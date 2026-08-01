@@ -618,9 +618,12 @@
     renderSubcatChips();
 
     itemsContainer.innerHTML = "";
-    const showItems = !isCCMode && PANTRY_CATS.has(catId) && !txn;
+    const showItems = !isCCMode && PANTRY_CATS.has(catId);
     itemsSection.style.display = showItems ? "block" : "none";
-    if(showItems) addItemRow();
+    if(showItems){
+      if(txn && txn.items && txn.items.length){ txn.items.forEach(it=> addItemRow(it.name, it.qty)); }
+      else if(!txn){ addItemRow(); }
+    }
 
     normalActions.style.display = txn ? "none" : "flex";
     editActions.style.display = txn ? "flex" : "none";
@@ -649,7 +652,7 @@
       lastPayMethod = activePayMethod; localStorage.setItem(LASTPAY_KEY, lastPayMethod);
     }
     if(items.length){
-      items.forEach(it=> pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name:it.name, qty:it.qty, date:newTxn.date, catId:activeCatId }));
+      items.forEach(it=> pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name:it.name, qty:it.qty, date:newTxn.date, catId:activeCatId, fromTxnId:newTxn.id }));
       saveJ(PANTRY_KEY, pantry); renderPantry();
     }
     closeSheet(); renderCatGrid(); renderRecent(); pushToCloud();
@@ -662,8 +665,24 @@
     editingTxn.amount = amt; editingTxn.type = isCCMode ? "expense" : activeType;
     editingTxn.note = noteInput.value.trim(); editingTxn.date = dateInput.value || editingTxn.date;
     if(!isCCMode){ editingTxn.paymentMethod = activePayMethod; editingTxn.subcategory = activeSubcat; }
+
+    if(!isCCMode && PANTRY_CATS.has(editingTxn.catId)){
+      const newItems = collectItems();
+      const newNamesLower = newItems.map(i=>i.name.toLowerCase());
+      // Drop pantry entries that were linked to this transaction but are no longer listed
+      pantry = pantry.filter(p=> !(p.fromTxnId===editingTxn.id && !newNamesLower.includes(p.name.toLowerCase())));
+      // Update quantity on entries that are still listed, add entries that are new
+      newItems.forEach(ni=>{
+        const match = pantry.find(p=> p.fromTxnId===editingTxn.id && p.name.toLowerCase()===ni.name.toLowerCase());
+        if(match){ match.qty = ni.qty; match.date = editingTxn.date; }
+        else { pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name: ni.name, qty: ni.qty, date: editingTxn.date, catId: editingTxn.catId, fromTxnId: editingTxn.id }); }
+      });
+      saveJ(PANTRY_KEY, pantry);
+      if(newItems.length) editingTxn.items = newItems; else delete editingTxn.items;
+    }
+
     saveJ(STORE_KEY, txns);
-    closeSheet(); renderRecent(); renderDashboard(); renderHistory(); pushToCloud();
+    closeSheet(); renderRecent(); renderDashboard(); renderHistory(); renderPantry(); pushToCloud();
   });
   document.getElementById("deleteBtn").addEventListener("click", ()=>{
     if(!editingTxn) return;
@@ -766,6 +785,7 @@
     pantry.forEach(p=>{ if(!seen.has(p.name.toLowerCase())) seen.set(p.name.toLowerCase(), p.name); });
     itemNamesList.innerHTML = [...seen.values()].sort().map(n=>`<option value="${n.replace(/"/g,'&quot;')}">`).join("");
   }
+  let expandedPantryItems = new Set();
   function renderPantry(){
     refreshItemNamesList();
     if(pantry.length===0){ pantryList.innerHTML = `<div class="empty-hint">Nothing logged yet.</div>`; return; }
@@ -780,13 +800,35 @@
     }).sort((a,b)=> b.lastDate.localeCompare(a.lastDate));
     pantryList.innerHTML = "";
     rows.forEach(g=>{
+      const key = g.name.toLowerCase();
       const c = catMap[g.catId] || catMap.groceries;
       const daysAgo = Math.max(0, Math.round((Date.now()-new Date(g.last.date).getTime())/86400000));
       const wl = pantryWindow>=9999 ? "all time" : "last "+pantryWindow+"d";
       const row = document.createElement("div");
       row.className = "pantry-row";
-      row.innerHTML = `<span class="emoji">${c.emoji}</span><div class="mid"><div class="pname">${g.name}</div><div class="pmeta">last: ${g.last.qty||"\u2014"} \u00b7 ${daysAgo===0?"today":daysAgo+"d ago"} &nbsp;\u00b7&nbsp; bought ${g.countInWindow}\u00d7 (${wl})</div></div>`;
+      row.style.cursor = "pointer";
+      row.innerHTML = `<span class="emoji">${c.emoji}</span><div class="mid"><div class="pname">${g.name}</div><div class="pmeta">last: ${g.last.qty||"\u2014"} \u00b7 ${daysAgo===0?"today":daysAgo+"d ago"} &nbsp;\u00b7&nbsp; bought ${g.countInWindow}\u00d7 (${wl})</div></div><span style="color:var(--muted); font-size:11px;">${expandedPantryItems.has(key)?"\u25b2":"\u25bc"}</span>`;
+      row.addEventListener("click", ()=>{ if(expandedPantryItems.has(key)) expandedPantryItems.delete(key); else expandedPantryItems.add(key); renderPantry(); });
       pantryList.appendChild(row);
+      if(expandedPantryItems.has(key)){
+        const detail = document.createElement("div");
+        detail.className = "subcat-list";
+        detail.innerHTML = g.entries.map(e=>{
+          const d = Math.max(0, Math.round((Date.now()-new Date(e.date).getTime())/86400000));
+          return `<div class="subcat-row"><span>${e.qty||"\u2014"} \u00b7 ${d===0?"today":d+"d ago"}</span><b class="pantry-del" data-id="${e.id}" style="cursor:pointer; color:var(--expense); font-weight:700;">\u2715 delete</b></div>`;
+        }).join("");
+        detail.querySelectorAll(".pantry-del").forEach(btn=>{
+          btn.addEventListener("click", (ev)=>{
+            ev.stopPropagation();
+            if(!confirm("Delete this one entry? This can't be undone, and it will not change any linked expense amount.")) return;
+            pantry = pantry.filter(p=>p.id!==btn.dataset.id);
+            saveJ(PANTRY_KEY, pantry);
+            renderPantry();
+            pushToCloud();
+          });
+        });
+        pantryList.appendChild(detail);
+      }
     });
   }
   document.getElementById("pantryAddBtn").addEventListener("click", ()=>{
