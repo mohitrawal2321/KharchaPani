@@ -307,6 +307,7 @@
         <div class="split-card credit"><div class="lbl">On credit</div><div class="val" id="splitCredit">&#8377;0</div><div class="sub">due next bill</div></div>
       </div>
       <div class="cc-paid-row"><span>CC bill paid this month</span><span id="ccPaidThisMonth">&#8377;0</span></div>
+      <div class="cc-paid-row" style="border-style:solid; border-color:var(--accent);"><span style="color:var(--accent); font-weight:700;">&#128176; Total left your bank this month</span><span id="totalCashOut" style="color:var(--accent); font-size:15px;">&#8377;0</span></div>
 
       <div class="balance-cards">
         <div class="bal-card left"><div class="lbl">&#128176; Money left (all-time)</div><div class="val" id="balMoneyLeft">&#8377;0</div></div>
@@ -867,6 +868,7 @@
     document.getElementById("splitPaid").textContent = fmt(paidNow);
     document.getElementById("splitCredit").textContent = fmt(onCredit);
     document.getElementById("ccPaidThisMonth").textContent = fmt(ccPaidThisMonth);
+    document.getElementById("totalCashOut").textContent = fmt(paidNow + ccPaidThisMonth);
 
     const allIncome = txns.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
     const allNonCCExpense = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
