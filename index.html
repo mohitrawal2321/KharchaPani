@@ -6,39 +6,38 @@
 <title>Kharcha Pani</title>
 <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIktoYXJjaGEgUGFuaSIsICJzaG9ydF9uYW1lIjogIktoYXJjaGEgUGFuaSIsICJzdGFydF91cmwiOiAiLiIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGEwZjBjIiwgInRoZW1lX2NvbG9yIjogIiMwYTBmMGMifQ==">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0a0f0c;
-    --bg2:#111a15;
-    --card:#141f19;
-    --card2:#1b2921;
-    --border:#2c4235;
-    --text:#eafff2;
-    --muted:#7fa38e;
-    --accent:#ffd23f;
-    --accent-dim:#3a2e0a;
-    --income:#39ff88;
-    --expense:#ff4d6d;
-    --pixel:'Press Start 2P', monospace;
-    --radius:14px;
-    --radius-sm:8px;
+    --bg:#0b0e11;
+    --bg2:#12171a;
+    --card:#12171a;
+    --card2:#171d21;
+    --border:#1e2427;
+    --text:#f2f5f4;
+    --muted:#7a8580;
+    --accent:#5fcf9e;
+    --accent-dim:#16241d;
+    --income:#5fcf9e;
+    --expense:#d67a7a;
+    --radius:16px;
+    --radius-sm:12px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; height:100%;}
   body{
     background:var(--bg); color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     overscroll-behavior:none; user-select:none;
   }
   input, textarea, select { user-select:text; }
   #app{ max-width:520px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding-bottom:76px; }
 
   header.topbar{ padding:18px 16px 10px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:5; background:linear-gradient(var(--bg) 82%, transparent); }
-  header.topbar h1{ font-size:15px; margin:0; font-weight:400; letter-spacing:.5px; font-family:var(--pixel); line-height:1.6; }
+  header.topbar h1{ font-size:18px; margin:0; font-weight:700; letter-spacing:-.2px; }
   header.topbar h1 span{ color:var(--accent); }
-  .icon-btn{ background:var(--card); border:2px solid var(--border); color:var(--text); width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; box-shadow:2px 2px 0 rgba(0,0,0,.4); }
-  .icon-btn:active{ box-shadow:none; transform:translate(2px,2px); }
+  .icon-btn{ background:var(--card); border:2px solid var(--border); color:var(--text); width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+  .icon-btn:active{ opacity:.7; }
 
   main{ flex:1; padding:0 14px; }
   .screen{ display:none; animation:fadeIn .18s ease; }
@@ -51,9 +50,9 @@
   .type-toggle button.active.income{ background:var(--income); color:#031b0d; }
 
   .cat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
-  .cat-card{ background:var(--card); border:2px solid var(--border); border-radius:var(--radius-sm); padding:12px 6px 9px; text-align:center; cursor:pointer; transition:transform .08s; box-shadow:3px 3px 0 rgba(0,0,0,.35); }
-  .cat-card:active{ transform:translate(2px,2px); box-shadow:none; }
-  .cat-card.recent{ border-color:var(--accent); box-shadow:3px 3px 0 rgba(0,0,0,.35), 0 0 10px rgba(255,210,63,.35); }
+  .cat-card{ background:var(--card); border:2px solid var(--border); border-radius:var(--radius-sm); padding:12px 6px 9px; text-align:center; cursor:pointer; transition:transform .08s; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+  .cat-card:active{ opacity:.75; }
+  .cat-card.recent{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
   .cat-card .emoji{ font-size:24px; display:block; margin-bottom:4px; }
   .cat-card .lbl{ font-size:10.5px; color:var(--muted); line-height:1.2; display:block; }
 
@@ -86,11 +85,11 @@
   .sheet-header .emoji{ font-size:26px; }
   .sheet-header .name{ font-size:16px; font-weight:700; }
   .amount-wrap{ display:flex; align-items:baseline; gap:8px; margin:6px 0 12px; border-bottom:2px solid var(--border); padding-bottom:10px; }
-  .amount-wrap .rupee{ font-size:22px; color:var(--accent); font-weight:600; font-family:var(--pixel); }
-  .amount-display{ flex:1; color:var(--text); font-size:26px; font-weight:700; font-family:var(--pixel); min-height:1.2em; }
+  .amount-wrap .rupee{ font-size:22px; color:var(--accent); font-weight:700; }
+  .amount-display{ flex:1; color:var(--text); font-size:30px; font-weight:800; letter-spacing:-.5px; min-height:1.2em; }
   .keypad{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
-  .keypad button{ padding:15px 0; font-size:18px; font-weight:700; background:var(--card2); border:2px solid var(--border); border-radius:10px; color:var(--text); cursor:pointer; box-shadow:2px 2px 0 rgba(0,0,0,.35); }
-  .keypad button:active{ box-shadow:none; transform:translate(2px,2px); }
+  .keypad button{ padding:15px 0; font-size:18px; font-weight:700; background:var(--card2); border:2px solid var(--border); border-radius:10px; color:var(--text); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .keypad button:active{ opacity:.7; }
   .keypad button.back{ color:var(--expense); font-size:16px; }
   .chip-row{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
   .chip{ background:var(--card); border:1px solid var(--border); color:var(--muted); padding:7px 13px; border-radius:999px; font-size:12.5px; cursor:pointer; }
@@ -101,38 +100,34 @@
   .field-row input[type=text], .field-row input[type=date], .field-row select{ width:100%; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:var(--radius-sm); font-size:16px; outline:none; }
   .sheet-actions{ display:flex; gap:10px; margin-top:16px; }
   #normalActions, #editActions{ position:sticky; bottom:-22px; background:var(--bg2); margin:16px -18px -22px; padding:14px 18px 22px; border-top:2px solid var(--border); z-index:2; }
-  .btn{ flex:1; padding:13px; border-radius:8px; border:2px solid transparent; font-size:15px; font-weight:700; cursor:pointer; box-shadow:3px 3px 0 rgba(0,0,0,.4); transition:transform .06s; }
-  .btn:active{ box-shadow:none; transform:translate(3px,3px); }
-  .btn.primary{ background:var(--accent); color:#1a1400; border-color:#c9a52e; }
+  .btn{ flex:1; padding:13px; border-radius:8px; border:2px solid transparent; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:transform .06s; }
+  .btn:active{ opacity:.8; }
+  .btn.primary{ background:var(--accent); color:#04140c; border-color:var(--accent); font-weight:700; }
   .btn.ghost{ background:var(--card2); color:var(--muted); border-color:var(--border); }
   .btn.danger{ background:#2b0f16; color:var(--expense); border-color:#5a1f2c; }
 
   .month-nav{ display:flex; align-items:center; justify-content:space-between; margin:8px 0 16px; }
   .month-nav .m-title{ font-size:17px; font-weight:700; }
-  .summary-cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
-  .sum-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 8px; text-align:center; }
-  .sum-card .lbl{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
-  .sum-card .val{ font-size:15px; font-weight:800; margin-top:4px; }
-  .sum-card.income .val{ color:var(--income); }
-  .sum-card.expense .val{ color:var(--expense); }
-  .sum-card.net .val{ color:var(--accent); }
 
-  .split-cards{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
-  .split-card{ border-radius:var(--radius-sm); padding:12px; }
-  .split-card.paid{ background:#0c2417; border:2px solid #1c5c3a; }
-  .split-card.credit{ background:#2c1608; border:2px solid #7a4318; }
-  .split-card .lbl{ font-size:10px; text-transform:uppercase; letter-spacing:.4px; }
-  .split-card.paid .lbl{ color:#4fd68f; }
-  .split-card.credit .lbl{ color:#e8965a; }
-  .split-card .val{ font-size:16px; font-weight:800; margin-top:5px; color:var(--text); }
-  .split-card .sub{ font-size:10px; margin-top:2px; }
-  .split-card.paid .sub{ color:#4fd68f; }
-  .split-card.credit .sub{ color:#e8965a; }
-  .cc-paid-row{ background:var(--card2); border:1px dashed var(--border); border-radius:var(--radius-sm); padding:10px 12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
-  .cc-paid-row span:first-child{ color:var(--muted); font-size:11.5px; }
-  .cc-paid-row span:last-child{ font-weight:700; font-size:13px; }
+  .hero-cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+  .hero-card{ border-radius:var(--radius); padding:18px; cursor:pointer; }
+  .hero-card.kharcha{ background:var(--card); border:1px solid var(--border); }
+  .hero-card.shesh{ background:#0e1f19; border:1px solid #1c3a2e; cursor:default; }
+  .hero-card .lbl{ font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+  .hero-card.shesh .lbl{ color:#5fcf9e; }
+  .hero-card .val{ font-size:21px; font-weight:800; margin-top:6px; letter-spacing:-.3px; color:var(--text); }
+  .hero-card.shesh .val{ color:#5fcf9e; }
+  .hero-card .hint{ font-size:10px; margin-top:4px; color:var(--muted); }
+  .hero-card.shesh .hint{ color:#3d8a68; }
 
-  .balance-cards{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:18px; }
+  .detail-panel{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:18px; }
+  .detail-row{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); padding:5px 0; }
+  .detail-row b{ color:var(--text); font-weight:600; }
+  .detail-note{ font-size:11px; color:var(--accent); margin-top:6px; padding-top:8px; border-top:1px solid var(--border); }
+
+  .accordion-row{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:13px 14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; cursor:pointer; font-size:13px; font-weight:600; }
+  .accordion-panel{ margin:-4px 0 18px; }
+  .balance-cards{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .bal-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; }
   .bal-card .lbl{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
   .bal-card .val{ font-size:18px; font-weight:800; }
@@ -141,13 +136,14 @@
 
   .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px; }
   .card h3{ margin:0 0 12px; font-size:14px; font-weight:700; color:var(--text); }
-  .bar-row{ margin-bottom:6px; border-radius:var(--radius-sm); padding:8px; cursor:pointer; }
-  .bar-row:hover{ background:var(--card2); }
-  .bar-row .brow-top{ display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px; }
-  .bar-row .brow-top .name{ display:flex; align-items:center; gap:6px; color:var(--text); }
-  .bar-row .brow-top .val{ color:var(--muted); font-weight:600; }
-  .bar-track{ height:7px; background:var(--card2); border-radius:99px; overflow:hidden; }
-  .bar-fill{ height:100%; background:var(--accent); border-radius:99px; }
+  .donut-wrap{ display:flex; align-items:center; gap:18px; }
+  .donut-wrap svg{ flex:none; cursor:pointer; }
+  .donut-legend{ flex:1; font-size:11.5px; color:var(--text); }
+  .donut-legend .leg-row{ display:flex; align-items:center; gap:7px; padding:4px 0; cursor:pointer; }
+  .donut-legend .swatch{ width:9px; height:9px; border-radius:2px; flex:none; }
+  .donut-legend .leg-name{ flex:1; }
+  .donut-legend .leg-pct{ color:var(--muted); }
+  .ledger-btn{ text-align:center; border:1px solid var(--border); color:var(--text); padding:14px; border-radius:var(--radius-sm); font-size:12.5px; font-weight:600; margin-bottom:16px; cursor:pointer; }
   .subcat-list{ padding:6px 4px 2px 30px; }
   .subcat-row{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); padding:4px 0; }
   .subcat-row b{ color:var(--text); font-weight:600; }
@@ -295,35 +291,51 @@
         <button class="icon-btn" id="nextMonth">&rsaquo;</button>
       </div>
 
-      <div class="summary-cards">
-        <div class="sum-card income"><div class="lbl">Income</div><div class="val" id="sumIncome">&#8377;0</div></div>
-        <div class="sum-card expense"><div class="lbl">Total spent</div><div class="val" id="sumExpense">&#8377;0</div></div>
-        <div class="sum-card net"><div class="lbl">Net</div><div class="val" id="sumNet">&#8377;0</div></div>
+      <div class="hero-cards">
+        <div class="hero-card kharcha" id="kharchaCard">
+          <div class="lbl">Kharcha</div>
+          <div class="val" id="kharchaVal">&#8377;0</div>
+          <div class="hint" id="kharchaArrow">tap for details &#9662;</div>
+        </div>
+        <div class="hero-card shesh">
+          <div class="lbl">Shesh</div>
+          <div class="val" id="sheshVal">&#8377;0</div>
+          <div class="hint">in your bank right now</div>
+        </div>
       </div>
 
-      <div class="section-label" style="margin-top:0;">Same total, split by timing</div>
-      <div class="split-cards">
-        <div class="split-card paid"><div class="lbl">Paid now</div><div class="val" id="splitPaid">&#8377;0</div><div class="sub">cash / UPI / debit</div></div>
-        <div class="split-card credit"><div class="lbl">On credit</div><div class="val" id="splitCredit">&#8377;0</div><div class="sub">due next bill</div></div>
-      </div>
-      <div class="cc-paid-row"><span>CC bill paid this month</span><span id="ccPaidThisMonth">&#8377;0</span></div>
-      <div class="cc-paid-row" style="border-style:solid; border-color:var(--accent);"><span style="color:var(--accent); font-weight:700;">&#128176; Total left your bank this month</span><span id="totalCashOut" style="color:var(--accent); font-size:15px;">&#8377;0</span></div>
-
-      <div class="balance-cards">
-        <div class="bal-card left"><div class="lbl">&#128176; Money left (all-time)</div><div class="val" id="balMoneyLeft">&#8377;0</div></div>
-        <div class="bal-card cc"><div class="lbl">&#128179; Credit card owed</div><div class="val" id="balCCOwed">&#8377;0</div></div>
+      <div class="detail-panel" id="kharchaDetail" style="display:none;">
+        <div class="detail-row"><span>Income this month</span><b id="detIncome">&#8377;0</b></div>
+        <div class="detail-row"><span>UPI</span><b id="detUpi">&#8377;0</b></div>
+        <div class="detail-row"><span>Cash</span><b id="detCash">&#8377;0</b></div>
+        <div class="detail-row"><span>Debit card</span><b id="detDebit">&#8377;0</b></div>
+        <div class="detail-row"><span>Credit card bill payment</span><b id="detCcPaid">&#8377;0</b></div>
+        <div class="detail-note" id="detOnCredit"></div>
       </div>
 
       <div class="card">
-        <h3>Category breakdown &middot; tap to expand</h3>
-        <div id="catBreakdown"></div>
-        <div class="empty-hint" id="catEmptyHint" style="display:none;">No expenses logged this month yet.</div>
+        <h3>Where it went &middot; tap a slice</h3>
+        <div class="donut-wrap" id="donutWrap">
+          <svg id="donutChart" viewBox="0 0 100 100" width="110" height="110"></svg>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+        <div class="empty-hint" id="donutEmptyHint" style="display:none;">No spending logged this month yet.</div>
+      </div>
+
+      <div class="accordion-row" id="allTimeToggle"><span>&#128202; All-time balance</span><span id="allTimeArrow">&#9662;</span></div>
+      <div class="accordion-panel" id="allTimePanel" style="display:none;">
+        <div class="balance-cards">
+          <div class="bal-card left"><div class="lbl">Money left (all-time)</div><div class="val" id="balMoneyLeft">&#8377;0</div></div>
+          <div class="bal-card cc"><div class="lbl">Credit card owed</div><div class="val" id="balCCOwed">&#8377;0</div></div>
+        </div>
       </div>
 
       <div class="card">
         <h3>Last 6 months</h3>
         <canvas id="trendChart" height="180"></canvas>
       </div>
+
+      <div class="ledger-btn" id="ledgerBtn">&#128220; View full ledger &amp; balance sheet</div>
 
       <div class="tools-row">
         <button class="btn ghost" id="exportCsvBtn">&#8595; Export CSV (by category)</button>
@@ -717,6 +729,7 @@
   const fDateTo = document.getElementById("fDateTo");
 
   CATEGORIES.forEach(c=>{ const o=document.createElement("option"); o.value=c.id; o.textContent=c.emoji+" "+c.name; fCategory.appendChild(o); });
+  (function(){ const o=document.createElement("option"); o.value="ccpayment"; o.textContent="\u{1F4B3} Credit Card Bill Payment"; fCategory.appendChild(o); })();
 
   function refreshSubcatFilterOptions(){
     const catId = fCategory.value;
@@ -746,8 +759,13 @@
   }
 
   function renderHistory(){
-    let list = [...txns].filter(t=>!t.isCC);
-    if(fCategory.value) list = list.filter(t=>t.catId===fCategory.value);
+    let list = [...txns];
+    if(fCategory.value === "ccpayment"){
+      list = list.filter(t=>t.isCC);
+    } else {
+      list = list.filter(t=>!t.isCC);
+      if(fCategory.value) list = list.filter(t=>t.catId===fCategory.value);
+    }
     if(fSubcat.value) list = list.filter(t=>t.subcategory===fSubcat.value);
     if(fMethod.value) list = list.filter(t=>t.paymentMethod===fMethod.value);
     if(fRange.value==="month"){ const ym=todayISO().slice(0,7); list=list.filter(t=>monthKey(t.date)===ym); }
@@ -849,26 +867,49 @@
   document.getElementById("prevMonth").addEventListener("click", ()=>shiftMonth(-1));
   document.getElementById("nextMonth").addEventListener("click", ()=>shiftMonth(1));
 
+  document.getElementById("kharchaCard").addEventListener("click", ()=>{
+    const panel = document.getElementById("kharchaDetail");
+    const arrow = document.getElementById("kharchaArrow");
+    const isOpen = panel.style.display !== "none";
+    panel.style.display = isOpen ? "none" : "block";
+    arrow.textContent = isOpen ? "tap for details \u25be" : "hide details \u25b4";
+  });
+  document.getElementById("allTimeToggle").addEventListener("click", ()=>{
+    const panel = document.getElementById("allTimePanel");
+    const arrow = document.getElementById("allTimeArrow");
+    const isOpen = panel.style.display !== "none";
+    panel.style.display = isOpen ? "none" : "block";
+    arrow.textContent = isOpen ? "\u25be" : "\u25b4";
+  });
+  document.getElementById("ledgerBtn").addEventListener("click", ()=> switchScreen("history"));
+
   let trendChartInstance = null;
-  const expandedCats = new Set();
 
   function renderDashboard(){
     monthTitle.textContent = monthLabel(dashYM);
     const monthTxns = txns.filter(t=> monthKey(t.date)===dashYM);
 
     const income = monthTxns.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
-    const expense = monthTxns.filter(t=>t.type==="expense" && !t.isCC).reduce((s,t)=>s+t.amount,0);
-    document.getElementById("sumIncome").textContent = fmt(income);
-    document.getElementById("sumExpense").textContent = fmt(expense);
-    document.getElementById("sumNet").textContent = fmt(income-expense);
-
-    const paidNow = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
+    const upiAmt = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="upi").reduce((s,t)=>s+t.amount,0);
+    const cashAmt = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="cash").reduce((s,t)=>s+t.amount,0);
+    const debitAmt = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="debit").reduce((s,t)=>s+t.amount,0);
+    const paidNow = upiAmt + cashAmt + debitAmt;
     const onCredit = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="credit").reduce((s,t)=>s+t.amount,0);
     const ccPaidThisMonth = monthTxns.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
-    document.getElementById("splitPaid").textContent = fmt(paidNow);
-    document.getElementById("splitCredit").textContent = fmt(onCredit);
-    document.getElementById("ccPaidThisMonth").textContent = fmt(ccPaidThisMonth);
-    document.getElementById("totalCashOut").textContent = fmt(paidNow + ccPaidThisMonth);
+
+    // Kharcha = true cash-out this month (never includes new credit-card purchases until the month they're actually paid)
+    const kharcha = paidNow + ccPaidThisMonth;
+    const shesh = income - kharcha;
+    document.getElementById("kharchaVal").textContent = fmt(kharcha);
+    document.getElementById("sheshVal").textContent = fmt(shesh);
+
+    document.getElementById("detIncome").textContent = fmt(income);
+    document.getElementById("detUpi").textContent = fmt(upiAmt);
+    document.getElementById("detCash").textContent = fmt(cashAmt);
+    document.getElementById("detDebit").textContent = fmt(debitAmt);
+    document.getElementById("detCcPaid").textContent = fmt(ccPaidThisMonth);
+    const onCreditNote = document.getElementById("detOnCredit");
+    onCreditNote.textContent = onCredit>0 ? ("+ " + fmt(onCredit) + " still on credit card, not yet paid (not counted above)") : "";
 
     const allIncome = txns.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
     const allNonCCExpense = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
@@ -877,43 +918,47 @@
     document.getElementById("balMoneyLeft").textContent = fmt(allIncome-allNonCCExpense-allCCPayments);
     document.getElementById("balCCOwed").textContent = fmt(Math.max(0, allCCPurchases-allCCPayments));
 
+    // Donut: cash-paid-only category totals, PLUS a dedicated Credit Card Bill Payment slice.
+    // Together these always sum to exactly `kharcha` \u2014 same number, two views, never added together.
     const byCat = {};
-    monthTxns.filter(t=>t.type==="expense" && !t.isCC).forEach(t=>{ byCat[t.catId]=(byCat[t.catId]||0)+t.amount; });
-    const entries = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-    const catBreakdown = document.getElementById("catBreakdown");
-    const emptyHint = document.getElementById("catEmptyHint");
-    if(entries.length===0){ catBreakdown.innerHTML=""; emptyHint.style.display="block"; }
-    else {
-      emptyHint.style.display = "none";
-      const max = entries[0][1];
-      catBreakdown.innerHTML = "";
-      entries.forEach(([id,amt])=>{
-        const c = catMap[id]||catMap.others;
-        const pct = Math.round((amt/expense)*100);
-        const width = Math.max(4, Math.round((amt/max)*100));
-        const wrap = document.createElement("div");
-        const isExpanded = expandedCats.has(id);
-        wrap.innerHTML = `<div class="bar-row"><div class="brow-top"><span class="name">${c.emoji} ${c.name}</span><span class="val">${fmt(amt)} \u00b7 ${pct}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${width}%"></div></div></div>`;
-        const barRow = wrap.querySelector(".bar-row");
-        barRow.addEventListener("click", ()=>{
-          if(expandedCats.has(id)) expandedCats.delete(id); else expandedCats.add(id);
-          renderDashboard();
-        });
-        catBreakdown.appendChild(wrap);
-        if(isExpanded){
-          const subs = {};
-          monthTxns.filter(t=>t.catId===id && t.type==="expense" && !t.isCC).forEach(t=>{
-            const key = t.subcategory || "(no subcategory)";
-            subs[key] = (subs[key]||0) + t.amount;
-          });
-          const subEntries = Object.entries(subs).sort((a,b)=>b[1]-a[1]);
-          const subDiv = document.createElement("div");
-          subDiv.className = "subcat-list";
-          subDiv.innerHTML = subEntries.map(([name,amt2])=>`<div class="subcat-row"><span>${name}</span><b>${fmt(amt2)}</b></div>`).join("") +
-            `<div class="see-all" style="text-align:left; padding:6px 0;" data-cat="${id}">View all in History &rarr;</div>`;
-          subDiv.querySelector(".see-all").addEventListener("click", ()=> switchScreen("history", {catId:id, range:"month"}));
-          catBreakdown.appendChild(subDiv);
-        }
+    monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").forEach(t=>{ byCat[t.catId]=(byCat[t.catId]||0)+t.amount; });
+    const donutSlices = Object.entries(byCat).map(([id,amt])=>({ id, name: (catMap[id]||catMap.others).name, emoji:(catMap[id]||catMap.others).emoji, amt }));
+    if(ccPaidThisMonth>0) donutSlices.push({ id:"ccpayment", name:"Credit Card Bill Payment", emoji:"\u{1F4B3}", amt:ccPaidThisMonth });
+    donutSlices.sort((a,b)=>b.amt-a.amt);
+
+    const donutColors = ["#5fcf9e","#e8b34f","#6b8fd6","#d67a7a","#a582d6","#5fb8cf","#cf9e5f","#8ecf5f"];
+    const donutChart = document.getElementById("donutChart");
+    const donutLegend = document.getElementById("donutLegend");
+    const donutEmptyHint = document.getElementById("donutEmptyHint");
+    const donutWrap = document.getElementById("donutWrap");
+    if(donutSlices.length===0){
+      donutWrap.style.display = "none"; donutEmptyHint.style.display = "block";
+    } else {
+      donutWrap.style.display = "flex"; donutEmptyHint.style.display = "none";
+      const total = donutSlices.reduce((s,d)=>s+d.amt,0);
+      const r = 40, circ = 2*Math.PI*r;
+      let cumPct = 0;
+      let svgParts = `<g transform="rotate(-90 50 50)">`;
+      donutSlices.forEach((d,i)=>{
+        const pct = total>0 ? d.amt/total : 0;
+        const dash = pct*circ;
+        const color = donutColors[i % donutColors.length];
+        svgParts += `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="16" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${-cumPct*circ}" data-cat="${d.id}" style="cursor:pointer;"/>`;
+        cumPct += pct;
+      });
+      svgParts += `</g>`;
+      donutChart.innerHTML = svgParts;
+      donutChart.querySelectorAll("circle").forEach(el=>{
+        el.addEventListener("click", ()=> switchScreen("history", {catId: el.dataset.cat==="ccpayment" ? "ccpayment" : el.dataset.cat, range:"month"}));
+      });
+      donutLegend.innerHTML = "";
+      donutSlices.forEach((d,i)=>{
+        const pct = total>0 ? Math.round((d.amt/total)*100) : 0;
+        const row = document.createElement("div");
+        row.className = "leg-row";
+        row.innerHTML = `<span class="swatch" style="background:${donutColors[i%donutColors.length]}"></span><span class="leg-name">${d.emoji} ${d.name}</span><span class="leg-pct">${pct}%</span>`;
+        row.addEventListener("click", ()=> switchScreen("history", {catId:d.id, range:"month"}));
+        donutLegend.appendChild(row);
       });
     }
 
@@ -925,14 +970,16 @@
       labels.push(d.toLocaleDateString("en-IN",{month:"short"}));
       const mt = txns.filter(t=>monthKey(t.date)===ym);
       incomeSeries.push(mt.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0));
-      expenseSeries.push(mt.filter(t=>t.type==="expense" && !t.isCC).reduce((s,t)=>s+t.amount,0));
+      const mtPaidNow = mt.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
+      const mtCcPaid = mt.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
+      expenseSeries.push(mtPaidNow + mtCcPaid);
     }
     const ctx = document.getElementById("trendChart").getContext("2d");
     if(trendChartInstance) trendChartInstance.destroy();
     trendChartInstance = new Chart(ctx, { type:"bar", data:{ labels, datasets:[
-      { label:"Income", data:incomeSeries, backgroundColor:"#39ff88", borderRadius:4, maxBarThickness:22 },
-      { label:"Expense", data:expenseSeries, backgroundColor:"#ff4d6d", borderRadius:4, maxBarThickness:22 }
-    ]}, options:{ responsive:true, plugins:{legend:{labels:{color:"#7fa38e", font:{size:11}}}}, scales:{ x:{ticks:{color:"#7fa38e",font:{size:11}},grid:{display:false}}, y:{ticks:{color:"#7fa38e",font:{size:10}},grid:{color:"#2c4235"}} } } });
+      { label:"Income", data:incomeSeries, backgroundColor:"#5fcf9e", borderRadius:4, maxBarThickness:22 },
+      { label:"Kharcha", data:expenseSeries, backgroundColor:"#d67a7a", borderRadius:4, maxBarThickness:22 }
+    ]}, options:{ responsive:true, plugins:{legend:{labels:{color:"#7a8580", font:{size:11}}}}, scales:{ x:{ticks:{color:"#7a8580",font:{size:11}},grid:{display:false}}, y:{ticks:{color:"#7a8580",font:{size:10}},grid:{color:"#1e2427"}} } } });
   }
 
   // ---------- CSV EXPORT ----------
