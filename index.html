@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kharcha Pani</title>
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIktoYXJjaGEgUGFuaSIsICJzaG9ydF9uYW1lIjogIktoYXJjaGEgUGFuaSIsICJzdGFydF91cmwiOiAiLiIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGEwZjBjIiwgInRoZW1lX2NvbG9yIjogIiMwYTBmMGMifQ==">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0e11;
+    --bg2:#12171a;
+    --card:#12171a;
+    --card2:#171d21;
+    --border:#1e2427;
+    --text:#f2f5f4;
+    --muted:#7a8580;
+    --accent:#5fcf9e;
+    --accent-dim:#16241d;
+    --income:#5fcf9e;
+    --expense:#d67a7a;
+    --radius:16px;
+    --radius-sm:12px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%;}
+  /* Inputs and selects carry an intrinsic minimum width, and a flex child defaults to
+     min-width:auto \u2014 so a row of them can refuse to shrink and push the page wider than
+     the screen. min-width:0 lets them actually fit. */
+  .filter-row select, .filter-row input, .pantry-add-row input, .item-row input,
+  .code-row input, .lg-row .cn, .lg-head .cn, .lg-total .cn{ min-width:0; }
+  body{
+    overflow-x:hidden;
+    background:var(--bg); color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    overscroll-behavior:none; user-select:none;
+  }
+  input, textarea, select { user-select:text; }
+  #app{ max-width:520px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding-bottom:76px; }
+
+  header.topbar{ padding:18px 16px 10px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:5; background:linear-gradient(var(--bg) 82%, transparent); }
+  header.topbar h1{ font-size:18px; margin:0; font-weight:700; letter-spacing:-.2px; }
+  header.topbar h1 span{ color:var(--accent); }
+  .icon-btn{ background:var(--card); border:2px solid var(--border); color:var(--text); width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+  .icon-btn:active{ opacity:.7; }
+
+  main{ flex:1; padding:0 14px; }
+  .screen{ display:none; animation:fadeIn .18s ease; }
+  .screen.active{ display:block; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  .type-toggle{ display:flex; background:var(--card2); border:1px solid var(--border); border-radius:999px; padding:4px; margin:6px 0 14px; }
+  .type-toggle button{ flex:1; border:none; background:transparent; color:var(--muted); padding:9px 0; border-radius:999px; font-size:14px; font-weight:600; cursor:pointer; }
+  .type-toggle button.active.expense{ background:var(--expense); color:#1a0208; }
+  .type-toggle button.active.income{ background:var(--income); color:#031b0d; }
+
+  .cat-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+  .cat-card{ background:var(--card); border:2px solid var(--border); border-radius:var(--radius-sm); padding:12px 6px 9px; text-align:center; cursor:pointer; transition:transform .08s; box-shadow:0 2px 6px rgba(0,0,0,.25); }
+  .cat-card:active{ opacity:.75; }
+  .cat-card.recent{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .cat-card .emoji{ font-size:24px; display:block; margin-bottom:4px; }
+  .cat-card .lbl{ font-size:10.5px; color:var(--muted); line-height:1.2; display:block; }
+
+  .section-label{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin:16px 0 8px; font-weight:600; }
+
+  .recent-list, .history-list{ display:flex; flex-direction:column; gap:8px; }
+  .txn-row{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:11px 12px; display:flex; align-items:center; gap:10px; cursor:pointer; }
+  .txn-row .emoji{ font-size:20px; width:30px; text-align:center; }
+  .txn-row .mid{ flex:1; min-width:0; }
+  .txn-row .cat{ font-size:13.5px; font-weight:600; }
+  .txn-row .note{ font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .txn-row .amt{ font-size:14.5px; font-weight:700; white-space:nowrap; }
+  .txn-row .amt.income{ color:var(--income); }
+  .txn-row .amt.expense{ color:var(--expense); }
+  .empty-hint{ color:var(--muted); font-size:13px; text-align:center; padding:24px 10px; }
+  .see-all{ text-align:center; color:var(--accent); font-size:12.5px; font-weight:600; padding:10px; cursor:pointer; }
+
+  .cc-tile{ display:flex; align-items:center; gap:10px; background:var(--card2); border:1px dashed var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:16px; cursor:pointer; }
+  .cc-tile .emoji{ font-size:20px; }
+  .cc-tile .txt{ flex:1; }
+  .cc-tile .txt .t1{ font-size:13.5px; font-weight:700; }
+  .cc-tile .txt .t2{ font-size:11px; color:var(--muted); }
+
+  .sheet-backdrop{ position:fixed; inset:0; background:rgba(10,15,12,.4); z-index:20; display:none; }
+  .sheet-backdrop.active{ display:block; }
+  .sheet{ position:fixed; left:0; right:0; bottom:-100%; z-index:21; max-width:520px; margin:0 auto; background:var(--bg2); border-radius:22px 22px 0 0; padding:16px 18px 22px; border:1px solid var(--border); border-bottom:none; transition:bottom .22s ease; max-height:88vh; overflow-y:auto; }
+  .sheet.active{ bottom:0; }
+  .sheet-handle{ width:38px; height:4px; background:var(--border); border-radius:99px; margin:0 auto 14px; }
+  .sheet-header{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .sheet-header .emoji{ font-size:26px; }
+  .sheet-header .name{ font-size:16px; font-weight:700; }
+  .amount-wrap{ display:flex; align-items:baseline; gap:8px; margin:6px 0 12px; border-bottom:2px solid var(--border); padding-bottom:10px; }
+  .amount-wrap .rupee{ font-size:22px; color:var(--accent); font-weight:700; }
+  .amount-display{ flex:1; color:var(--text); font-size:30px; font-weight:800; letter-spacing:-.5px; min-height:1.2em; }
+  .keypad{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:16px; }
+  .keypad button{ padding:15px 0; font-size:18px; font-weight:700; background:var(--card2); border:2px solid var(--border); border-radius:10px; color:var(--text); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .keypad button:active{ opacity:.7; }
+  .keypad button.back{ color:var(--expense); font-size:16px; }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
+  .chip{ background:var(--card); border:1px solid var(--border); color:var(--muted); padding:7px 13px; border-radius:999px; font-size:12.5px; cursor:pointer; }
+  .chip.active{ background:var(--accent-dim); border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .chip.dashed{ border-style:dashed; color:var(--accent); }
+  .field-row{ margin-bottom:12px; }
+  .field-row label{ font-size:11.5px; color:var(--muted); display:block; margin-bottom:5px; text-transform:uppercase; letter-spacing:.4px; }
+  .field-row input[type=text], .field-row input[type=date], .field-row select{ width:100%; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:var(--radius-sm); font-size:16px; outline:none; }
+  .sheet-actions{ display:flex; gap:10px; margin-top:16px; }
+  #normalActions, #editActions{ position:sticky; bottom:-22px; background:var(--bg2); margin:16px -18px -22px; padding:14px 18px 22px; border-top:2px solid var(--border); z-index:2; }
+  .btn{ flex:1; padding:13px; border-radius:8px; border:2px solid transparent; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.25); transition:transform .06s; }
+  .btn:active{ opacity:.8; }
+  .btn.primary{ background:var(--accent); color:#04140c; border-color:var(--accent); font-weight:700; }
+  .btn.ghost{ background:var(--card2); color:var(--muted); border-color:var(--border); }
+  .btn.danger{ background:#2b0f16; color:var(--expense); border-color:#5a1f2c; }
+
+  .month-nav{ display:flex; align-items:center; justify-content:space-between; margin:8px 0 16px; }
+  .month-nav .m-title{ font-size:17px; font-weight:700; }
+
+  .hero-cards{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:10px; }
+  .hero-card{ border-radius:var(--radius); padding:18px; cursor:pointer; }
+  .hero-card.kharcha{ background:var(--card); border:1px solid var(--border); }
+  .hero-card.shesh{ background:#0e1f19; border:1px solid #1c3a2e; cursor:default; }
+  .hero-card .lbl{ font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); }
+  .hero-card.shesh .lbl{ color:#5fcf9e; }
+  .hero-card .val{ font-size:21px; font-weight:800; margin-top:6px; letter-spacing:-.3px; color:var(--text); }
+  .hero-card.shesh .val{ color:#5fcf9e; }
+  .hero-card .hint{ font-size:10px; margin-top:4px; color:var(--muted); }
+  .hero-card.shesh .hint{ color:#3d8a68; }
+
+  .detail-panel{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:18px; }
+  .detail-row{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); padding:5px 0; }
+  .detail-row b{ color:var(--text); font-weight:600; }
+  .detail-note{ font-size:11px; color:var(--accent); margin-top:6px; padding-top:8px; border-top:1px solid var(--border); }
+
+  .accordion-row{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:13px 14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; cursor:pointer; font-size:13px; font-weight:600; }
+  .accordion-panel{ margin:-4px 0 18px; }
+  .balance-cards{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
+  .bal-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; }
+  .bal-card .lbl{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; }
+  .bal-card .val{ font-size:18px; font-weight:800; }
+  .bal-card.left .val{ color:var(--accent); }
+  .bal-card.cc .val{ color:var(--expense); }
+
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px; }
+  .card h3{ margin:0 0 12px; font-size:14px; font-weight:700; color:var(--text); }
+  .donut-wrap{ display:flex; align-items:center; gap:18px; }
+  .donut-wrap svg{ flex:none; cursor:pointer; }
+  .donut-legend{ flex:1; font-size:11.5px; color:var(--text); }
+  .donut-legend .leg-row{ display:flex; align-items:center; gap:7px; padding:4px 0; cursor:pointer; }
+  .donut-legend .swatch{ width:9px; height:9px; border-radius:2px; flex:none; }
+  .donut-legend .leg-name{ flex:1; }
+  .donut-legend .leg-pct{ color:var(--muted); }
+  .ledger-btn{ text-align:center; border:1px solid var(--border); color:var(--text); padding:14px; border-radius:var(--radius-sm); font-size:12.5px; font-weight:600; margin-bottom:16px; cursor:pointer; }
+  .subcat-list{ padding:6px 4px 2px 30px; }
+  .subcat-row{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); padding:4px 0; }
+  .subcat-row b{ color:var(--text); font-weight:600; }
+
+  .ledger-head{ display:flex; align-items:center; gap:10px; margin:8px 0 16px; }
+  .ledger-head .lg-title{ font-size:17px; font-weight:700; }
+  .ledger-table{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; margin-bottom:10px; }
+  .lg-head{ display:flex; padding:9px 12px; font-size:11px; color:var(--muted); border-bottom:1px solid var(--border); }
+  .lg-row{ display:flex; align-items:center; padding:11px 12px; font-size:12.5px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .lg-head .c1, .lg-row .c1, .lg-total .c1{ flex:1.15; display:flex; align-items:center; gap:5px; }
+  .lg-head .cn, .lg-row .cn, .lg-total .cn{ flex:1; text-align:right; }
+  .lg-row .caret{ font-size:10px; }
+  .lg-detail{ background:#0e1316; border-bottom:1px solid var(--border); padding:10px 12px 12px; }
+  .lg-detail .d-row{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); padding:3px 0; }
+  .lg-detail .d-row b{ color:var(--text); font-weight:600; }
+  .lg-note{ font-size:11px; color:var(--accent); margin-top:7px; padding-top:7px; border-top:1px solid var(--border); line-height:1.5; }
+  .lg-sep{ margin-top:7px; padding-top:7px; border-top:1px solid var(--border); }
+  .lg-link{ margin-top:10px; border:1px solid var(--border); border-radius:8px; text-align:center; font-size:11.5px; color:var(--accent); padding:9px; cursor:pointer; }
+  .lg-total{ display:flex; align-items:center; padding:11px 12px; font-size:12.5px; background:var(--card2); font-weight:700; }
+  .lg-total .c1{ color:var(--muted); font-weight:600; }
+  .lg-foot{ font-size:11px; color:var(--muted); margin:0 2px 18px; line-height:1.6; }
+  .lg-warn{ font-size:11.5px; color:var(--expense); border:1px solid #5a1f2c; background:#2b0f16; border-radius:var(--radius-sm); padding:11px 12px; margin-bottom:14px; line-height:1.5; }
+
+  .cal-dow{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px; margin-bottom:6px; }
+  .cal-dow span{ font-size:10px; color:var(--muted); text-align:center; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:3px; }
+  .cal-cell{ border-radius:8px; padding:5px 2px; text-align:center; min-height:38px; border:1px solid transparent; }
+  .cal-cell.has{ background:var(--card2); cursor:pointer; }
+  .cal-cell .dnum{ display:block; font-size:10.5px; color:#4a534f; }
+  .cal-cell.has .dnum{ color:var(--text); }
+  .cal-cell .damt{ display:block; font-size:10px; color:var(--expense); margin-top:1px; }
+  .cal-cell.today{ border-color:var(--border); }
+  .cal-cell.sel{ background:var(--accent-dim); border-color:var(--accent); }
+  .cal-cell.sel .dnum, .cal-cell.sel .damt{ color:var(--accent); }
+  .cal-day{ margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
+  .cal-day .cd-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .cal-day .cd-date{ font-size:12.5px; font-weight:700; }
+  .cal-day .cd-amt{ font-size:13px; font-weight:700; color:var(--expense); }
+  .cal-day .cd-row{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); padding:5px 0; }
+  .cal-day .cd-row b{ color:var(--text); font-weight:600; }
+  .cal-day .cd-credit{ font-size:11px; color:var(--accent); margin-top:7px; padding-top:7px; border-top:1px solid var(--border); line-height:1.5; }
+  .cal-foot{ margin-top:12px; padding-top:10px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); }
+
+  .filter-summary{ display:flex; justify-content:space-between; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:11px 12px; font-size:12.5px; cursor:pointer; }
+  .filter-summary .fs-right{ display:flex; align-items:center; gap:12px; color:var(--muted); font-size:11.5px; }
+  .filter-summary .fs-clear{ color:var(--accent); font-weight:600; }
+  .filter-sub{ font-size:11px; color:var(--muted); margin:-2px 2px 4px; line-height:1.5; }
+  .pantry-search{ width:100%; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:var(--radius-sm); font-size:16px; outline:none; margin-bottom:10px; }
+
+  canvas{ max-width:100%; }
+  .tools-row{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+  .tools-row .btn{ font-size:12px; padding:10px; flex:1 1 45%; }
+
+  .sync-dot{ width:8px; height:8px; border-radius:50%; background:#3a4a40; display:inline-block; margin-right:6px; vertical-align:middle; }
+  .sync-dot.on{ background:var(--income); box-shadow:0 0 6px var(--income); }
+  .sync-dot.err{ background:var(--expense); }
+  .sync-status{ font-size:11.5px; color:var(--muted); display:flex; align-items:center; margin-bottom:14px; }
+  .field-row textarea{ width:100%; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:var(--radius-sm); font-size:16px; outline:none; font-family:monospace; min-height:90px; resize:vertical; }
+  .code-row{ display:flex; gap:8px; }
+  .code-row input{ flex:1; }
+  .code-row .btn{ flex:none; padding:11px 14px; font-size:12.5px; }
+  .helper-text{ font-size:11.5px; color:var(--muted); margin:-4px 0 12px; line-height:1.4; }
+
+  .pantry-add-row{ display:flex; gap:8px; margin-bottom:16px; }
+  .pantry-add-row input{ background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:var(--radius-sm); font-size:16px; outline:none; }
+  .pantry-add-row input.pname{ flex:2; }
+  .pantry-add-row input.pqty{ flex:1; }
+  .pantry-add-row button{ flex:none; width:44px; border-radius:var(--radius-sm); border:none; background:var(--accent); color:#fff; font-size:20px; font-weight:700; cursor:pointer; }
+  .pantry-list{ display:flex; flex-direction:column; gap:8px; }
+  .pantry-row{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:11px 12px; display:flex; align-items:center; gap:10px; }
+  .pantry-row .emoji{ font-size:18px; }
+  .pantry-row .mid{ flex:1; min-width:0; }
+  .pantry-row .pname{ font-size:13.5px; font-weight:600; }
+  .pantry-row .pmeta{ font-size:11px; color:var(--muted); }
+
+  .items-section{ margin-bottom:14px; border-top:1px solid var(--border); padding-top:12px; }
+  .item-row{ display:flex; gap:8px; margin-bottom:8px; }
+  .item-row input.iname{ flex:2; background:var(--card); border:1px solid var(--border); color:var(--text); padding:9px 10px; border-radius:var(--radius-sm); font-size:16px; outline:none; }
+  .item-row input.iqty{ flex:1; background:var(--card); border:1px solid var(--border); color:var(--text); padding:9px 10px; border-radius:var(--radius-sm); font-size:16px; outline:none; }
+  .item-row .irem{ background:none; border:none; color:var(--expense); font-size:18px; cursor:pointer; flex:none; width:30px; }
+  .add-item-btn{ background:none; border:1px dashed var(--border); color:var(--accent); font-size:12.5px; padding:8px; width:100%; border-radius:var(--radius-sm); cursor:pointer; }
+
+  .filter-bar{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .filter-row{ display:flex; gap:8px; }
+  .filter-row select, .filter-row input[type=text], .filter-row input[type=date]{ flex:1; background:var(--card); border:1px solid var(--border); color:var(--text); padding:9px 10px; border-radius:var(--radius-sm); font-size:16px; outline:none; }
+  .filter-total{ background:var(--card2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:12.5px; }
+  .filter-total b{ font-size:15px; }
+
+  nav.bottomnav{ position:fixed; bottom:0; left:0; right:0; z-index:10; background:var(--bg2); border-top:1px solid var(--border); display:flex; max-width:520px; margin:0 auto; padding-bottom:env(safe-area-inset-bottom); }
+  nav.bottomnav button{ flex:1; background:transparent; border:none; color:var(--muted); padding:11px 0 9px; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:10px; cursor:pointer; }
+  nav.bottomnav button .ic{ font-size:18px; }
+  nav.bottomnav button.active{ color:var(--accent); }
+  ::-webkit-scrollbar{ display:none; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <h1>Kharcha<span>Pani</span></h1>
+    <button class="icon-btn" id="settingsBtn"><span class="sync-dot" id="headerDot"></span>&#9881;&#65039;</button>
+  </header>
+
+  <main>
+    <!-- ADD SCREEN -->
+    <section class="screen active" id="screen-add">
+      <div class="section-label" style="margin-top:0;">Tap a category to log</div>
+      <div class="cat-grid" id="catGrid"></div>
+
+      <div class="cc-tile" id="ccTile">
+        <span class="emoji">&#128179;</span>
+        <div class="txt"><div class="t1">Pay Credit Card Bill</div><div class="t2">Settles what you already spent &mdash; won't double count</div></div>
+        <span>&rsaquo;</span>
+      </div>
+
+      <div class="section-label">Recent</div>
+      <div class="recent-list" id="recentList"></div>
+      <div class="see-all" id="seeAllBtn">See all &rarr;</div>
+    </section>
+
+    <!-- HISTORY SCREEN -->
+    <section class="screen" id="screen-history">
+      <div class="section-label" style="margin-top:0;">Filters</div>
+      <div class="filter-bar">
+        <div class="filter-summary" id="catSummary">
+          <span id="catSummaryText">All categories</span>
+          <span class="fs-right"><span class="fs-clear" id="catClear" style="display:none;">Clear</span><span id="catCaret">&#9662;</span></span>
+        </div>
+        <div class="chip-row" id="catChipRow" style="display:none; margin-bottom:0;"></div>
+        <div class="filter-row">
+          <select id="fSubcat" style="display:none;"><option value="">All subcategories</option></select>
+        </div>
+        <div class="filter-summary" id="methodSummary">
+          <span id="methodSummaryText">Any payment method</span>
+          <span class="fs-right"><span class="fs-clear" id="methodClear" style="display:none;">Clear</span><span id="methodCaret">&#9662;</span></span>
+        </div>
+        <div class="chip-row" id="methodChipRow" style="display:none; margin-bottom:0;">
+          <div class="chip" data-m="upi">UPI</div>
+          <div class="chip" data-m="cash">Cash</div>
+          <div class="chip" data-m="debit">Debit Card</div>
+          <div class="chip" data-m="credit">Credit Card</div>
+          <div class="chip" data-m="cc_settlement">Card Bill Payment</div>
+        </div>
+        <div class="filter-row">
+          <select id="fRange">
+            <option value="all">All time</option>
+            <option value="30">Last 30 days</option>
+            <option value="60">Last 60 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="month">This month</option>
+            <option value="custom">Custom range...</option>
+          </select>
+        </div>
+        <div class="filter-row" id="fCustomDateRow" style="display:none;">
+          <input type="date" id="fDateFrom">
+          <input type="date" id="fDateTo">
+        </div>
+        <div class="filter-row">
+          <input type="text" id="fSearch" placeholder="Search notes...">
+          <select id="fSort">
+            <option value="amount">Amount high&ndash;low</option>
+            <option value="date">Newest first</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-total">
+        <span id="fCount">0 transactions</span>
+        <b id="fTotal">&#8377;0</b>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </section>
+
+    <!-- PANTRY SCREEN -->
+    <section class="screen" id="screen-pantry">
+      <div class="section-label" style="margin-top:0;">Log a purchase</div>
+      <div class="pantry-add-row">
+        <input type="text" id="pantryNameInput" class="pname" placeholder="Item name" list="itemNamesList">
+        <input type="text" id="pantryQtyInput" class="pqty" placeholder="Qty e.g. 2kg">
+        <button id="pantryAddBtn">+</button>
+      </div>
+      <datalist id="itemNamesList"></datalist>
+      <div class="section-label" style="display:flex; align-items:center; justify-content:space-between;"><span>Purchase history</span></div>
+      <input type="text" id="pantrySearch" class="pantry-search" placeholder="Search items...">
+      <div class="chip-row" id="pantryWindowRow">
+        <div class="chip" data-w="7">7d</div>
+        <div class="chip" data-w="15">15d</div>
+        <div class="chip active" data-w="30">30d</div>
+        <div class="chip" data-w="60">60d</div>
+        <div class="chip" data-w="month">This month</div>
+        <div class="chip" data-w="all">All time</div>
+      </div>
+      <div class="pantry-list" id="pantryList"></div>
+    </section>
+
+    <!-- DASHBOARD SCREEN -->
+    <section class="screen" id="screen-dash">
+      <div class="month-nav">
+        <button class="icon-btn" id="prevMonth">&lsaquo;</button>
+        <div class="m-title" id="monthTitle">June 2026</div>
+        <button class="icon-btn" id="nextMonth">&rsaquo;</button>
+      </div>
+
+      <div class="hero-cards">
+        <div class="hero-card kharcha" id="kharchaCard">
+          <div class="lbl">Kharcha</div>
+          <div class="val" id="kharchaVal">&#8377;0</div>
+          <div class="hint" id="kharchaArrow">tap for details &#9662;</div>
+        </div>
+        <div class="hero-card shesh">
+          <div class="lbl">Shesh</div>
+          <div class="val" id="sheshVal">&#8377;0</div>
+          <div class="hint">in your bank right now</div>
+        </div>
+      </div>
+
+      <div class="detail-panel" id="kharchaDetail" style="display:none;">
+        <div class="detail-row"><span>Income this month</span><b id="detIncome">&#8377;0</b></div>
+        <div class="detail-row"><span>UPI</span><b id="detUpi">&#8377;0</b></div>
+        <div class="detail-row"><span>Cash</span><b id="detCash">&#8377;0</b></div>
+        <div class="detail-row"><span>Debit card</span><b id="detDebit">&#8377;0</b></div>
+        <div class="detail-row"><span>Credit card bill payment</span><b id="detCcPaid">&#8377;0</b></div>
+        <div class="detail-note" id="detOnCredit"></div>
+      </div>
+
+      <div class="card">
+        <h3>Where it went &middot; tap a slice</h3>
+        <div class="donut-wrap" id="donutWrap">
+          <svg id="donutChart" viewBox="0 0 100 100" width="110" height="110"></svg>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+        <div class="empty-hint" id="donutEmptyHint" style="display:none;">No spending logged this month yet.</div>
+      </div>
+
+      <div class="card" id="calCard">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="margin:0;">Day by day</h3>
+          <span style="font-size:11px; color:var(--muted);">tap a day</span>
+        </div>
+        <div class="cal-dow"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-day" id="calDayPanel" style="display:none;"></div>
+        <div class="cal-foot" id="calFoot"></div>
+      </div>
+
+      <div class="accordion-row" id="allTimeToggle"><span>&#128202; All-time balance</span><span id="allTimeArrow">&#9662;</span></div>
+      <div class="accordion-panel" id="allTimePanel" style="display:none;">
+        <div class="balance-cards">
+          <div class="bal-card left"><div class="lbl">Money left (all-time)</div><div class="val" id="balMoneyLeft">&#8377;0</div></div>
+          <div class="bal-card cc"><div class="lbl">Credit card owed</div><div class="val" id="balCCOwed">&#8377;0</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Last 6 months</h3>
+        <canvas id="trendChart" height="180"></canvas>
+      </div>
+
+      <div class="ledger-btn" id="ledgerBtn">&#128220; View full ledger &amp; balance sheet</div>
+
+      <div class="tools-row">
+        <button class="btn ghost" id="exportCsvBtn">&#8595; Export CSV (by category)</button>
+        <button class="btn ghost" id="exportBtn">&#8595; Full backup (JSON)</button>
+        <button class="btn ghost" id="importBtn">&#8593; Restore backup</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+    </section>
+
+    <!-- LEDGER SCREEN -->
+    <section class="screen" id="screen-ledger">
+      <div class="ledger-head">
+        <button class="icon-btn" id="ledgerBack">&lsaquo;</button>
+        <div class="lg-title">Ledger</div>
+      </div>
+
+      <div class="balance-cards">
+        <div class="bal-card left"><div class="lbl">Money left</div><div class="val" id="lgMoneyLeft">&#8377;0</div></div>
+        <div class="bal-card cc"><div class="lbl">Card owed</div><div class="val" id="lgCCOwed">&#8377;0</div></div>
+      </div>
+      <div class="lg-foot" style="margin-top:8px;">as of today &middot; all-time running totals</div>
+
+      <div class="lg-warn" id="lgWarn" style="display:none;"></div>
+
+      <div class="section-label" style="margin-top:0;">Month by month</div>
+      <div class="ledger-table" id="ledgerTable"></div>
+      <div class="lg-foot">Every month's Shesh added together equals Money left. Card purchases enter Kharcha only in the month you pay the bill.</div>
+    </section>
+  </main>
+
+  <nav class="bottomnav">
+    <button class="active" data-screen="add"><span class="ic">&#10133;</span>Add</button>
+    <button data-screen="history"><span class="ic">&#128220;</span>History</button>
+    <button data-screen="pantry"><span class="ic">&#129530;</span>Pantry</button>
+    <button data-screen="dash"><span class="ic">&#128202;</span>Dashboard</button>
+  </nav>
+
+  <!-- BOTTOM SHEET: quick entry -->
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <div class="sheet" id="entrySheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><span class="emoji" id="sheetEmoji">&#128722;</span><span class="name" id="sheetName">Groceries</span></div>
+
+    <div class="type-toggle" id="sheetType">
+      <button class="expense active" data-t="expense">Expense</button>
+      <button class="income" data-t="income">Income</button>
+    </div>
+
+    <div class="chip-row" id="payMethodRow">
+      <div class="chip active" data-m="upi">UPI</div>
+      <div class="chip" data-m="cash">Cash</div>
+      <div class="chip" data-m="debit">Debit Card</div>
+      <div class="chip" data-m="credit">Credit Card</div>
+    </div>
+
+    <div class="amount-wrap"><span class="rupee">&#8377;</span><div class="amount-display" id="amountDisplay">0</div></div>
+    <div class="keypad" id="keypad">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" data-k=".">.</button><button type="button" data-k="0">0</button><button type="button" class="back" data-k="back">&#9003;</button>
+    </div>
+
+    <div id="subcatBlock">
+      <label style="font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:8px;">Subcategory</label>
+      <div class="chip-row" id="subcatChips"></div>
+      <div class="field-row" id="customSubcatRow" style="display:none;">
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="customSubcatInput" placeholder="New subcategory name" style="flex:1; background:var(--card); border:1px solid var(--border); color:var(--text); padding:9px 10px; border-radius:var(--radius-sm); font-size:16px;">
+          <button type="button" class="btn primary" style="flex:none; padding:9px 16px; font-size:12.5px;" id="customSubcatAddBtn">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="items-section" id="itemsSection" style="display:none;">
+      <label style="font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:8px;">Add to pantry (optional)</label>
+      <div id="itemsContainer"></div>
+      <button type="button" class="add-item-btn" id="addItemBtn">+ Add item</button>
+    </div>
+
+    <div class="field-row"><label>Note (optional)</label><input type="text" id="noteInput" placeholder="e.g. traffic was bad"></div>
+    <div class="field-row"><label>Date</label><input type="date" id="dateInput"></div>
+
+    <div class="sheet-actions" id="normalActions">
+      <button class="btn ghost" id="cancelBtn">Cancel</button>
+      <button class="btn primary" id="saveBtn">Save</button>
+    </div>
+    <div class="sheet-actions" id="editActions" style="display:none;">
+      <button class="btn danger" id="deleteBtn">Delete</button>
+      <button class="btn primary" id="updateBtn">Update</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM SHEET: sync setup -->
+  <div class="sheet-backdrop" id="syncBackdrop"></div>
+  <div class="sheet" id="syncSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><span class="emoji">&#9729;&#65039;</span><span class="name">Sync across devices</span></div>
+    <div class="sync-status"><span class="sync-dot" id="syncStatusDot"></span><span id="syncStatusText">Not connected &mdash; data stays only on this device</span></div>
+    <div class="field-row"><label>Firebase config (paste the whole object)</label><textarea id="fbConfigInput" placeholder='{ "apiKey": "...", "projectId": "...", ... }'></textarea></div>
+    <div class="helper-text">From Firebase Console &rarr; Project settings &rarr; Your apps &rarr; Web app config. Same config on all devices. (If you already connected an older version of this app, paste the same config and sync code &mdash; your data reconnects automatically.)</div>
+    <div class="field-row">
+      <label>Sync code (same code on every device)</label>
+      <div class="code-row"><input type="text" id="syncCodeInput" placeholder="e.g. a7x9-k2p4-m8qz"><button class="btn ghost" id="genCodeBtn">Generate</button></div>
+    </div>
+    <div class="helper-text">Treat this code like a password.</div>
+    <div class="sheet-actions"><button class="btn ghost" id="syncCancelBtn">Close</button><button class="btn primary" id="syncConnectBtn">Connect</button></div>
+    <div class="sheet-actions" style="margin-top:10px;"><button class="btn danger" id="clearDataBtn">Clear all local data</button></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  const CATEGORIES = [
+    { id:"groceries",  name:"Groceries",        emoji:"\u{1F6D2}", subcats:["Local shop","Supermarket","Household","Blinkit","Zepto","Instamart","BigBasket"] },
+    { id:"outsidefood",name:"Outside Food",     emoji:"\u{1F37D}\uFE0F", subcats:["Restaurant","Cafe","Snacks","Zomato","Swiggy"] },
+    { id:"transport",  name:"Transportation",   emoji:"\u{1F697}", subcats:["Cab","Auto","Bike taxi","Metro","Bus","Train","Fuel","Parking","Tolls","Servicing"] },
+    { id:"bills",      name:"Bills & Utilities",emoji:"\u{1F4A1}", subcats:["Electricity","Water","Gas","Internet","Mobile","Maintenance","Insurance"] },
+    { id:"rent",       name:"Rent",             emoji:"\u{1F3E0}", subcats:[] },
+    { id:"shopping",   name:"Shopping",         emoji:"\u{1F6CD}\uFE0F", subcats:["Clothes","Footwear","Electronics","Toys","Gifts"] },
+    { id:"health",     name:"Fitness",          emoji:"\u{1F4AA}", subcats:["Gym","Yoga","Sports","Supplements"] },
+    { id:"medical",    name:"Medical",          emoji:"\u{1F48A}", subcats:["Doctor","Pharmacy","Lab test","Hospital"] },
+    { id:"travel",     name:"Travel",           emoji:"\u2708\uFE0F", subcats:["Flights","Trains","Hotels","Intercity bus","Visa"] },
+    { id:"subscription",name:"Subscription",    emoji:"\u{1F4F1}", subcats:["Netflix","Prime","Spotify","Cloud"] },
+    { id:"entertainment",name:"Entertainment",  emoji:"\u{1F3AC}", subcats:["Movies","Events","Games","Concerts"] },
+    { id:"moneysent",  name:"Money Sent",       emoji:"\u{1F4B8}", subcats:["Family","Friend","Rent share","Gift"] },
+    { id:"income",     name:"Income",           emoji:"\u{1F4B0}", subcats:["Salary","Freelance","Interest","Refund","Bonus"] },
+    { id:"others",     name:"Others",           emoji:"\u{1F5C2}\uFE0F", subcats:[] },
+  ];
+  const catMap = {}; CATEGORIES.forEach(c=>catMap[c.id]=c);
+  catMap["ccpayment"] = { id:"ccpayment", name:"Credit Card Bill Payment", emoji:"\u{1F4B3}", subcats:[] };
+  // Retired category ids. They no longer appear as tiles, but they stay in catMap so that
+  // any transaction still carrying an old id displays with its real name instead of
+  // silently falling back to "Others" \u2014 which matters if the migration below is declined,
+  // or if the other phone hasn't been updated yet.
+  [ { id:"grocerydelivery", name:"Grocery Delivery", emoji:"\u{1F4E6}", subcats:[] },
+    { id:"fooddelivery",    name:"Food Delivery",    emoji:"\u{1F354}", subcats:[] },
+    { id:"airlines",        name:"Airlines",         emoji:"\u2708\uFE0F", subcats:[] },
+    { id:"electricity",     name:"Electricity",      emoji:"\u{1F4A1}", subcats:[] },
+    { id:"transfer",        name:"Transfer",         emoji:"\u{1F4B8}", subcats:[] }
+  ].forEach(c=> catMap[c.id]=c);
+  const PANTRY_CATS = new Set(["groceries","shopping"]);
+
+  const STORE_KEY = "kharchapani_txns_v1";
+  const USAGE_KEY = "kharchapani_usage_v1";
+  const PANTRY_KEY = "kharchapani_pantry_v1";
+  const SUBCAT_KEY = "kharchapani_customsubcats_v1";
+  const LASTSUBCAT_KEY = "kharchapani_lastsubcat_v1";
+  const LASTPAY_KEY = "kharchapani_lastpay_v1";
+  function loadJ(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch(e){ return fallback; } }
+  function saveJ(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+  let txns = loadJ(STORE_KEY, []);
+  let usage = loadJ(USAGE_KEY, {});
+  let pantry = loadJ(PANTRY_KEY, []);
+  let customSubcats = loadJ(SUBCAT_KEY, {}); // { catId: [names] }
+  let lastSubcat = loadJ(LASTSUBCAT_KEY, {}); // { catId: name }
+  let lastPayMethod = localStorage.getItem(LASTPAY_KEY) || "upi";
+
+  function subcatsFor(catId){
+    const base = (catMap[catId] && catMap[catId].subcats) || [];
+    const custom = customSubcats[catId] || [];
+    return [...base, ...custom.filter(c=>!base.includes(c))];
+  }
+
+  const fmt = n => "\u20B9" + Math.round(n).toLocaleString("en-IN");
+  const nfmt = n => Math.round(n).toLocaleString("en-IN");
+  function todayISO(){ return new Date().toISOString().slice(0,10); }
+  function monthKey(d){ return d.slice(0,7); }
+  function monthLabel(ym){ const [y,m]=ym.split("-").map(Number); return new Date(y,m-1,1).toLocaleDateString("en-IN",{month:"long",year:"numeric"}); }
+  function shortMonthLabel(ym){ const [y,m]=ym.split("-").map(Number); return new Date(y,m-1,1).toLocaleDateString("en-IN",{month:"short",year:"2-digit"}); }
+  function monthEndISO(ym){ const [y,m]=ym.split("-").map(Number); return ym+"-"+String(new Date(y,m,0).getDate()).padStart(2,"0"); }
+  function bumpUsage(id){ usage[id]=(usage[id]||0)+1; saveJ(USAGE_KEY, usage); }
+  function topUsedCats(n){ return Object.entries(usage).sort((a,b)=>b[1]-a[1]).slice(0,n).map(e=>e[0]); }
+
+  // ---------- CAT GRID ----------
+  const catGrid = document.getElementById("catGrid");
+  function renderCatGrid(){
+    const recents = new Set(topUsedCats(3));
+    catGrid.innerHTML = "";
+    CATEGORIES.forEach(c=>{
+      const el = document.createElement("div");
+      el.className = "cat-card" + (recents.has(c.id) ? " recent" : "");
+      el.innerHTML = `<span class="emoji">${c.emoji}</span><span class="lbl">${c.name}</span>`;
+      el.addEventListener("click", ()=> openSheet(c.id));
+      catGrid.appendChild(el);
+    });
+  }
+  document.getElementById("ccTile").addEventListener("click", ()=> openSheet("ccpayment"));
+
+  // ---------- RECENT LIST ----------
+  const recentList = document.getElementById("recentList");
+  function renderRecent(){
+    const sorted = [...txns].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,10);
+    if(sorted.length===0){ recentList.innerHTML = `<div class="empty-hint">No transactions yet. Tap a category above to add your first one.</div>`; return; }
+    recentList.innerHTML = "";
+    sorted.forEach(t=> recentList.appendChild(txnRowEl(t)));
+  }
+  document.getElementById("seeAllBtn").addEventListener("click", ()=>{ switchScreen("history"); });
+
+  function txnRowEl(t){
+    const c = catMap[t.catId] || catMap.others;
+    const tag = t.subcategory ? (" \u00b7 " + t.subcategory) : "";
+    const ccTag = (t.paymentMethod==="credit" && !t.isCC) ? " \u00b7 CC" : "";
+    const row = document.createElement("div");
+    row.className = "txn-row";
+    row.innerHTML = `
+      <span class="emoji">${c.emoji}</span>
+      <div class="mid">
+        <div class="cat">${c.name}${tag}</div>
+        <div class="note">${(t.note ? t.note : t.date)}${ccTag}</div>
+      </div>
+      <div class="amt ${t.type}">${t.type==="income"?"+":"-"}${fmt(t.amount)}</div>
+    `;
+    row.addEventListener("click", ()=> openSheet(t.catId, t));
+    return row;
+  }
+
+  // ---------- ENTRY SHEET ----------
+  const sheetBackdrop = document.getElementById("sheetBackdrop");
+  const entrySheet = document.getElementById("entrySheet");
+  const sheetEmoji = document.getElementById("sheetEmoji");
+  const sheetName = document.getElementById("sheetName");
+  const sheetType = document.getElementById("sheetType");
+  const amountDisplay = document.getElementById("amountDisplay");
+  const keypad = document.getElementById("keypad");
+  let amountStr = "";
+  function renderAmount(){ amountDisplay.textContent = amountStr || "0"; }
+  function currentAmount(){ const v = parseFloat(amountStr); return isNaN(v) ? 0 : v; }
+  keypad.addEventListener("click", (e)=>{
+    const btn = e.target.closest("button"); if(!btn) return;
+    const k = btn.dataset.k;
+    if(k==="back"){ amountStr = amountStr.slice(0,-1); }
+    else if(k==="."){ if(!amountStr.includes(".")) amountStr += (amountStr===""?"0.":"."); }
+    else { if(amountStr==="0") amountStr = k; else amountStr += k; }
+    renderAmount();
+  });
+  const noteInput = document.getElementById("noteInput");
+  const dateInput = document.getElementById("dateInput");
+  const subcatBlock = document.getElementById("subcatBlock");
+  const subcatChips = document.getElementById("subcatChips");
+  const customSubcatRow = document.getElementById("customSubcatRow");
+  const customSubcatInput = document.getElementById("customSubcatInput");
+  const normalActions = document.getElementById("normalActions");
+  const editActions = document.getElementById("editActions");
+  const payMethodRow = document.getElementById("payMethodRow");
+  const itemsSection = document.getElementById("itemsSection");
+  const itemsContainer = document.getElementById("itemsContainer");
+  const addItemBtn = document.getElementById("addItemBtn");
+
+  let activeCatId = null, editingTxn = null, activeType = "expense", activePayMethod = "upi", activeSubcat = "";
+
+  function setType(t){
+    activeType = t;
+    [...sheetType.children].forEach(b=> b.classList.toggle("active", b.dataset.t===t));
+    payMethodRow.style.display = (t==="expense" && activeCatId!=="ccpayment") ? "flex" : "none";
+  }
+  function setPayMethod(m){ activePayMethod=m; [...payMethodRow.children].forEach(ch=>ch.classList.toggle("active", ch.dataset.m===m)); }
+  [...payMethodRow.children].forEach(ch=> ch.addEventListener("click", ()=> setPayMethod(ch.dataset.m)));
+
+  function renderSubcatChips(){
+    subcatChips.innerHTML = "";
+    subcatsFor(activeCatId).forEach(name=>{
+      const el = document.createElement("div");
+      el.className = "chip" + (activeSubcat===name ? " active" : "");
+      el.textContent = name;
+      el.addEventListener("click", ()=>{ activeSubcat = (activeSubcat===name ? "" : name); renderSubcatChips(); customSubcatRow.style.display="none"; });
+      subcatChips.appendChild(el);
+    });
+    const addEl = document.createElement("div");
+    addEl.className = "chip dashed";
+    addEl.textContent = "+ Custom";
+    addEl.addEventListener("click", ()=>{ customSubcatRow.style.display = customSubcatRow.style.display==="none" ? "block" : "none"; customSubcatInput.focus(); });
+    subcatChips.appendChild(addEl);
+  }
+  document.getElementById("customSubcatAddBtn").addEventListener("click", ()=>{
+    const name = customSubcatInput.value.trim();
+    if(!name) return;
+    if(!customSubcats[activeCatId]) customSubcats[activeCatId] = [];
+    if(!customSubcats[activeCatId].includes(name)) customSubcats[activeCatId].push(name);
+    saveJ(SUBCAT_KEY, customSubcats);
+    activeSubcat = name;
+    customSubcatInput.value = "";
+    customSubcatRow.style.display = "none";
+    renderSubcatChips();
+    pushToCloud();
+  });
+
+  function addItemRow(name, qty){
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `<input type="text" class="iname" placeholder="Item name" list="itemNamesList" value="${name?name.replace(/"/g,'&quot;'):''}"><input type="text" class="iqty" placeholder="Qty" value="${qty?qty.replace(/"/g,'&quot;'):''}"><button type="button" class="irem">\u2715</button>`;
+    row.querySelector(".irem").addEventListener("click", ()=> row.remove());
+    itemsContainer.appendChild(row);
+  }
+  addItemBtn.addEventListener("click", ()=> addItemRow());
+  function collectItems(){ return [...itemsContainer.querySelectorAll(".item-row")].map(r=>({name:r.querySelector(".iname").value.trim(), qty:r.querySelector(".iqty").value.trim()})).filter(i=>i.name); }
+
+  function openSheet(catId, txn){
+    activeCatId = catId; editingTxn = txn || null;
+    const c = catMap[catId];
+    sheetEmoji.textContent = c.emoji; sheetName.textContent = c.name;
+    const isCCMode = catId === "ccpayment";
+
+    setType(txn ? txn.type : (catId==="income" ? "income" : "expense"));
+    setPayMethod(txn && txn.paymentMethod ? txn.paymentMethod : lastPayMethod);
+    sheetType.style.display = "none";
+    payMethodRow.style.display = (!isCCMode && activeType==="expense") ? "flex" : "none";
+
+    amountStr = txn ? String(txn.amount) : "";
+    renderAmount();
+    noteInput.value = txn ? (txn.note||"") : "";
+    dateInput.value = txn ? txn.date : todayISO();
+
+    activeSubcat = txn ? (txn.subcategory || "") : (lastSubcat[catId] || "");
+    subcatBlock.style.display = isCCMode ? "none" : "block";
+    customSubcatRow.style.display = "none";
+    renderSubcatChips();
+
+    itemsContainer.innerHTML = "";
+    const showItems = !isCCMode && PANTRY_CATS.has(catId);
+    itemsSection.style.display = showItems ? "block" : "none";
+    if(showItems){
+      if(txn && txn.items && txn.items.length){ txn.items.forEach(it=> addItemRow(it.name, it.qty)); }
+      else if(!txn){ addItemRow(); }
+    }
+
+    normalActions.style.display = txn ? "none" : "flex";
+    editActions.style.display = txn ? "flex" : "none";
+    sheetBackdrop.classList.add("active"); entrySheet.classList.add("active");
+    if(!sheetPushed){ try{ history.pushState({view:"sheet"}, ""); sheetPushed = true; }catch(e){} }
+  }
+  function doCloseSheet(){ sheetBackdrop.classList.remove("active"); entrySheet.classList.remove("active"); }
+  // Closing by button or backdrop steps history back, so the entry the sheet pushed is
+  // consumed. popstate is what actually hides it, keeping both routes identical.
+  function closeSheet(){ if(sheetPushed){ history.back(); } else { doCloseSheet(); } }
+  sheetBackdrop.addEventListener("click", closeSheet);
+  document.getElementById("cancelBtn").addEventListener("click", closeSheet);
+
+  document.getElementById("saveBtn").addEventListener("click", ()=>{
+    const amt = currentAmount();
+    if(amt<=0){ return; }
+    const isCCMode = activeCatId === "ccpayment";
+    const newTxn = {
+      id: Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      catId: activeCatId, amount: amt, type: isCCMode ? "expense" : activeType,
+      note: noteInput.value.trim(), date: dateInput.value || todayISO(),
+      // Income has no payment method. Without this it silently inherits the last one used,
+      // which is how salary entries ended up stored as credit card spending.
+      paymentMethod: isCCMode ? "cc_settlement" : (activeType==="income" ? "" : activePayMethod), isCC: isCCMode,
+      subcategory: isCCMode ? "" : activeSubcat
+    };
+    const items = (!isCCMode) ? collectItems() : [];
+    if(items.length) newTxn.items = items;
+    txns.push(newTxn); saveJ(STORE_KEY, txns); bumpUsage(activeCatId);
+    if(!isCCMode){
+      if(activeSubcat){ lastSubcat[activeCatId] = activeSubcat; saveJ(LASTSUBCAT_KEY, lastSubcat); }
+      lastPayMethod = activePayMethod; localStorage.setItem(LASTPAY_KEY, lastPayMethod);
+    }
+    if(items.length){
+      items.forEach(it=> pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name:it.name, qty:it.qty, date:newTxn.date, catId:activeCatId, fromTxnId:newTxn.id }));
+      saveJ(PANTRY_KEY, pantry); renderPantry();
+    }
+    closeSheet(); renderCatGrid(); renderRecent(); renderLedger(); pushToCloud();
+  });
+
+  document.getElementById("updateBtn").addEventListener("click", ()=>{
+    const amt = currentAmount();
+    if(amt<=0 || !editingTxn) return;
+    const isCCMode = editingTxn.catId === "ccpayment";
+    editingTxn.amount = amt; editingTxn.type = isCCMode ? "expense" : activeType;
+    editingTxn.note = noteInput.value.trim(); editingTxn.date = dateInput.value || editingTxn.date;
+    if(!isCCMode){ editingTxn.paymentMethod = (activeType==="income") ? "" : activePayMethod; editingTxn.subcategory = activeSubcat; }
+
+    if(!isCCMode && PANTRY_CATS.has(editingTxn.catId)){
+      const newItems = collectItems();
+      const newNamesLower = newItems.map(i=>i.name.toLowerCase());
+      // Drop pantry entries that were linked to this transaction but are no longer listed
+      pantry = pantry.filter(p=> !(p.fromTxnId===editingTxn.id && !newNamesLower.includes(p.name.toLowerCase())));
+      // Update quantity on entries that are still listed, add entries that are new
+      newItems.forEach(ni=>{
+        const match = pantry.find(p=> p.fromTxnId===editingTxn.id && p.name.toLowerCase()===ni.name.toLowerCase());
+        if(match){ match.qty = ni.qty; match.date = editingTxn.date; }
+        else { pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name: ni.name, qty: ni.qty, date: editingTxn.date, catId: editingTxn.catId, fromTxnId: editingTxn.id }); }
+      });
+      saveJ(PANTRY_KEY, pantry);
+      if(newItems.length) editingTxn.items = newItems; else delete editingTxn.items;
+    }
+
+    saveJ(STORE_KEY, txns);
+    closeSheet(); renderRecent(); renderDashboard(); renderHistory(); renderPantry(); renderLedger(); pushToCloud();
+  });
+  document.getElementById("deleteBtn").addEventListener("click", ()=>{
+    if(!editingTxn) return;
+    txns = txns.filter(t=>t.id!==editingTxn.id);
+    saveJ(STORE_KEY, txns);
+    closeSheet(); renderCatGrid(); renderRecent(); renderDashboard(); renderHistory(); renderLedger(); pushToCloud();
+  });
+
+  // ---------- NAV ----------
+  const screens = {
+    add: document.getElementById("screen-add"),
+    history: document.getElementById("screen-history"),
+    pantry: document.getElementById("screen-pantry"),
+    dash: document.getElementById("screen-dash"),
+    ledger: document.getElementById("screen-ledger")
+  };
+  // Every tab switch and every sheet open pushes a browser history entry, so the Android
+  // back gesture steps back through the app instead of closing it. popstate below undoes
+  // the topmost layer: an open sheet first, otherwise the previous screen.
+  let currentScreen = "add";
+  let sheetPushed = false, syncPushed = false;
+
+  function switchScreen(name, presetFilter, fromPop){
+    if(!screens[name]) name = "add";
+    if(!fromPop && name===currentScreen && !presetFilter) return;
+    // The ledger has no tab of its own; it lives under Dashboard, so keep that tab lit.
+    const navName = (name==="ledger") ? "dash" : name;
+    document.querySelectorAll("nav.bottomnav button").forEach(b=>b.classList.toggle("active", b.dataset.screen===navName));
+    Object.values(screens).forEach(s=>s.classList.remove("active"));
+    screens[name].classList.add("active");
+    window.scrollTo(0,0);
+    currentScreen = name;
+    if(name==="dash") renderDashboard();
+    if(name==="pantry") renderPantry();
+    if(name==="ledger") renderLedger();
+    if(name==="history"){ if(presetFilter) applyHistoryPreset(presetFilter); renderHistory(); }
+    if(!fromPop){ try{ history.pushState({view:"screen", screen:name}, ""); }catch(e){} }
+  }
+  document.querySelectorAll("nav.bottomnav button").forEach(btn=> btn.addEventListener("click", ()=> switchScreen(btn.dataset.screen)));
+
+  try{ history.replaceState({view:"screen", screen:"add"}, ""); }catch(e){}
+  window.addEventListener("popstate", function(e){
+    if(sheetPushed){ sheetPushed = false; doCloseSheet(); return; }
+    if(syncPushed){ syncPushed = false; doCloseSyncSheet(); return; }
+    const st = e.state || {};
+    switchScreen(st.screen || "add", null, true);
+  });
+
+  // ---------- HISTORY ----------
+  const fSubcat = document.getElementById("fSubcat");
+  const fRange = document.getElementById("fRange");
+  const fSearch = document.getElementById("fSearch");
+  const fSort = document.getElementById("fSort");
+  const historyList = document.getElementById("historyList");
+  const fCustomDateRow = document.getElementById("fCustomDateRow");
+  const fDateFrom = document.getElementById("fDateFrom");
+  const fDateTo = document.getElementById("fDateTo");
+
+  // Empty set means "everything" for both of these.
+  let selCats = new Set();
+  let selMethods = new Set();
+  const catSummary = document.getElementById("catSummary");
+  const catSummaryText = document.getElementById("catSummaryText");
+  const catChipRow = document.getElementById("catChipRow");
+  const catClear = document.getElementById("catClear");
+  const catCaret = document.getElementById("catCaret");
+  const methodSummary = document.getElementById("methodSummary");
+  const methodSummaryText = document.getElementById("methodSummaryText");
+  const methodChipRow = document.getElementById("methodChipRow");
+  const methodClear = document.getElementById("methodClear");
+  const methodCaret = document.getElementById("methodCaret");
+  const METHOD_NAMES = { upi:"UPI", cash:"Cash", debit:"Debit Card", credit:"Credit Card", cc_settlement:"Card Bill Payment" };
+
+  (function buildCatChips(){
+    CATEGORIES.forEach(c=>{
+      const el = document.createElement("div");
+      el.className = "chip"; el.dataset.cat = c.id; el.textContent = c.name;
+      catChipRow.appendChild(el);
+    });
+    const cc = document.createElement("div");
+    cc.className = "chip dashed"; cc.dataset.cat = "ccpayment"; cc.textContent = "Card Bill Payment";
+    catChipRow.appendChild(cc);
+  })();
+
+  function renderCatChips(){
+    [...catChipRow.children].forEach(el=> el.classList.toggle("active", selCats.has(el.dataset.cat)));
+    catSummaryText.textContent = selCats.size===0 ? "All categories"
+      : (selCats.size===1 ? (catMap[[...selCats][0]] || catMap.others).name : selCats.size + " categories");
+    catClear.style.display = selCats.size ? "inline" : "none";
+  }
+  function renderMethodChips(){
+    [...methodChipRow.children].forEach(el=> el.classList.toggle("active", selMethods.has(el.dataset.m)));
+    methodSummaryText.textContent = selMethods.size===0 ? "Any payment method"
+      : (selMethods.size===1 ? METHOD_NAMES[[...selMethods][0]] : selMethods.size + " payment methods");
+    methodClear.style.display = selMethods.size ? "inline" : "none";
+  }
+  function setChipRowOpen(row, caret, open){
+    row.style.display = open ? "flex" : "none";
+    caret.textContent = open ? "\u25b4" : "\u25be";
+  }
+  catSummary.addEventListener("click", ()=> setChipRowOpen(catChipRow, catCaret, catChipRow.style.display==="none"));
+  methodSummary.addEventListener("click", ()=> setChipRowOpen(methodChipRow, methodCaret, methodChipRow.style.display==="none"));
+  catClear.addEventListener("click", (ev)=>{ ev.stopPropagation(); selCats.clear(); renderCatChips(); refreshSubcatFilterOptions(); renderHistory(); });
+  methodClear.addEventListener("click", (ev)=>{ ev.stopPropagation(); selMethods.clear(); renderMethodChips(); renderHistory(); });
+  [...catChipRow.children].forEach(el=> el.addEventListener("click", ()=>{
+    const id = el.dataset.cat;
+    if(selCats.has(id)) selCats.delete(id); else selCats.add(id);
+    renderCatChips(); refreshSubcatFilterOptions(); renderHistory();
+  }));
+  [...methodChipRow.children].forEach(el=> el.addEventListener("click", ()=>{
+    const m = el.dataset.m;
+    if(selMethods.has(m)) selMethods.delete(m); else selMethods.add(m);
+    renderMethodChips(); renderHistory();
+  }));
+
+  // Subcategories belong to one category, so this only makes sense with exactly one picked.
+  function refreshSubcatFilterOptions(){
+    const only = selCats.size===1 ? [...selCats][0] : "";
+    const subs = (only && only!=="ccpayment") ? subcatsFor(only) : [];
+    if(subs.length===0){ fSubcat.style.display="none"; fSubcat.value=""; return; }
+    fSubcat.style.display="block";
+    fSubcat.innerHTML = `<option value="">All subcategories</option>` + subs.map(s=>`<option value="${s}">${s}</option>`).join("");
+  }
+  fRange.addEventListener("change", ()=>{
+    fCustomDateRow.style.display = fRange.value==="custom" ? "flex" : "none";
+    if(fRange.value==="custom" && !fDateFrom.value){ fDateFrom.value = todayISO(); fDateTo.value = todayISO(); }
+    renderHistory();
+  });
+  [fSubcat, fSort].forEach(el=> el.addEventListener("change", renderHistory));
+  [fDateFrom, fDateTo].forEach(el=> el.addEventListener("change", renderHistory));
+  fSearch.addEventListener("input", renderHistory);
+
+  function applyHistoryPreset(p){
+    selCats.clear();
+    if(p.catId) selCats.add(p.catId);
+    renderCatChips();
+    refreshSubcatFilterOptions();
+    fSubcat.value = p.subcategory || "";
+    fRange.value = p.range || "all";
+    fCustomDateRow.style.display = fRange.value==="custom" ? "flex" : "none";
+    if(p.range==="custom"){ fDateFrom.value = p.from || ""; fDateTo.value = p.to || ""; }
+    selMethods.clear();
+    renderMethodChips();
+    fSearch.value = "";
+  }
+
+  function renderHistory(){
+    let list = [...txns];
+    // No categories picked now means everything, credit card bill payments included.
+    if(selCats.size) list = list.filter(t=> selCats.has(t.isCC ? "ccpayment" : t.catId));
+    if(fSubcat.value) list = list.filter(t=>t.subcategory===fSubcat.value);
+    if(selMethods.size) list = list.filter(t=> selMethods.has(t.paymentMethod));
+    if(fRange.value==="month"){ const ym=todayISO().slice(0,7); list=list.filter(t=>monthKey(t.date)===ym); }
+    else if(fRange.value==="custom"){
+      if(fDateFrom.value) list = list.filter(t=> t.date >= fDateFrom.value);
+      if(fDateTo.value) list = list.filter(t=> t.date <= fDateTo.value);
+    }
+    else if(fRange.value && fRange.value!=="all"){ const cutoff=Date.now()-parseInt(fRange.value,10)*86400000; list=list.filter(t=> new Date(t.date).getTime()>=cutoff); }
+    const q = fSearch.value.trim().toLowerCase();
+    if(q) list = list.filter(t=> (t.note||"").toLowerCase().includes(q) || (t.subcategory||"").toLowerCase().includes(q));
+    list.sort((a,b)=> fSort.value==="amount" ? (b.amount-a.amount) : (b.date+b.id).localeCompare(a.date+a.id));
+
+    const total = list.reduce((s,t)=> s + (t.type==="income"? t.amount : -t.amount), 0);
+    document.getElementById("fCount").textContent = list.length + " transaction" + (list.length===1?"":"s");
+    document.getElementById("fTotal").textContent = fmt(Math.abs(total));
+
+    historyList.innerHTML = "";
+    if(list.length===0){ historyList.innerHTML = `<div class="empty-hint">No transactions match these filters.</div>`; return; }
+    list.forEach(t=> historyList.appendChild(txnRowEl(t)));
+  }
+
+  // ---------- PANTRY ----------
+  const pantryList = document.getElementById("pantryList");
+  const pantryWindowRow = document.getElementById("pantryWindowRow");
+  const itemNamesList = document.getElementById("itemNamesList");
+  const pantrySearch = document.getElementById("pantrySearch");
+  let pantryWindow = "30";
+  [...pantryWindowRow.children].forEach(ch=>{
+    ch.addEventListener("click", ()=>{
+      pantryWindow = ch.dataset.w;
+      [...pantryWindowRow.children].forEach(c=>c.classList.toggle("active", c===ch));
+      renderPantry();
+    });
+  });
+  pantrySearch.addEventListener("input", renderPantry);
+  function pantryWindowLabel(){
+    if(pantryWindow==="all") return "all time";
+    if(pantryWindow==="month") return "this month";
+    return "last " + pantryWindow + "d";
+  }
+  function inPantryWindow(dateStr){
+    if(pantryWindow==="all") return true;
+    if(pantryWindow==="month") return monthKey(dateStr)===todayISO().slice(0,7);
+    return new Date(dateStr).getTime() >= (Date.now() - parseInt(pantryWindow,10)*86400000);
+  }
+  function refreshItemNamesList(){
+    const seen = new Map();
+    pantry.forEach(p=>{ if(!seen.has(p.name.toLowerCase())) seen.set(p.name.toLowerCase(), p.name); });
+    itemNamesList.innerHTML = [...seen.values()].sort().map(n=>`<option value="${n.replace(/"/g,'&quot;')}">`).join("");
+  }
+  let expandedPantryItems = new Set();
+  function renderPantry(){
+    refreshItemNamesList();
+    if(pantry.length===0){ pantryList.innerHTML = `<div class="empty-hint">Nothing logged yet.</div>`; return; }
+    const groups = {};
+    pantry.forEach(p=>{ const k=p.name.toLowerCase(); if(!groups[k]) groups[k]={name:p.name,catId:p.catId,entries:[]}; groups[k].entries.push(p); });
+    const q = pantrySearch.value.trim().toLowerCase();
+    const rows = Object.values(groups).map(g=>{
+      g.entries.sort((a,b)=>b.date.localeCompare(a.date));
+      const last = g.entries[0];
+      const inWindow = g.entries.filter(e=> inPantryWindow(e.date));
+      return {...g, last, countInWindow: inWindow.length, lastDate: last.date};
+    })
+    .filter(g=> g.countInWindow>0)
+    .filter(g=> !q || g.name.toLowerCase().includes(q))
+    .sort((a,b)=> b.lastDate.localeCompare(a.lastDate));
+    pantryList.innerHTML = "";
+    if(rows.length===0){
+      pantryList.innerHTML = `<div class="empty-hint">${q ? "No items match that search." : "Nothing bought in this period."}</div>`;
+      return;
+    }
+    rows.forEach(g=>{
+      const key = g.name.toLowerCase();
+      const c = catMap[g.catId] || catMap.groceries;
+      const daysAgo = Math.max(0, Math.round((Date.now()-new Date(g.last.date).getTime())/86400000));
+      const wl = pantryWindowLabel();
+      const row = document.createElement("div");
+      row.className = "pantry-row";
+      row.style.cursor = "pointer";
+      row.innerHTML = `<span class="emoji">${c.emoji}</span><div class="mid"><div class="pname">${g.name}</div><div class="pmeta">last: ${g.last.qty||"\u2014"} \u00b7 ${daysAgo===0?"today":daysAgo+"d ago"} &nbsp;\u00b7&nbsp; bought ${g.countInWindow}\u00d7 (${wl})</div></div><span style="color:var(--muted); font-size:11px;">${expandedPantryItems.has(key)?"\u25b2":"\u25bc"}</span>`;
+      row.addEventListener("click", ()=>{ if(expandedPantryItems.has(key)) expandedPantryItems.delete(key); else expandedPantryItems.add(key); renderPantry(); });
+      pantryList.appendChild(row);
+      if(expandedPantryItems.has(key)){
+        const detail = document.createElement("div");
+        detail.className = "subcat-list";
+        detail.innerHTML = g.entries.map(e=>{
+          const d = Math.max(0, Math.round((Date.now()-new Date(e.date).getTime())/86400000));
+          return `<div class="subcat-row"><span>${e.qty||"\u2014"} \u00b7 ${d===0?"today":d+"d ago"}</span><b class="pantry-del" data-id="${e.id}" style="cursor:pointer; color:var(--expense); font-weight:700;">\u2715 delete</b></div>`;
+        }).join("");
+        detail.querySelectorAll(".pantry-del").forEach(btn=>{
+          btn.addEventListener("click", (ev)=>{
+            ev.stopPropagation();
+            if(!confirm("Delete this one entry? This can't be undone, and it will not change any linked expense amount.")) return;
+            pantry = pantry.filter(p=>p.id!==btn.dataset.id);
+            saveJ(PANTRY_KEY, pantry);
+            renderPantry();
+            pushToCloud();
+          });
+        });
+        pantryList.appendChild(detail);
+      }
+    });
+  }
+  document.getElementById("pantryAddBtn").addEventListener("click", ()=>{
+    const nameEl=document.getElementById("pantryNameInput"), qtyEl=document.getElementById("pantryQtyInput");
+    const name = nameEl.value.trim();
+    if(!name){ nameEl.focus(); return; }
+    pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name, qty: qtyEl.value.trim(), date: todayISO(), catId:"groceries" });
+    saveJ(PANTRY_KEY, pantry);
+    nameEl.value=""; qtyEl.value="";
+    renderPantry(); pushToCloud();
+  });
+
+  // ---------- DASHBOARD ----------
+  let dashYM = todayISO().slice(0,7);
+  const monthTitle = document.getElementById("monthTitle");
+  function shiftMonth(d){ const [y,m]=dashYM.split("-").map(Number); const dt=new Date(y,m-1+d,1); dashYM = dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0"); selectedCalDay = null; renderDashboard(); }
+  document.getElementById("prevMonth").addEventListener("click", ()=>shiftMonth(-1));
+  document.getElementById("nextMonth").addEventListener("click", ()=>shiftMonth(1));
+
+  document.getElementById("kharchaCard").addEventListener("click", ()=>{
+    const panel = document.getElementById("kharchaDetail");
+    const arrow = document.getElementById("kharchaArrow");
+    const isOpen = panel.style.display !== "none";
+    panel.style.display = isOpen ? "none" : "block";
+    arrow.textContent = isOpen ? "tap for details \u25be" : "hide details \u25b4";
+  });
+  document.getElementById("allTimeToggle").addEventListener("click", ()=>{
+    const panel = document.getElementById("allTimePanel");
+    const arrow = document.getElementById("allTimeArrow");
+    const isOpen = panel.style.display !== "none";
+    panel.style.display = isOpen ? "none" : "block";
+    arrow.textContent = isOpen ? "\u25be" : "\u25b4";
+  });
+  document.getElementById("ledgerBtn").addEventListener("click", ()=> switchScreen("ledger"));
+  document.getElementById("ledgerBack").addEventListener("click", ()=> history.back());
+
+  let trendChartInstance = null;
+
+  function renderDashboard(){
+    monthTitle.textContent = monthLabel(dashYM);
+    const monthTxns = txns.filter(t=> monthKey(t.date)===dashYM);
+
+    const income = monthTxns.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
+    const upiAmt = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="upi").reduce((s,t)=>s+t.amount,0);
+    const cashAmt = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="cash").reduce((s,t)=>s+t.amount,0);
+    const debitAmt = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="debit").reduce((s,t)=>s+t.amount,0);
+    const paidNow = upiAmt + cashAmt + debitAmt;
+    const onCredit = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="credit").reduce((s,t)=>s+t.amount,0);
+    const ccPaidThisMonth = monthTxns.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
+
+    // Kharcha = true cash-out this month (never includes new credit-card purchases until the month they're actually paid)
+    const kharcha = paidNow + ccPaidThisMonth;
+    const shesh = income - kharcha;
+    document.getElementById("kharchaVal").textContent = fmt(kharcha);
+    document.getElementById("sheshVal").textContent = fmt(shesh);
+
+    document.getElementById("detIncome").textContent = fmt(income);
+    document.getElementById("detUpi").textContent = fmt(upiAmt);
+    document.getElementById("detCash").textContent = fmt(cashAmt);
+    document.getElementById("detDebit").textContent = fmt(debitAmt);
+    document.getElementById("detCcPaid").textContent = fmt(ccPaidThisMonth);
+    const onCreditNote = document.getElementById("detOnCredit");
+    onCreditNote.textContent = onCredit>0 ? ("+ " + fmt(onCredit) + " still on credit card, not yet paid (not counted above)") : "";
+
+    const allIncome = txns.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
+    const allNonCCExpense = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
+    const allCCPayments = txns.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
+    const allCCPurchases = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="credit").reduce((s,t)=>s+t.amount,0);
+    document.getElementById("balMoneyLeft").textContent = fmt(allIncome-allNonCCExpense-allCCPayments);
+    document.getElementById("balCCOwed").textContent = fmt(Math.max(0, allCCPurchases-allCCPayments));
+
+    // Donut: cash-paid-only category totals, PLUS a dedicated Credit Card Bill Payment slice.
+    // Together these always sum to exactly `kharcha` \u2014 same number, two views, never added together.
+    const byCat = {};
+    monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").forEach(t=>{ byCat[t.catId]=(byCat[t.catId]||0)+t.amount; });
+    const donutSlices = Object.entries(byCat).map(([id,amt])=>({ id, name: (catMap[id]||catMap.others).name, emoji:(catMap[id]||catMap.others).emoji, amt }));
+    if(ccPaidThisMonth>0) donutSlices.push({ id:"ccpayment", name:"Credit Card Bill Payment", emoji:"\u{1F4B3}", amt:ccPaidThisMonth });
+    donutSlices.sort((a,b)=>b.amt-a.amt);
+
+    const donutColors = ["#5fcf9e","#e8b34f","#6b8fd6","#d67a7a","#a582d6","#5fb8cf","#cf9e5f","#8ecf5f"];
+    const donutChart = document.getElementById("donutChart");
+    const donutLegend = document.getElementById("donutLegend");
+    const donutEmptyHint = document.getElementById("donutEmptyHint");
+    const donutWrap = document.getElementById("donutWrap");
+    if(donutSlices.length===0){
+      donutWrap.style.display = "none"; donutEmptyHint.style.display = "block";
+    } else {
+      donutWrap.style.display = "flex"; donutEmptyHint.style.display = "none";
+      const total = donutSlices.reduce((s,d)=>s+d.amt,0);
+      const r = 40, circ = 2*Math.PI*r;
+      let cumPct = 0;
+      let svgParts = `<g transform="rotate(-90 50 50)">`;
+      donutSlices.forEach((d,i)=>{
+        const pct = total>0 ? d.amt/total : 0;
+        const dash = pct*circ;
+        const color = donutColors[i % donutColors.length];
+        svgParts += `<circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="16" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${-cumPct*circ}" data-cat="${d.id}" style="cursor:pointer;"/>`;
+        cumPct += pct;
+      });
+      svgParts += `</g>`;
+      donutChart.innerHTML = svgParts;
+      donutChart.querySelectorAll("circle").forEach(el=>{
+        el.addEventListener("click", ()=> switchScreen("history", {catId: el.dataset.cat==="ccpayment" ? "ccpayment" : el.dataset.cat, range:"month"}));
+      });
+      donutLegend.innerHTML = "";
+      donutSlices.forEach((d,i)=>{
+        const pct = total>0 ? Math.round((d.amt/total)*100) : 0;
+        const row = document.createElement("div");
+        row.className = "leg-row";
+        row.innerHTML = `<span class="swatch" style="background:${donutColors[i%donutColors.length]}"></span><span class="leg-name">${d.emoji} ${d.name}</span><span class="leg-pct">${pct}%</span>`;
+        row.addEventListener("click", ()=> switchScreen("history", {catId:d.id, range:"month"}));
+        donutLegend.appendChild(row);
+      });
+    }
+
+    renderCalendar(kharcha);
+
+    const labels=[], incomeSeries=[], expenseSeries=[];
+    const [y,m] = dashYM.split("-").map(Number);
+    for(let i=5;i>=0;i--){
+      const d = new Date(y, m-1-i, 1);
+      const ym = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+      labels.push(d.toLocaleDateString("en-IN",{month:"short"}));
+      const mt = txns.filter(t=>monthKey(t.date)===ym);
+      incomeSeries.push(mt.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0));
+      const mtPaidNow = mt.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
+      const mtCcPaid = mt.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
+      expenseSeries.push(mtPaidNow + mtCcPaid);
+    }
+    const ctx = document.getElementById("trendChart").getContext("2d");
+    if(trendChartInstance) trendChartInstance.destroy();
+    trendChartInstance = new Chart(ctx, { type:"bar", data:{ labels, datasets:[
+      { label:"Income", data:incomeSeries, backgroundColor:"#5fcf9e", borderRadius:4, maxBarThickness:22 },
+      { label:"Kharcha", data:expenseSeries, backgroundColor:"#d67a7a", borderRadius:4, maxBarThickness:22 }
+    ]}, options:{ responsive:true, plugins:{legend:{labels:{color:"#7a8580", font:{size:11}}}}, scales:{ x:{ticks:{color:"#7a8580",font:{size:11}},grid:{display:false}}, y:{ticks:{color:"#7a8580",font:{size:10}},grid:{color:"#1e2427"}} } } });
+  }
+
+  // ---------- CALENDAR DAY VIEW ----------
+  // A day's figure follows exactly the same rule as Kharcha: money that actually left the
+  // account that day. A credit card purchase contributes nothing on the day it was swiped;
+  // it lands on the day its bill is paid. That keeps every rupee on the calendar exactly once.
+  let selectedCalDay = null;
+  function dayCashOut(t){
+    if(t.type !== "expense") return 0;
+    if(t.isCC) return t.amount;
+    if(t.paymentMethod === "credit") return 0;
+    return t.amount;
+  }
+  function shortAmt(n){
+    n = Math.round(n);
+    if(n >= 100000) return (n/100000).toFixed(1).replace(/\.0$/,"") + "L";
+    if(n >= 1000) return (n/1000).toFixed(1).replace(/\.0$/,"") + "k";
+    return String(n);
+  }
+  function renderCalendar(monthKharcha){
+    const grid = document.getElementById("calGrid");
+    const panel = document.getElementById("calDayPanel");
+    const foot = document.getElementById("calFoot");
+    const [y,m] = dashYM.split("-").map(Number);
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const lead = (new Date(y, m-1, 1).getDay() + 6) % 7; // shift so Monday is the first column
+
+    const monthTxns = txns.filter(t=> monthKey(t.date)===dashYM);
+    const byDay = {};
+    monthTxns.forEach(t=>{ const v = dayCashOut(t); if(v>0) byDay[t.date] = (byDay[t.date]||0) + v; });
+
+    let html = "";
+    for(let i=0;i<lead;i++) html += `<span class="cal-cell"></span>`;
+    for(let d=1; d<=daysInMonth; d++){
+      const iso = dashYM + "-" + String(d).padStart(2,"0");
+      const amt = byDay[iso] || 0;
+      const cls = "cal-cell" + (amt>0 ? " has" : "") + (iso===todayISO() ? " today" : "") + (iso===selectedCalDay ? " sel" : "");
+      html += `<span class="${cls}" data-day="${iso}"><span class="dnum">${d}</span>${ amt>0 ? `<span class="damt">${shortAmt(amt)}</span>` : `` }</span>`;
+    }
+    grid.innerHTML = html;
+    grid.querySelectorAll(".cal-cell.has").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        selectedCalDay = (selectedCalDay === el.dataset.day) ? null : el.dataset.day;
+        renderCalendar(monthKharcha);
+      });
+    });
+
+    if(selectedCalDay && monthKey(selectedCalDay)===dashYM && byDay[selectedCalDay]){
+      const dayTxns = monthTxns.filter(t=> t.date===selectedCalDay);
+      const spent = dayTxns.filter(t=> dayCashOut(t)>0).sort((a,b)=> b.amount - a.amount);
+      const onCard = dayTxns.filter(t=> t.type==="expense" && !t.isCC && t.paymentMethod==="credit");
+      const cardTotal = onCard.reduce((s,t)=>s+t.amount,0);
+      const [dy,dm,dd] = [Number(selectedCalDay.slice(0,4)), Number(selectedCalDay.slice(5,7)), Number(selectedCalDay.slice(8,10))];
+      const label = new Date(dy, dm-1, dd).toLocaleDateString("en-IN",{weekday:"long", day:"numeric", month:"long"});
+      let p = `<div class="cd-head"><span class="cd-date">${label}</span><span class="cd-amt">${fmt(byDay[selectedCalDay])}</span></div>`;
+      spent.forEach(t=>{
+        const c = t.isCC ? catMap.ccpayment : (catMap[t.catId] || catMap.others);
+        const tag = t.isCC ? "" : (t.subcategory ? " \u00b7 " + t.subcategory : (t.paymentMethod ? " \u00b7 " + (METHOD_NAMES[t.paymentMethod]||t.paymentMethod) : ""));
+        p += `<div class="cd-row"><span>${c.name}${tag}</span><b>${fmt(t.amount)}</b></div>`;
+      });
+      if(cardTotal>0) p += `<div class="cd-credit">+ ${fmt(cardTotal)} on the credit card this day \u2014 counted when you pay the bill, not today</div>`;
+      panel.innerHTML = p;
+      panel.style.display = "block";
+    } else {
+      panel.style.display = "none";
+      panel.innerHTML = "";
+    }
+
+    const gridTotal = Object.values(byDay).reduce((s,v)=>s+v,0);
+    // The days must add up to the same Kharcha shown above. If they ever don't, say so.
+    const mismatch = Math.round(gridTotal) !== Math.round(monthKharcha);
+    foot.innerHTML = `<span>All ${daysInMonth} days</span><span style="color:${mismatch?"var(--expense)":"var(--text)"};">${fmt(gridTotal)}${mismatch?" \u2014 does not match Kharcha":""}</span>`;
+  }
+
+  // ---------- LEDGER ----------
+  // One row per month. Kharcha here is built from exactly the same rule the dashboard uses:
+  // everything actually paid out (cash / UPI / debit) plus credit card bill payments.
+  // New credit card purchases are tracked separately and never enter Kharcha until their bill is paid.
+  let expandedLedgerMonths = new Set();
+
+  function buildLedgerMonths(){
+    const byMonth = {};
+    txns.forEach(t=>{
+      const ym = monthKey(t.date);
+      if(!byMonth[ym]) byMonth[ym] = { ym, income:0, upi:0, cash:0, debit:0, ccPaid:0, onCredit:0 };
+      const b = byMonth[ym];
+      if(t.type==="income"){ b.income += t.amount; return; }
+      if(t.isCC){ b.ccPaid += t.amount; return; }
+      if(t.paymentMethod==="credit"){ b.onCredit += t.amount; return; }
+      if(t.paymentMethod==="cash"){ b.cash += t.amount; }
+      else if(t.paymentMethod==="debit"){ b.debit += t.amount; }
+      else { b.upi += t.amount; }
+    });
+    const rows = Object.values(byMonth).sort((a,b)=> a.ym.localeCompare(b.ym));
+    let runLeft = 0, runOwed = 0;
+    rows.forEach(r=>{
+      r.kharcha = r.upi + r.cash + r.debit + r.ccPaid;
+      r.shesh = r.income - r.kharcha;
+      runLeft += r.shesh;
+      runOwed += (r.onCredit - r.ccPaid);
+      r.runLeft = runLeft;
+      r.runOwed = runOwed;
+    });
+    return rows;
+  }
+
+  function renderLedger(){
+    const allIncome = txns.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
+    const allNonCCExpense = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
+    const allCCPayments = txns.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
+    const allCCPurchases = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="credit").reduce((s,t)=>s+t.amount,0);
+    const moneyLeft = allIncome - allNonCCExpense - allCCPayments;
+    document.getElementById("lgMoneyLeft").textContent = fmt(moneyLeft);
+    document.getElementById("lgCCOwed").textContent = fmt(Math.max(0, allCCPurchases - allCCPayments));
+
+    const table = document.getElementById("ledgerTable");
+    const warn = document.getElementById("lgWarn");
+    const rows = buildLedgerMonths();
+
+    if(rows.length===0){
+      warn.style.display = "none";
+      table.innerHTML = `<div class="empty-hint">No transactions logged yet.</div>`;
+      return;
+    }
+
+    const totIncome = rows.reduce((s,r)=>s+r.income,0);
+    const totKharcha = rows.reduce((s,r)=>s+r.kharcha,0);
+    const totShesh = rows.reduce((s,r)=>s+r.shesh,0);
+
+    // Safety check: every month's Shesh added up must equal Money left, exactly.
+    // If it ever doesn't, something is being counted twice and you should see it immediately.
+    if(Math.round(totShesh) !== Math.round(moneyLeft)){
+      warn.style.display = "block";
+      warn.textContent = "Check this: the months add up to " + fmt(totShesh) + " but Money left says " + fmt(moneyLeft) + ". These two should always match.";
+    } else {
+      warn.style.display = "none";
+    }
+
+    let html = `<div class="lg-head"><span class="c1">Month</span><span class="cn">Income</span><span class="cn">Kharcha</span><span class="cn">Shesh</span></div>`;
+
+    [...rows].reverse().forEach(r=>{
+      const open = expandedLedgerMonths.has(r.ym);
+      html += `<div class="lg-row" data-ym="${r.ym}">
+        <span class="c1"><span class="caret" style="color:${open?"var(--accent)":"var(--muted)"};">${open?"\u25b4":"\u25be"}</span>${shortMonthLabel(r.ym)}</span>
+        <span class="cn" style="color:var(--muted);">${nfmt(r.income)}</span>
+        <span class="cn" style="color:var(--expense);">${nfmt(r.kharcha)}</span>
+        <span class="cn" style="color:var(--accent);">${nfmt(r.shesh)}</span>
+      </div>`;
+      if(open){
+        html += `<div class="lg-detail">
+          <div class="d-row"><span>UPI</span><b>${fmt(r.upi)}</b></div>
+          <div class="d-row"><span>Cash</span><b>${fmt(r.cash)}</b></div>
+          <div class="d-row"><span>Debit card</span><b>${fmt(r.debit)}</b></div>
+          <div class="d-row"><span>Credit card bill paid</span><b>${fmt(r.ccPaid)}</b></div>
+          ${ r.onCredit>0 ? `<div class="lg-note">+ ${fmt(r.onCredit)} spent on card this month, bill not yet paid \u2014 not counted above</div>` : `` }
+          <div class="d-row lg-sep"><span>Money left after this month</span><b style="color:var(--accent);">${fmt(r.runLeft)}</b></div>
+          <div class="d-row"><span>Card owed at month end</span><b style="color:var(--expense);">${fmt(Math.max(0, r.runOwed))}</b></div>
+          <div class="lg-link" data-open="${r.ym}">See all ${monthLabel(r.ym)} transactions</div>
+        </div>`;
+      }
+    });
+
+    html += `<div class="lg-total">
+      <span class="c1">${rows.length} month${rows.length===1?"":"s"}</span>
+      <span class="cn">${nfmt(totIncome)}</span>
+      <span class="cn">${nfmt(totKharcha)}</span>
+      <span class="cn" style="color:var(--accent);">${nfmt(totShesh)}</span>
+    </div>`;
+
+    table.innerHTML = html;
+
+    table.querySelectorAll(".lg-row").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const ym = el.dataset.ym;
+        if(expandedLedgerMonths.has(ym)) expandedLedgerMonths.delete(ym); else expandedLedgerMonths.add(ym);
+        renderLedger();
+      });
+    });
+    table.querySelectorAll(".lg-link").forEach(el=>{
+      el.addEventListener("click", (ev)=>{
+        ev.stopPropagation();
+        const ym = el.dataset.open;
+        switchScreen("history", { range:"custom", from: ym+"-01", to: monthEndISO(ym) });
+      });
+    });
+  }
+
+  // ---------- CSV EXPORT ----------
+  function csvEscape(v){ v = String(v==null?"":v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+  document.getElementById("exportCsvBtn").addEventListener("click", ()=>{
+    const grouped = {};
+    txns.forEach(t=>{ const key=t.isCC?"Credit Card Bill Payment":(catMap[t.catId]?catMap[t.catId].name:"Others"); if(!grouped[key]) grouped[key]=[]; grouped[key].push(t); });
+    const catNames = Object.keys(grouped).sort();
+    let out = "";
+    catNames.forEach(name=>{
+      const rows = grouped[name].sort((a,b)=> a.date.localeCompare(b.date));
+      const catTotal = rows.reduce((s,t)=> s + (t.type==="income"?t.amount:-t.amount), 0);
+      out += name + " (" + rows.length + " transactions, net " + fmt(catTotal) + ")\n";
+      out += ["Date","Subcategory","Type","Payment Method","Amount","Note"].map(csvEscape).join(",") + "\n";
+      rows.forEach(t=>{
+        out += [t.date, t.subcategory||"", t.type, t.paymentMethod||"", t.amount, t.note||""].map(csvEscape).join(",") + "\n";
+      });
+      out += "\n";
+    });
+    const blob = new Blob([out], {type:"text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href=url; a.download="kharcha-pani-"+todayISO()+".csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify({txns,usage,pantry,customSubcats}, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href=url; a.download="kharcha-pani-backup-"+todayISO()+".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  });
+  document.getElementById("importBtn").addEventListener("click", ()=> document.getElementById("importFile").click());
+  document.getElementById("importFile").addEventListener("change", (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const data = JSON.parse(reader.result);
+        if(!Array.isArray(data.txns)){ alert("Invalid backup file."); return; }
+
+        const doMerge = confirm(
+          "Import " + data.txns.length + " transaction(s) from this backup.\n\n" +
+          "Tap OK to MERGE with what's already in the app (safe \u2014 nothing existing is lost, duplicates are skipped).\n\n" +
+          "Tap Cancel, then re-open this file if you actually want to REPLACE everything currently in the app instead."
+        );
+        if(doMerge){
+          const existingIds = new Set(txns.map(t=>t.id));
+          const newTxns = (data.txns||[]).filter(t=> !existingIds.has(t.id));
+          txns = [...txns, ...newTxns];
+
+          const incomingUsage = data.usage || {};
+          Object.keys(incomingUsage).forEach(k=> usage[k] = (usage[k]||0) + incomingUsage[k]);
+
+          const existingPantryIds = new Set(pantry.map(p=>p.id));
+          const newPantry = (data.pantry||[]).filter(p=> !existingPantryIds.has(p.id));
+          pantry = [...pantry, ...newPantry];
+
+          const incomingSubcats = data.customSubcats || {};
+          Object.keys(incomingSubcats).forEach(catId=>{
+            if(!customSubcats[catId]) customSubcats[catId] = [];
+            incomingSubcats[catId].forEach(name=>{ if(!customSubcats[catId].includes(name)) customSubcats[catId].push(name); });
+          });
+
+          saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
+          renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
+          pushToCloud();
+          alert("Merged " + newTxns.length + " new transaction(s). " + (data.txns.length - newTxns.length) + " duplicate(s) skipped.");
+        } else {
+          if(!confirm("This will DELETE everything currently in the app and replace it with only what's in this backup file. Are you sure?")) return;
+          txns=data.txns; usage=data.usage||{}; pantry=data.pantry||[]; customSubcats=data.customSubcats||{};
+          saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
+          renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
+          pushToCloud();
+          alert("Backup restored (replaced).");
+        }
+      }catch(err){ alert("Could not read backup file."); }
+    };
+    reader.readAsText(file);
+  });
+
+  // ---------- SYNC ----------
+  const FB_CONFIG_KEY = "kharchapani_fb_config";
+  const SYNC_CODE_KEY = "kharchapani_sync_code";
+  const LOCAL_MODIFIED_KEY = "kharchapani_local_modified_v1";
+  let fbApp=null, fbDb=null, fbUnsub=null;
+  // localModified persists in localStorage so a reload/reconnect never forgets whether
+  // this device's data is newer than the cloud's. If this device already had data before
+  // this fix shipped, treat that existing data as current rather than defaulting to 0.
+  let localModified = parseInt(localStorage.getItem(LOCAL_MODIFIED_KEY)||"0", 10);
+  if(!localStorage.getItem(LOCAL_MODIFIED_KEY) && txns.length>0){
+    localModified = Date.now();
+    localStorage.setItem(LOCAL_MODIFIED_KEY, String(localModified));
+  }
+  const syncBackdrop=document.getElementById("syncBackdrop"), syncSheet=document.getElementById("syncSheet");
+  const fbConfigInput=document.getElementById("fbConfigInput"), syncCodeInput=document.getElementById("syncCodeInput");
+  const syncStatusDot=document.getElementById("syncStatusDot"), syncStatusText=document.getElementById("syncStatusText");
+  const headerDot=document.getElementById("headerDot");
+  function setSyncStatus(state,text){ const cls="sync-dot "+(state==="on"?"on":state==="err"?"err":""); syncStatusDot.className=cls; headerDot.className=cls; syncStatusText.textContent=text; }
+  function doCloseSyncSheet(){ syncBackdrop.classList.remove("active"); syncSheet.classList.remove("active"); }
+  function closeSyncSheet(){ if(syncPushed){ history.back(); } else { doCloseSyncSheet(); } }
+  document.getElementById("settingsBtn").addEventListener("click", ()=>{
+    fbConfigInput.value = localStorage.getItem(FB_CONFIG_KEY) || "";
+    syncCodeInput.value = localStorage.getItem(SYNC_CODE_KEY) || "";
+    syncBackdrop.classList.add("active"); syncSheet.classList.add("active");
+    if(!syncPushed){ try{ history.pushState({view:"sheet"}, ""); syncPushed = true; }catch(e){} }
+  });
+  document.getElementById("syncCancelBtn").addEventListener("click", closeSyncSheet);
+  syncBackdrop.addEventListener("click",(e)=>{ if(e.target===syncBackdrop) closeSyncSheet(); });
+  document.getElementById("genCodeBtn").addEventListener("click", ()=>{
+    const chars="abcdefghjkmnpqrstuvwxyz23456789"; let code="";
+    for(let i=0;i<12;i++){ code+=chars[Math.floor(Math.random()*chars.length)]; if(i%4===3 && i<11) code+="-"; }
+    syncCodeInput.value = code;
+  });
+  document.getElementById("syncConnectBtn").addEventListener("click", ()=>{
+    const raw = fbConfigInput.value.trim(); const code = syncCodeInput.value.trim();
+    if(!raw||!code){ alert("Paste your Firebase config and enter/generate a sync code first."); return; }
+    let cfg;
+    try{
+      const start=raw.indexOf("{"), end=raw.lastIndexOf("}");
+      if(start===-1||end===-1||end<start) throw new Error("no object");
+      let objText = raw.slice(start,end+1).replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"');
+      try{ cfg = JSON.parse(objText); } catch(e0){ cfg = Function('"use strict"; return ('+objText+')')(); }
+    }catch(e){ alert("Could not read that config \u2014 make sure you copied the whole { ... } object from Firebase console."); return; }
+    localStorage.setItem(FB_CONFIG_KEY, raw); localStorage.setItem(SYNC_CODE_KEY, code);
+    initSync(cfg, code, true);
+  });
+  function initSync(cfg, code, isFresh){
+    setSyncStatus("connecting","Connecting\u2026");
+    try{
+      if(fbUnsub) fbUnsub();
+      if(fbApp) fbApp.delete().catch(()=>{});
+      fbApp = firebase.initializeApp(cfg, "kharchapani-"+Date.now());
+      fbDb = fbApp.firestore();
+      const docRef = fbDb.collection("expenseiq").doc(code);
+      fbUnsub = docRef.onSnapshot(snap=>{
+        if(!snap.exists){ pushToCloud(); setSyncStatus("on","Connected \u2014 waiting for first sync"); return; }
+        const data = snap.data();
+        const remoteTs = data.updatedAt || 0;
+        if(remoteTs > localModified){
+          // Cloud genuinely has newer data than this device has seen \u2014 pull it down.
+          txns=data.txns||[]; usage=data.usage||{}; pantry=data.pantry||[]; customSubcats=data.customSubcats||{};
+          localModified = remoteTs; localStorage.setItem(LOCAL_MODIFIED_KEY, String(localModified));
+          saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
+          renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
+          setSyncStatus("on","Synced across your devices");
+        } else if(remoteTs < localModified){
+          // This device has changes the cloud doesn't have yet \u2014 push, never silently discard them.
+          pushToCloud();
+          setSyncStatus("on","Synced across your devices");
+        } else {
+          setSyncStatus("on","Synced across your devices");
+        }
+      }, err=>{ console.error(err); setSyncStatus("err","Sync error \u2014 check rules/config"); });
+      if(isFresh) closeSyncSheet();
+    }catch(e){ console.error(e); setSyncStatus("err","Could not connect \u2014 check your config"); }
+  }
+  function pushToCloud(){
+    localModified = Date.now();
+    localStorage.setItem(LOCAL_MODIFIED_KEY, String(localModified));
+    if(!fbDb) return;
+    const code = localStorage.getItem(SYNC_CODE_KEY); if(!code) return;
+    fbDb.collection("expenseiq").doc(code).set({txns,usage,pantry,customSubcats,updatedAt:localModified}).catch(err=>{ console.error(err); setSyncStatus("err","Could not reach the cloud"); });
+  }
+  document.getElementById("clearDataBtn").addEventListener("click", ()=>{
+    if(confirm("Clear ALL data on this device? If sync is connected, this also clears it on your other devices.")){
+      txns=[]; usage={}; pantry=[]; customSubcats={};
+      saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
+      renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
+      pushToCloud();
+    }
+  });
+  (function autoConnect(){
+    const raw = localStorage.getItem(FB_CONFIG_KEY), code = localStorage.getItem(SYNC_CODE_KEY);
+    if(raw && code){ try{ initSync(JSON.parse(raw), code, false); }catch(e){} }
+  })();
+
+  // ---------- INIT ----------
+  renderCatChips(); renderMethodChips();
+  renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); refreshSubcatFilterOptions(); renderHistory(); renderLedger();
+
+  // One-time offer to clear the stray payment method left on income entries by the old bug.
+  // Nothing that produces a number reads this field for income, so no total can change.
+  const INCOME_FIX_KEY = "kharchapani_incomefix_v1";
+  setTimeout(function(){
+    if(localStorage.getItem(INCOME_FIX_KEY)) return;
+    const bad = txns.filter(t=> t.type==="income" && t.paymentMethod);
+    if(bad.length === 0){ localStorage.setItem(INCOME_FIX_KEY,"done"); return; }
+    const ok = confirm(
+      "Found " + bad.length + " income entr" + (bad.length===1?"y":"ies") + " saved with a payment method on it. That was a bug, now fixed for new entries.\n\n" +
+      "Tap OK to clear that field on those entries. None of your totals change \u2014 only History's payment filter and the CSV export.\n\n" +
+      "Tap Cancel to leave them exactly as they are."
+    );
+    if(ok){
+      bad.forEach(t=> t.paymentMethod = "");
+      saveJ(STORE_KEY, txns);
+      renderRecent(); renderHistory(); renderLedger(); pushToCloud();
+      alert("Cleaned up " + bad.length + " entr" + (bad.length===1?"y":"ies") + ".");
+    }
+    localStorage.setItem(INCOME_FIX_KEY,"done");
+  }, 800);
+
+  // One-time category restructure. This only ever rewrites catId and subcategory \u2014 it never
+  // touches an amount, a date, a type or the isCC flag, so Kharcha, Shesh, Money left and
+  // Card owed are all mathematically untouched. What changes is how spending is grouped:
+  // the donut merges the old split slices, and History groups them together.
+  const CAT_MIGRATION = {
+    grocerydelivery: { to:"groceries",   fallbackSub:"Delivery" },
+    fooddelivery:    { to:"outsidefood", fallbackSub:"Delivery" },
+    airlines:        { to:"travel",      fallbackSub:"Flights" },
+    electricity:     { to:"bills",       fallbackSub:"Electricity" },
+    transfer:        { to:"moneysent",   fallbackSub:"" }
+  };
+  const CAT_FIX_KEY = "kharchapani_catmigration_v1";
+
+  function preserveUnknownSubcats(){
+    // Any subcategory sitting on a transaction that isn't in the new built-in list gets kept
+    // as a custom one, so old tags like "Bike" or "Local" stay visible and filterable.
+    txns.forEach(t=>{
+      if(!t.subcategory || !t.catId || t.isCC) return;
+      const base = (catMap[t.catId] && catMap[t.catId].subcats) || [];
+      if(base.includes(t.subcategory)) return;
+      if(!customSubcats[t.catId]) customSubcats[t.catId] = [];
+      if(!customSubcats[t.catId].includes(t.subcategory)) customSubcats[t.catId].push(t.subcategory);
+    });
+  }
+
+  function runCategoryMigration(){
+    let changed = 0;
+    txns.forEach(t=>{
+      const rule = CAT_MIGRATION[t.catId];
+      if(!rule) return;
+      t.catId = rule.to;
+      if(!t.subcategory && rule.fallbackSub) t.subcategory = rule.fallbackSub;
+      changed++;
+    });
+    pantry.forEach(p=>{ const rule = CAT_MIGRATION[p.catId]; if(rule) p.catId = rule.to; });
+    Object.keys(CAT_MIGRATION).forEach(oldId=>{
+      const newId = CAT_MIGRATION[oldId].to;
+      if(usage[oldId]){ usage[newId] = (usage[newId]||0) + usage[oldId]; delete usage[oldId]; }
+      if(customSubcats[oldId]){
+        if(!customSubcats[newId]) customSubcats[newId] = [];
+        customSubcats[oldId].forEach(n=>{ if(!customSubcats[newId].includes(n)) customSubcats[newId].push(n); });
+        delete customSubcats[oldId];
+      }
+      if(lastSubcat[oldId]){ lastSubcat[newId] = lastSubcat[oldId]; delete lastSubcat[oldId]; }
+    });
+    preserveUnknownSubcats();
+    saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry);
+    saveJ(SUBCAT_KEY,customSubcats); saveJ(LASTSUBCAT_KEY,lastSubcat);
+    return changed;
+  }
+
+  setTimeout(function(){
+    if(localStorage.getItem(CAT_FIX_KEY)) return;
+    const affected = txns.filter(t=> CAT_MIGRATION[t.catId]).length;
+    if(affected === 0){ localStorage.setItem(CAT_FIX_KEY,"done"); return; }
+    const ok = confirm(
+      "Categories have been reorganised. " + affected + " saved transaction" + (affected===1?"":"s") + " use the old ones.\n\n" +
+      "Grocery Delivery moves into Groceries, Food Delivery into Outside Food, Airlines into Travel, Electricity into Bills & Utilities, and Transfer becomes Money Sent. Each keeps its detail as a subcategory.\n\n" +
+      "No amount, date or total changes \u2014 only how spending is grouped.\n\n" +
+      "Tap OK to update them, or Cancel to leave everything as it is."
+    );
+    if(ok){
+      const n = runCategoryMigration();
+      renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
+      pushToCloud();
+      alert("Updated " + n + " transaction" + (n===1?"":"s") + ".");
+      localStorage.setItem(CAT_FIX_KEY,"done");
+    }
+  }, 1400);
+
+  if("serviceWorker" in navigator){
+    const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{});`;
+    const swBlob = new Blob([swCode], {type:"application/javascript"});
+    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+  }
+})();
+</script>
+</body>
+</html>
