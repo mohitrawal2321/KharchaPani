@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Kharcha Pani</title>
-<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIktoYXJjaGEgUGFuaSIsICJzaG9ydF9uYW1lIjogIktoYXJjaGEgUGFuaSIsICJzdGFydF91cmwiOiAiLiIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGEwZjBjIiwgInRoZW1lX2NvbG9yIjogIiMwYTBmMGMifQ==">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0e11">
+<meta name="description" content="Track spending, income, reward points and your pantry.">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <script>try{ if(localStorage.getItem("kharchapani_pin_v1")) document.documentElement.classList.add("locked"); }catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -210,6 +214,8 @@
   .sync-dot{ width:8px; height:8px; border-radius:50%; background:#3a4a40; display:inline-block; margin-right:6px; vertical-align:middle; }
   .sync-dot.on{ background:var(--income); box-shadow:0 0 6px var(--income); }
   .sync-dot.err{ background:var(--expense); }
+  .sync-dot.pend{ background:#e8b34f; box-shadow:0 0 6px #e8b34f; }
+  .pend-dot{ display:inline-block; width:7px; height:7px; border-radius:50%; background:#e8b34f; margin-left:6px; vertical-align:middle; }
   .sync-status{ font-size:11.5px; color:var(--muted); display:flex; align-items:center; margin-bottom:14px; }
   .field-row textarea{ width:100%; background:var(--card); border:1px solid var(--border); color:var(--text); padding:11px 12px; border-radius:var(--radius-sm); font-size:16px; outline:none; font-family:monospace; min-height:90px; resize:vertical; }
   .code-row{ display:flex; gap:8px; }
@@ -284,6 +290,19 @@
   .rw-row .rw-val{ font-size:11px; color:var(--muted); }
 
   /* PIN lock */
+  /* QR invites */
+  .qr-actions{ display:flex; gap:8px; margin-bottom:12px; }
+  .qr-actions .btn{ font-size:12.5px; padding:11px 8px; }
+  .qr-panel{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-bottom:14px; }
+  .join-panel{ border-color:var(--accent); }
+  .qr-box{ background:#fff; border-radius:12px; padding:10px; width:max-content; margin:0 auto; }
+  .qr-box canvas{ display:block; width:220px; height:220px; image-rendering:pixelated; }
+  .qr-info{ font-size:12px; color:var(--muted); line-height:1.5; margin-top:10px; text-align:center; }
+  .qr-info b{ color:var(--text); }
+  #scanVideo{ width:100%; border-radius:10px; background:#000; max-height:300px; object-fit:cover; display:block; }
+  .manual-sync{ margin-top:4px; }
+  .manual-sync summary{ font-size:12.5px; color:var(--muted); cursor:pointer; padding:6px 0; }
+
   .lock{ position:fixed; inset:0; z-index:100; background:var(--bg); display:none; flex-direction:column; align-items:center; justify-content:center; padding:24px 20px; }
   .lock.active, html.locked .lock{ display:flex; }
   html.locked #app{ visibility:hidden; }
@@ -588,6 +607,13 @@
     <div class="sheet-handle"></div>
     <div class="sheet-header"><span class="emoji">&#9881;&#65039;</span><span class="name">Settings</span></div>
 
+    <div id="joinPanel" class="qr-panel join-panel" style="display:none;">
+      <div class="set-title" style="color:var(--accent);">Join a shared ledger</div>
+      <div class="qr-info" id="joinInfo"></div>
+      <div class="field-row" style="margin-top:10px;"><label>Name for this phone</label><input type="text" id="joinName" maxlength="24" placeholder="e.g. DABBA"></div>
+      <div class="sheet-actions" style="margin-top:6px;"><button class="btn ghost" id="joinCancel">Cancel</button><button class="btn primary" id="joinGo">Join</button></div>
+    </div>
+
     <div class="set-title">This phone</div>
     <div class="field-row">
       <label>Device name (shows on entries you add)</label>
@@ -620,16 +646,35 @@
     <div class="set-section">
     <div class="set-title">Sync across devices</div>
     <div class="sync-status"><span class="sync-dot" id="syncStatusDot"></span><span id="syncStatusText">Not connected &mdash; data stays only on this device</span></div>
-    <div class="field-row"><label>Firebase config (paste the whole object)</label><textarea id="fbConfigInput" placeholder='{ "apiKey": "...", "projectId": "...", ... }'></textarea></div>
-    <div class="helper-text">From Firebase Console &rarr; Project settings &rarr; Your apps &rarr; Web app config. Same config on all devices. (If you already connected an older version of this app, paste the same config and sync code &mdash; your data reconnects automatically.)</div>
-    <div class="field-row">
-      <label>Sync code (same code on every device)</label>
-      <div class="code-row"><input type="text" id="syncCodeInput" placeholder="e.g. a7x9-k2p4-m8qz"><button class="btn ghost" id="genCodeBtn">Generate</button></div>
+    <div class="qr-actions">
+      <button class="btn ghost" id="inviteBtn">&#128241; Invite a phone</button>
+      <button class="btn ghost" id="scanBtn">&#128247; Join with QR</button>
     </div>
-    <div class="helper-text">Treat this code like a password.</div>
-    <div class="sheet-actions"><button class="btn ghost" id="syncCancelBtn">Close</button><button class="btn primary" id="syncConnectBtn">Connect</button></div>
+    <div id="invitePanel" class="qr-panel" style="display:none;">
+      <div class="qr-box"><canvas id="qrCanvas" width="264" height="264"></canvas></div>
+      <div class="qr-info" id="inviteInfo"></div>
+      <div class="sheet-actions" style="margin-top:10px;"><button class="btn ghost" id="inviteShare">Share link instead</button><button class="btn ghost" id="inviteClose">Done</button></div>
+    </div>
+    <div id="scanPanel" class="qr-panel" style="display:none;">
+      <video id="scanVideo" playsinline muted></video>
+      <div class="qr-info" id="scanInfo"></div>
+      <div class="field-row" style="margin-top:10px;"><label>Or paste the invite link</label><div class="code-row"><input type="text" id="joinLinkInput" placeholder="https://&hellip;#join=&hellip;"><button class="btn ghost" id="joinLinkBtn">Use</button></div></div>
+      <button class="btn ghost" id="scanClose" style="width:100%;">Cancel</button>
+    </div>
+    <details class="manual-sync" id="manualSync">
+      <summary>Manual setup (Firebase config &amp; sync code)</summary>
+      <div class="field-row" style="margin-top:12px;"><label>Firebase config (paste the whole object)</label><textarea id="fbConfigInput" placeholder='{ "apiKey": "...", "projectId": "...", ... }'></textarea></div>
+      <div class="helper-text">From Firebase Console &rarr; Project settings &rarr; Your apps &rarr; Web app config. Only needed on your first phone &mdash; add other phones with "Invite a phone".</div>
+      <div class="field-row">
+        <label>Sync code (same code on every device)</label>
+        <div class="code-row"><input type="text" id="syncCodeInput" placeholder="e.g. a7x9-k2p4-m8qz"><button class="btn ghost" id="genCodeBtn">Generate</button></div>
+      </div>
+      <div class="helper-text">Treat this code like a password.</div>
+      <button class="btn primary" id="syncConnectBtn" style="width:100%;">Connect</button>
+    </details>
+    </div>
+    <div class="sheet-actions"><button class="btn ghost" id="syncCancelBtn">Close</button></div>
     <div class="sheet-actions" style="margin-top:10px;"><button class="btn danger" id="clearDataBtn">Clear all local data</button></div>
-    </div>
   </div>
 
 </div>
@@ -717,8 +762,14 @@
   const DEVICE_KEY  = "kharchapani_device_v1";    // this phone: {id, name}
   const DEVICES_KEY = "kharchapani_devices_v1";   // every phone on the ledger: {id: {name, lastSeen}}
   const PIN_KEY     = "kharchapani_pin_v1";       // this phone only: {salt, hash}
+  const TOMB_KEY    = "kharchapani_tomb_v1";      // deletions, so a delete on one phone can't be undone by another: {txns:{id:ts}, pantry:{}, rewards:{}, devices:{}}
   let rewards = loadJ(REWARDS_KEY, []);
   let devices = loadJ(DEVICES_KEY, {});
+  let tomb = loadJ(TOMB_KEY, {});
+  ["txns","pantry","rewards","devices"].forEach(k=>{ if(!tomb[k]) tomb[k] = {}; });
+  // When an entry was last changed. Old entries have no time and count as 0 (oldest).
+  const tsOf = x => (x && (x.u || x.editedAt || x.addedAt)) || 0;
+  function tombstone(kind, ids){ const now = Date.now(); ids.forEach(id=>{ tomb[kind][id] = now; }); saveJ(TOMB_KEY, tomb); }
   let device = loadJ(DEVICE_KEY, null);
   const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const round2 = n => Math.round(n*100)/100;
@@ -729,6 +780,7 @@
   function devName(id, snap){ const d = devices[id]; return (d && d.name) || snap || "Unnamed phone"; }
   function stamp(t, isNew){
     const now = Date.now();
+    t.u = now;
     if(isNew){ t.addedBy = device.id; t.addedByName = device.name || ""; t.addedAt = now; }
     else { t.editedBy = device.id; t.editedByName = device.name || ""; t.editedAt = now; }
     return t;
@@ -810,7 +862,7 @@
     if(rewards.some(r=>r.name.toLowerCase()===name.toLowerCase())){ alert("You already have “"+name+"”."); return null; }
     const pts = parseFloat(balPts), worth = parseFloat(balWorth);
     const rate = (pts>0 && worth>0) ? worth/pts : 1;
-    const r = { id: uid(), name, rate };
+    const r = { id: uid(), name, rate, u: Date.now() };
     rewards.push(r); saveJ(REWARDS_KEY, rewards);
     if(pts>0){
       txns.push(stamp({ id: uid(), catId:"income", amount: round2(worth>0 ? worth : pts*rate), type:"income",
@@ -934,7 +986,7 @@
         <div class="cat">${c.name}${tag}</div>
         <div class="note">${(t.note ? t.note : t.date)}${ccTag}${byTag}</div>
       </div>
-      <div class="amt ${t.type}">${t.type==="income"?"+":"-"}${fmt(t.amount)}</div>
+      <div class="amt ${t.type}">${t.type==="income"?"+":"-"}${fmt(t.amount)}${pendingIds.has(t.id) ? `<span class="pend-dot" title="Waiting to upload"></span>` : ``}</div>
     `;
     row.addEventListener("click", ()=> openSheet(t.catId, t));
     return row;
@@ -1183,7 +1235,7 @@
   // Remember the rupees-per-point you just used, so next time the points box pre-fills sensibly.
   function learnRates(t){
     let changed = false;
-    const learn = (m, amt, pts)=>{ const r = rewardById(String(m).slice(3)); if(r && amt>0 && pts>0){ r.rate = amt/pts; changed = true; } };
+    const learn = (m, amt, pts)=>{ const r = rewardById(String(m).slice(3)); if(r && amt>0 && pts>0){ r.rate = amt/pts; r.u = Date.now(); changed = true; } };
     if(t.type==="income" && isPts(t.receivedAs)) learn(t.receivedAs, t.amount, t.pts);
     (t.payments||[]).forEach(p=>{ if(isPts(p.m)) learn(p.m, p.amt, p.pts); });
     if(changed) saveJ(REWARDS_KEY, rewards);
@@ -1338,10 +1390,10 @@
       if(activeType==="expense" && !splitMode){ lastPayMethod = activePayMethod; localStorage.setItem(LASTPAY_KEY, lastPayMethod); }
     }
     if(items.length){
-      items.forEach(it=> pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name:it.name, qty:it.qty, date:newTxn.date, catId:activeCatId, fromTxnId:newTxn.id }));
+      items.forEach(it=> pantry.push({ id: uid(), name:it.name, qty:it.qty, date:newTxn.date, catId:activeCatId, fromTxnId:newTxn.id, u: Date.now() }));
       saveJ(PANTRY_KEY, pantry); renderPantry();
     }
-    closeSheet(); renderCatGrid(); renderRecent(); renderLedger(); pushToCloud();
+    closeSheet(); renderCatGrid(); renderRecent(); renderLedger(); pushToCloud([newTxn.id]);
   });
 
   document.getElementById("updateBtn").addEventListener("click", ()=>{
@@ -1350,6 +1402,10 @@
     const isCCMode = editingTxn.catId === "ccpayment";
     const pay = readPayment(amt);
     if(pay.error){ alert(pay.error); return; }
+    // If a sync refreshed the list while this sheet was open, put this entry back in place
+    // so the edit lands on the live copy (it's newer, so it wins the merge).
+    const liveIdx = txns.findIndex(t=>t.id===editingTxn.id);
+    if(liveIdx>=0) txns[liveIdx] = editingTxn; else txns.push(editingTxn);
     editingTxn.amount = amt; editingTxn.type = isCCMode ? "expense" : activeType;
     editingTxn.note = noteInput.value.trim(); editingTxn.date = dateInput.value || editingTxn.date;
     if(!isCCMode){ applyPayment(editingTxn, pay.fields); editingTxn.subcategory = activeSubcat; }
@@ -1360,25 +1416,29 @@
       const newItems = collectItems();
       const newNamesLower = newItems.map(i=>i.name.toLowerCase());
       // Drop pantry entries that were linked to this transaction but are no longer listed
-      pantry = pantry.filter(p=> !(p.fromTxnId===editingTxn.id && !newNamesLower.includes(p.name.toLowerCase())));
+      const dropped = pantry.filter(p=> p.fromTxnId===editingTxn.id && !newNamesLower.includes(p.name.toLowerCase()));
+      if(dropped.length) tombstone("pantry", dropped.map(p=>p.id));
+      pantry = pantry.filter(p=> !dropped.includes(p));
       // Update quantity on entries that are still listed, add entries that are new
       newItems.forEach(ni=>{
         const match = pantry.find(p=> p.fromTxnId===editingTxn.id && p.name.toLowerCase()===ni.name.toLowerCase());
-        if(match){ match.qty = ni.qty; match.date = editingTxn.date; }
-        else { pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name: ni.name, qty: ni.qty, date: editingTxn.date, catId: editingTxn.catId, fromTxnId: editingTxn.id }); }
+        if(match){ match.qty = ni.qty; match.date = editingTxn.date; match.u = Date.now(); }
+        else { pantry.push({ id: uid(), name: ni.name, qty: ni.qty, date: editingTxn.date, catId: editingTxn.catId, fromTxnId: editingTxn.id, u: Date.now() }); }
       });
       saveJ(PANTRY_KEY, pantry);
       if(newItems.length) editingTxn.items = newItems; else delete editingTxn.items;
     }
 
     saveJ(STORE_KEY, txns);
-    closeSheet(); renderRecent(); renderDashboard(); renderHistory(); renderPantry(); renderLedger(); pushToCloud();
+    closeSheet(); renderRecent(); renderDashboard(); renderHistory(); renderPantry(); renderLedger(); pushToCloud([editingTxn.id]);
   });
   document.getElementById("deleteBtn").addEventListener("click", ()=>{
     if(!editingTxn) return;
-    txns = txns.filter(t=>t.id!==editingTxn.id);
+    const delId = editingTxn.id;
+    tombstone("txns", [delId]);
+    txns = txns.filter(t=>t.id!==delId);
     saveJ(STORE_KEY, txns);
-    closeSheet(); renderCatGrid(); renderRecent(); renderDashboard(); renderHistory(); renderLedger(); pushToCloud();
+    closeSheet(); renderCatGrid(); renderRecent(); renderDashboard(); renderHistory(); renderLedger(); pushToCloud([delId]);
   });
 
   // ---------- NAV ----------
@@ -1630,6 +1690,7 @@
           btn.addEventListener("click", (ev)=>{
             ev.stopPropagation();
             if(!confirm("Delete this one entry? This can't be undone, and it will not change any linked expense amount.")) return;
+            tombstone("pantry", [btn.dataset.id]);
             pantry = pantry.filter(p=>p.id!==btn.dataset.id);
             saveJ(PANTRY_KEY, pantry);
             renderPantry();
@@ -1644,7 +1705,7 @@
     const nameEl=document.getElementById("pantryNameInput"), qtyEl=document.getElementById("pantryQtyInput");
     const name = nameEl.value.trim();
     if(!name){ nameEl.focus(); return; }
-    pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name, qty: qtyEl.value.trim(), date: todayISO(), catId:"groceries" });
+    pantry.push({ id: uid(), name, qty: qtyEl.value.trim(), date: todayISO(), catId:"groceries", u: Date.now() });
     saveJ(PANTRY_KEY, pantry);
     nameEl.value=""; qtyEl.value="";
     renderPantry(); pushToCloud();
@@ -1775,6 +1836,7 @@
       incomeSeries.push(mt.reduce((s,t)=>s+bankIncomeOf(t),0));
       expenseSeries.push(mt.reduce((s,t)=>s+cashOutOf(t),0));
     }
+    if(!window.Chart) return;   // chart library not loaded yet (e.g. very first open while offline)
     const ctx = document.getElementById("trendChart").getContext("2d");
     if(trendChartInstance) trendChartInstance.destroy();
     trendChartInstance = new Chart(ctx, { type:"bar", data:{ labels, datasets:[
@@ -2060,7 +2122,13 @@
           alert("Merged " + newTxns.length + " new transaction(s). " + (data.txns.length - newTxns.length) + " duplicate(s) skipped.");
         } else {
           if(!confirm("This will DELETE everything currently in the app and replace it with only what's in this backup file. Are you sure?")) return;
-          txns=data.txns; usage=data.usage||{}; pantry=data.pantry||[]; customSubcats=data.customSubcats||{};
+          const keepT = new Set(data.txns.map(t=>t.id)), keepP = new Set((data.pantry||[]).map(p=>p.id));
+          tombstone("txns", txns.filter(t=>!keepT.has(t.id)).map(t=>t.id));
+          tombstone("pantry", pantry.filter(p=>!keepP.has(p.id)).map(p=>p.id));
+          // Restored entries count as changed now, so they win over older copies on other phones.
+          const nowR = Date.now();
+          txns=data.txns.map(t=>Object.assign({}, t, {u: nowR})); usage=data.usage||{};
+          pantry=(data.pantry||[]).map(p=>Object.assign({}, p, {u: nowR})); customSubcats=data.customSubcats||{};
           rewards=data.rewards||[]; mergeDevices(data.devices);
           saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
           saveJ(REWARDS_KEY,rewards); saveJ(DEVICES_KEY,devices); buildMethodChips();
@@ -2076,101 +2144,217 @@
   // ---------- SYNC ----------
   const FB_CONFIG_KEY = "kharchapani_fb_config";
   const SYNC_CODE_KEY = "kharchapani_sync_code";
-  const LOCAL_MODIFIED_KEY = "kharchapani_local_modified_v1";
-  let fbApp=null, fbDb=null, fbUnsub=null;
-  // localModified persists in localStorage so a reload/reconnect never forgets whether
-  // this device's data is newer than the cloud's. If this device already had data before
-  // this fix shipped, treat that existing data as current rather than defaulting to 0.
-  let localModified = parseInt(localStorage.getItem(LOCAL_MODIFIED_KEY)||"0", 10);
-  if(!localStorage.getItem(LOCAL_MODIFIED_KEY) && txns.length>0){
-    localModified = Date.now();
-    localStorage.setItem(LOCAL_MODIFIED_KEY, String(localModified));
-  }
+  const DIRTY_KEY = "kharchapani_dirty_v1";       // "1" while this phone has changes the cloud hasn't got
+  const PENDING_KEY = "kharchapani_pending_v1";   // ids of entries waiting to upload (for the little dots)
+  const SYNCV2_KEY = "kharchapani_syncv2";
+  let fbApp=null, fbDb=null, fbUnsub=null, ledgerRevoked=false;
   const syncBackdrop=document.getElementById("syncBackdrop"), syncSheet=document.getElementById("syncSheet");
   const fbConfigInput=document.getElementById("fbConfigInput"), syncCodeInput=document.getElementById("syncCodeInput");
   const syncStatusDot=document.getElementById("syncStatusDot"), syncStatusText=document.getElementById("syncStatusText");
   const headerDot=document.getElementById("headerDot");
-  function setSyncStatus(state,text){ const cls="sync-dot "+(state==="on"?"on":state==="err"?"err":""); syncStatusDot.className=cls; headerDot.className=cls; syncStatusText.textContent=text; }
-  function doCloseSyncSheet(){ syncBackdrop.classList.remove("active"); syncSheet.classList.remove("active"); }
+  function setSyncStatus(state,text){ const cls="sync-dot "+(state==="on"?"on":state==="err"?"err":state==="pend"?"pend":""); syncStatusDot.className=cls; headerDot.className=cls; syncStatusText.textContent=text; }
+  function doCloseSyncSheet(){
+    syncBackdrop.classList.remove("active"); syncSheet.classList.remove("active");
+    stopScan(); clearInterval(inviteTimer);
+    document.getElementById("invitePanel").style.display = "none"; document.getElementById("scanPanel").style.display = "none";
+  }
   function closeSyncSheet(){ if(syncPushed){ history.back(); } else { doCloseSyncSheet(); } }
-  document.getElementById("settingsBtn").addEventListener("click", ()=>{
+  function openSettings(){
     fbConfigInput.value = localStorage.getItem(FB_CONFIG_KEY) || "";
     syncCodeInput.value = localStorage.getItem(SYNC_CODE_KEY) || "";
+    // Manual setup is only needed on the first phone; keep it folded away once connected.
+    document.getElementById("manualSync").open = !localStorage.getItem(SYNC_CODE_KEY);
     renderSettings();
     syncSheet.scrollTop = 0;
     syncBackdrop.classList.add("active"); syncSheet.classList.add("active");
     if(!syncPushed){ try{ history.pushState({view:"sheet"}, ""); syncPushed = true; }catch(e){} }
-  });
+  }
+  document.getElementById("settingsBtn").addEventListener("click", openSettings);
   document.getElementById("syncCancelBtn").addEventListener("click", closeSyncSheet);
   syncBackdrop.addEventListener("click",(e)=>{ if(e.target===syncBackdrop) closeSyncSheet(); });
-  document.getElementById("genCodeBtn").addEventListener("click", ()=>{
-    const chars="abcdefghjkmnpqrstuvwxyz23456789"; let code="";
-    for(let i=0;i<12;i++){ code+=chars[Math.floor(Math.random()*chars.length)]; if(i%4===3 && i<11) code+="-"; }
-    syncCodeInput.value = code;
-  });
+  function randChars(n, chars){ const a = new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(x=> chars[x % chars.length]).join(""); }
+  function genCode(){ const c = randChars(12, "abcdefghjkmnpqrstuvwxyz23456789"); return c.slice(0,4)+"-"+c.slice(4,8)+"-"+c.slice(8,12); }
+  document.getElementById("genCodeBtn").addEventListener("click", ()=>{ syncCodeInput.value = genCode(); });
+  function parseConfig(raw){
+    const start=raw.indexOf("{"), end=raw.lastIndexOf("}");
+    if(start===-1||end===-1||end<start) throw new Error("no object");
+    const objText = raw.slice(start,end+1).replace(/[‘’]/g,"'").replace(/[“”]/g,'"');
+    try{ return JSON.parse(objText); } catch(e0){ return Function('"use strict"; return ('+objText+')')(); }
+  }
   document.getElementById("syncConnectBtn").addEventListener("click", ()=>{
     const raw = fbConfigInput.value.trim(); const code = syncCodeInput.value.trim();
     if(!raw||!code){ alert("Paste your Firebase config and enter/generate a sync code first."); return; }
     let cfg;
-    try{
-      const start=raw.indexOf("{"), end=raw.lastIndexOf("}");
-      if(start===-1||end===-1||end<start) throw new Error("no object");
-      let objText = raw.slice(start,end+1).replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"');
-      try{ cfg = JSON.parse(objText); } catch(e0){ cfg = Function('"use strict"; return ('+objText+')')(); }
-    }catch(e){ alert("Could not read that config \u2014 make sure you copied the whole { ... } object from Firebase console."); return; }
+    try{ cfg = parseConfig(raw); }
+    catch(e){ alert("Could not read that config — make sure you copied the whole { ... } object from Firebase console."); return; }
     localStorage.setItem(FB_CONFIG_KEY, raw); localStorage.setItem(SYNC_CODE_KEY, code);
     initSync(cfg, code, true);
   });
+
+  // ================= SYNC (merge-safe) =================
+  // Nothing is ever overwritten wholesale any more. Each phone keeps its own copy; when they
+  // meet, the two copies are MERGED entry by entry:
+  //  * an entry that exists on only one side is kept;
+  //  * if both sides have it, the most recently changed version wins;
+  //  * a deletion is remembered (a "tombstone"), so the other phone can't bring it back.
+  // Uploads happen inside a Firestore transaction (read cloud copy -> merge -> write), so two
+  // phones saving at the same moment can't wipe out each other's entries either.
+  // Offline: everything is saved on the phone first; changes queue up and upload by themselves
+  // when the connection comes back.
+  let dirty = localStorage.getItem(DIRTY_KEY)==="1";
+  let pendingIds = new Set(loadJ(PENDING_KEY, []));
+  let changeSeq = 0, syncing = false, syncTimer = null;
+  const TOMB_KEEP_MS = 180*86400000;
+
+  function localState(){ return { txns, pantry, usage, customSubcats, rewards, devices, tomb }; }
+  function mergeById(a, b, tA, tB, tsFn){
+    const t = Object.assign({}, tA||{});
+    Object.entries(tB||{}).forEach(([id,v])=>{ if(!(t[id] >= v)) t[id] = v; });
+    const map = new Map();
+    (a||[]).forEach(x=>{ if(x && x.id!=null) map.set(x.id, x); });
+    (b||[]).forEach(x=>{ if(!x || x.id==null) return; const cur = map.get(x.id); if(!cur || tsFn(x) > tsFn(cur)) map.set(x.id, x); });
+    const list = [];
+    map.forEach((x,id)=>{ if(!(t[id]!=null && t[id] >= tsFn(x))) list.push(x); });
+    return { list, tomb: t };
+  }
+  function mergeState(L, R){
+    R = R || {};
+    const RT = R.tomb || {}, LT = L.tomb || {};
+    const mt = mergeById(L.txns, R.txns, LT.txns, RT.txns, tsOf);
+    const mp = mergeById(L.pantry, R.pantry, LT.pantry, RT.pantry, tsOf);
+    const mr = mergeById(L.rewards, R.rewards, LT.rewards, RT.rewards, x=>x.u||0);
+    // Phones: keep the freshest record of each; drop removed phones (never this one).
+    const devT = Object.assign({}, LT.devices||{}); Object.entries(RT.devices||{}).forEach(([id,v])=>{ if(!(devT[id] >= v)) devT[id] = v; });
+    const devs = {};
+    [L.devices||{}, R.devices||{}].forEach(src=> Object.entries(src).forEach(([id,d])=>{
+      if(!d) return;
+      const cur = devs[id];
+      if(!cur || (d.lastSeen||0) > (cur.lastSeen||0)) devs[id] = d;
+    }));
+    Object.keys(devs).forEach(id=>{ if(id!==device.id && devT[id]!=null && devT[id] >= (devs[id].lastSeen||0)) delete devs[id]; });
+    devs[device.id] = { name: device.name || "", lastSeen: (devs[device.id] && devs[device.id].lastSeen) || Date.now() };
+    const us = Object.assign({}, R.usage||{}); Object.entries(L.usage||{}).forEach(([k,v])=>{ us[k] = Math.max(us[k]||0, v); });
+    const cs = {};
+    [R.customSubcats||{}, L.customSubcats||{}].forEach(src=> Object.entries(src).forEach(([cat,names])=>{
+      cs[cat] = cs[cat] || []; (names||[]).forEach(n=>{ if(!cs[cat].includes(n)) cs[cat].push(n); });
+    }));
+    const cutoff = Date.now() - TOMB_KEEP_MS;
+    const prune = o=>{ const out = {}; Object.entries(o).forEach(([k,v])=>{ if(v >= cutoff) out[k] = v; }); return out; };
+    return { txns: mt.list, pantry: mp.list, rewards: mr.list, devices: devs, usage: us, customSubcats: cs,
+             tomb: { txns: prune(mt.tomb), pantry: prune(mp.tomb), rewards: prune(mr.tomb), devices: prune(devT) } };
+  }
+  // Does the cloud copy lack anything this phone has?
+  function cloudIsBehind(m, R){
+    if(!R) return true;
+    const RT = R.tomb || {};
+    const behind = (list, rlist, fn)=>{ const rm = new Map((rlist||[]).map(x=>[x.id, fn(x)])); return list.some(x=> !rm.has(x.id) || fn(x) > rm.get(x.id)); };
+    if(behind(m.txns, R.txns, tsOf) || behind(m.pantry, R.pantry, tsOf) || behind(m.rewards, R.rewards, x=>x.u||0)) return true;
+    for(const k of ["txns","pantry","rewards","devices"]){
+      const rt = RT[k] || {};
+      if(Object.entries(m.tomb[k]).some(([id,v])=> !(rt[id] >= v))) return true;
+    }
+    const rd = (R.devices||{})[device.id];
+    if(!rd || rd.name !== (device.name||"")) return true;
+    return false;
+  }
+  function applyState(m){
+    txns = m.txns; pantry = m.pantry; rewards = m.rewards; devices = m.devices; usage = m.usage; customSubcats = m.customSubcats; tomb = m.tomb;
+    saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
+    saveJ(REWARDS_KEY,rewards); saveJ(DEVICES_KEY,devices); saveJ(TOMB_KEY,tomb);
+    buildMethodChips();
+    renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
+    if(syncSheet.classList.contains("active")) renderSettings();
+  }
+  function ledgerRef(){ const code = localStorage.getItem(SYNC_CODE_KEY); return (fbDb && code) ? fbDb.collection("expenseiq").doc(code) : null; }
+  function withTimeout(p, ms){ return Promise.race([p, new Promise((_,rej)=> setTimeout(()=> rej(new Error("timeout")), ms))]); }
+  const cleanForCloud = o => JSON.parse(JSON.stringify(o));   // Firestore rejects undefined values
+
+  // Called after every change. Name kept from the old version; it now just queues an upload.
+  function pushToCloud(ids){
+    changeSeq++;
+    dirty = true; localStorage.setItem(DIRTY_KEY, "1");
+    (ids||[]).forEach(id=> pendingIds.add(id)); saveJ(PENDING_KEY, [...pendingIds]);
+    refreshSyncStatus();
+    scheduleSync(300);
+  }
+  function scheduleSync(ms){ clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, ms==null ? 300 : ms); }
+  async function syncNow(){
+    const ref = ledgerRef();
+    if(!ref || ledgerRevoked) { refreshSyncStatus(); return; }
+    if(syncing){ scheduleSync(800); return; }
+    if(!navigator.onLine){ refreshSyncStatus(); return; }
+    syncing = true;
+    const seqAtStart = changeSeq;
+    try{
+      const merged = await withTimeout(fbDb.runTransaction(async tx=>{
+        const snap = await tx.get(ref);
+        const remote = snap.exists ? snap.data() : null;
+        if(remote && remote.revoked){ const e = new Error("revoked"); e.revoked = true; throw e; }
+        const m = mergeState(localState(), remote);
+        m.devices[device.id] = { name: device.name || "", lastSeen: Date.now() };
+        tx.set(ref, cleanForCloud(Object.assign({}, m, { updatedAt: Date.now(), v: 2 })));
+        return m;
+      }), 20000);
+      // Merge again with whatever changed on this phone while the upload was running.
+      applyState(mergeState(localState(), merged));
+      if(changeSeq === seqAtStart){
+        dirty = false; localStorage.removeItem(DIRTY_KEY);
+        pendingIds.clear(); saveJ(PENDING_KEY, []);
+        renderRecent(); renderHistory();
+      } else scheduleSync(300);
+    }catch(err){
+      if(err && err.revoked){ handleRevoked(); }
+      else { console.error(err); scheduleSync(30000); }
+    }finally{
+      syncing = false;
+      refreshSyncStatus();
+    }
+  }
+  function refreshSyncStatus(){
+    if(!fbDb || !localStorage.getItem(SYNC_CODE_KEY)){ setSyncStatus("", "Not connected — data stays only on this device"); return; }
+    if(ledgerRevoked){ setSyncStatus("err", "This ledger was moved to a new code. Ask for a new invite QR to keep syncing."); return; }
+    const n = pendingIds.size;
+    const what = n ? (n + " change" + (n===1?"":"s")) : "changes";
+    if(dirty && !navigator.onLine) setSyncStatus("pend", "Offline — " + what + " saved on this phone, will upload when you're back online");
+    else if(dirty) setSyncStatus("pend", "Uploading " + what + "…");
+    else setSyncStatus("on", "Synced across your devices");
+  }
+  function handleRevoked(){
+    ledgerRevoked = true;
+    if(fbUnsub){ fbUnsub(); fbUnsub = null; }
+    refreshSyncStatus();
+  }
+  window.addEventListener("online", ()=>{ refreshSyncStatus(); if(dirty) scheduleSync(500); });
+  window.addEventListener("offline", refreshSyncStatus);
+  setInterval(()=>{ if(dirty && !syncing) syncNow(); }, 60000);
+
   function initSync(cfg, code, isFresh){
-    setSyncStatus("connecting","Connecting\u2026");
+    setSyncStatus("connecting","Connecting…");
+    ledgerRevoked = false;
     try{
       if(fbUnsub) fbUnsub();
       if(fbApp) fbApp.delete().catch(()=>{});
       fbApp = firebase.initializeApp(cfg, "kharchapani-"+Date.now());
       fbDb = fbApp.firestore();
-      const docRef = fbDb.collection("expenseiq").doc(code);
-      fbUnsub = docRef.onSnapshot(snap=>{
-        if(!snap.exists){ pushToCloud(); setSyncStatus("on","Connected \u2014 waiting for first sync"); return; }
+      const ref = fbDb.collection("expenseiq").doc(code);
+      // Connecting (or first run of this version): make sure this phone's entries get merged up.
+      if(isFresh || !localStorage.getItem(SYNCV2_KEY)){ localStorage.setItem(SYNCV2_KEY, "1"); dirty = true; localStorage.setItem(DIRTY_KEY, "1"); }
+      fbUnsub = ref.onSnapshot(snap=>{
+        if(!snap.exists){ dirty = true; scheduleSync(100); return; }
         const data = snap.data();
-        const remoteTs = data.updatedAt || 0;
-        // A phone with no entries of its own (e.g. a new phone joining) always takes the
-        // cloud's data. Without this, renaming the new phone before connecting would make it
-        // look "newer" and it would push its empty ledger over yours.
-        const freshPhone = txns.length===0 && (data.txns||[]).length>0;
-        if(remoteTs > localModified || freshPhone){
-          // Cloud genuinely has newer data than this device has seen \u2014 pull it down.
-          txns=data.txns||[]; usage=data.usage||{}; pantry=data.pantry||[]; customSubcats=data.customSubcats||{};
-          // Points types and the phone list are merged, not replaced, so a phone still on the
-          // older app version (which doesn't know about them) can't wipe them out.
-          if(Array.isArray(data.rewards)){ const local = rewards; rewards = data.rewards.slice(); mergeRewards(local); }
-          mergeDevices(data.devices);
-          localModified = remoteTs; localStorage.setItem(LOCAL_MODIFIED_KEY, String(localModified));
-          saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
-          saveJ(REWARDS_KEY,rewards); saveJ(DEVICES_KEY,devices); buildMethodChips();
-          renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
-          if(syncSheet.classList.contains("active")) renderSettings();
-          setSyncStatus("on","Synced across your devices");
-        } else if(remoteTs < localModified){
-          // This device has changes the cloud doesn't have yet \u2014 push, never silently discard them.
-          pushToCloud();
-          setSyncStatus("on","Synced across your devices");
-        } else {
-          setSyncStatus("on","Synced across your devices");
-        }
-      }, err=>{ console.error(err); setSyncStatus("err","Sync error \u2014 check rules/config"); });
+        if(data.revoked){ handleRevoked(); return; }
+        const m = mergeState(localState(), data);
+        applyState(m);
+        if(dirty || cloudIsBehind(m, data)){ dirty = true; localStorage.setItem(DIRTY_KEY, "1"); scheduleSync(300); }
+        refreshSyncStatus();
+      }, err=>{ console.error(err); setSyncStatus("err","Sync error — check rules/config"); });
+      if(dirty) scheduleSync(500);
       if(isFresh) closeSyncSheet();
-    }catch(e){ console.error(e); setSyncStatus("err","Could not connect \u2014 check your config"); }
-  }
-  function pushToCloud(){
-    localModified = Date.now();
-    localStorage.setItem(LOCAL_MODIFIED_KEY, String(localModified));
-    if(!fbDb) return;
-    const code = localStorage.getItem(SYNC_CODE_KEY); if(!code) return;
-    devices[device.id] = { name: device.name || "", lastSeen: localModified }; saveJ(DEVICES_KEY, devices);
-    fbDb.collection("expenseiq").doc(code).set({txns,usage,pantry,customSubcats,rewards,devices,updatedAt:localModified}).catch(err=>{ console.error(err); setSyncStatus("err","Could not reach the cloud"); });
+    }catch(e){ console.error(e); setSyncStatus("err","Could not connect — check your config"); }
   }
   document.getElementById("clearDataBtn").addEventListener("click", ()=>{
     if(confirm("Clear ALL data on this device? If sync is connected, this also clears it on your other devices.")){
+      tombstone("txns", txns.map(t=>t.id)); tombstone("pantry", pantry.map(p=>p.id)); tombstone("rewards", rewards.map(r=>r.id));
       txns=[]; usage={}; pantry=[]; customSubcats={}; rewards=[];
       saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats); saveJ(REWARDS_KEY,rewards);
       buildMethodChips(); renderSettings();
@@ -2178,6 +2362,154 @@
       pushToCloud();
     }
   });
+  // ---------- QR CODE MAKER (built in, works offline) ----------
+  // A compact QR encoder (byte mode, versions 1-40), following the QR spec / Nayuki's reference design.
+  const QR = (function(){
+    const ECC_CW = [
+      [-1, 7,10,15,20,26,18,20,24,30,18,20,24,26,30,22,24,28,30,28,28,28,28,30,30,26,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+      [-1,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26,26,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28],
+      [-1,13,22,18,26,18,24,18,22,20,24,28,26,24,20,30,24,28,28,26,30,28,30,30,30,30,28,30,30,30,30,30,30,30,30,30,30,30,30,30,30],
+      [-1,17,28,22,16,22,28,26,26,24,28,24,28,22,24,24,30,28,28,26,28,30,24,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30]];
+    const NUM_BLK = [
+      [-1,1,1,1,1,1,2,2,2,2,4,4,4,4,4,6,6,6,6,7,8,8,9,9,10,12,12,12,13,14,15,16,17,18,19,19,20,21,22,24,25],
+      [-1,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16,17,17,18,20,21,23,25,26,28,29,31,33,35,37,38,40,43,45,47,49],
+      [-1,1,1,2,2,4,4,6,6,8,8,8,10,12,16,12,17,16,18,21,20,23,23,25,27,29,34,34,35,38,40,43,45,48,51,53,56,59,62,65,68],
+      [-1,1,1,2,4,4,4,5,6,8,8,11,11,16,16,18,16,19,21,25,25,25,34,30,32,35,37,40,42,45,48,51,54,57,60,63,66,70,74,77,81]];
+    const FORMAT_BITS = [1,0,3,2];   // L, M, Q, H
+    const bit = (x,i)=> ((x>>>i)&1)!==0;
+    function rawModules(v){
+      let r = (16*v + 128)*v + 64;
+      if(v>=2){ const n = Math.floor(v/7)+2; r -= (25*n - 10)*n - 55; if(v>=7) r -= 36; }
+      return r;
+    }
+    const dataCodewords = (v,e)=> Math.floor(rawModules(v)/8) - ECC_CW[e][v]*NUM_BLK[e][v];
+    function gfMul(x,y){ let z=0; for(let i=7;i>=0;i--){ z = (z<<1) ^ ((z>>>7)*0x11D); z ^= ((y>>>i)&1)*x; } return z; }
+    function rsDivisor(deg){
+      const r = []; for(let i=0;i<deg-1;i++) r.push(0); r.push(1);
+      let root = 1;
+      for(let i=0;i<deg;i++){
+        for(let j=0;j<r.length;j++){ r[j] = gfMul(r[j], root); if(j+1<r.length) r[j] ^= r[j+1]; }
+        root = gfMul(root, 0x02);
+      }
+      return r;
+    }
+    function rsRemainder(data, div){
+      const r = div.map(()=>0);
+      for(const b of data){ const f = b ^ r.shift(); r.push(0); div.forEach((c,i)=>{ r[i] ^= gfMul(c,f); }); }
+      return r;
+    }
+    function alignPositions(v){
+      if(v===1) return [];
+      const n = Math.floor(v/7)+2, size = v*4+17;
+      const step = Math.floor((v*8 + n*3 + 5)/(n*4 - 4))*2;
+      const r = [6];
+      for(let pos=size-7; r.length<n; pos-=step) r.splice(1,0,pos);
+      return r;
+    }
+    function encode(text, eclName){
+      const e = {L:0,M:1,Q:2,H:3}[eclName||"M"];
+      const bytes = Array.from(new TextEncoder().encode(text));
+      let v;
+      for(v=1; v<=40; v++){ if(4 + (v<10?8:16) + bytes.length*8 <= dataCodewords(v,e)*8) break; }
+      if(v>40) throw new Error("Too much data for a QR code");
+      const cap = dataCodewords(v,e)*8;
+      const bb = []; const app = (val,len)=>{ for(let i=len-1;i>=0;i--) bb.push((val>>>i)&1); };
+      app(4,4); app(bytes.length, v<10?8:16); bytes.forEach(b=>app(b,8));
+      app(0, Math.min(4, cap-bb.length)); app(0, (8 - bb.length%8)%8);
+      for(let pad=0xEC; bb.length<cap; pad ^= 0xEC^0x11) app(pad,8);
+      const data = []; for(let i=0;i<bb.length;i+=8){ let x=0; for(let j=0;j<8;j++) x=(x<<1)|bb[i+j]; data.push(x); }
+      // error correction + interleaving
+      const nb = NUM_BLK[e][v], eccLen = ECC_CW[e][v], raw = Math.floor(rawModules(v)/8);
+      const nShort = nb - raw % nb, shortLen = Math.floor(raw/nb);
+      const div = rsDivisor(eccLen), blocks = [];
+      for(let i=0,k=0;i<nb;i++){
+        const dat = data.slice(k, k + shortLen - eccLen + (i<nShort?0:1)); k += dat.length;
+        const ecc = rsRemainder(dat, div);
+        if(i<nShort) dat.push(0);
+        blocks.push(dat.concat(ecc));
+      }
+      const cw = [];
+      for(let i=0;i<blocks[0].length;i++) blocks.forEach((b,j)=>{ if(i!==shortLen-eccLen || j>=nShort) cw.push(b[i]); });
+      // module grid
+      const size = v*4+17;
+      const mod = Array.from({length:size},()=>Array(size).fill(false));
+      const fn  = Array.from({length:size},()=>Array(size).fill(false));
+      const setF = (x,y,d)=>{ mod[y][x]=d; fn[y][x]=true; };
+      for(let i=0;i<size;i++){ setF(6,i,i%2===0); setF(i,6,i%2===0); }
+      [[3,3],[size-4,3],[3,size-4]].forEach(([cx,cy])=>{
+        for(let dy=-4;dy<=4;dy++) for(let dx=-4;dx<=4;dx++){
+          const d = Math.max(Math.abs(dx),Math.abs(dy)), x=cx+dx, y=cy+dy;
+          if(x>=0 && x<size && y>=0 && y<size) setF(x,y, d!==2 && d!==4);
+        }
+      });
+      const ap = alignPositions(v), na = ap.length;
+      for(let i=0;i<na;i++) for(let j=0;j<na;j++){
+        if((i===0&&j===0)||(i===0&&j===na-1)||(i===na-1&&j===0)) continue;
+        for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++) setF(ap[i]+dx, ap[j]+dy, Math.max(Math.abs(dx),Math.abs(dy))!==1);
+      }
+      const drawFormat = mask=>{
+        const d = FORMAT_BITS[e]<<3 | mask;
+        let r = d; for(let i=0;i<10;i++) r = (r<<1) ^ ((r>>>9)*0x537);
+        const b = (d<<10 | r) ^ 0x5412;
+        for(let i=0;i<=5;i++) setF(8,i,bit(b,i));
+        setF(8,7,bit(b,6)); setF(8,8,bit(b,7)); setF(7,8,bit(b,8));
+        for(let i=9;i<15;i++) setF(14-i,8,bit(b,i));
+        for(let i=0;i<8;i++) setF(size-1-i,8,bit(b,i));
+        for(let i=8;i<15;i++) setF(8,size-15+i,bit(b,i));
+        setF(8,size-8,true);
+      };
+      drawFormat(0);
+      if(v>=7){
+        let r = v; for(let i=0;i<12;i++) r = (r<<1) ^ ((r>>>11)*0x1F25);
+        const b = v<<12 | r;
+        for(let i=0;i<18;i++){ const bt = bit(b,i), a = size-11+i%3, c = Math.floor(i/3); setF(a,c,bt); setF(c,a,bt); }
+      }
+      // data, zig-zag
+      let i = 0;
+      for(let right=size-1; right>=1; right-=2){
+        if(right===6) right = 5;
+        for(let vert=0; vert<size; vert++) for(let j=0;j<2;j++){
+          const x = right-j, up = ((right+1)&2)===0, y = up ? size-1-vert : vert;
+          if(!fn[y][x] && i < cw.length*8){ mod[y][x] = bit(cw[i>>>3], 7-(i&7)); i++; }
+        }
+      }
+      const maskFn = [
+        (x,y)=>(x+y)%2===0, (x,y)=>y%2===0, (x,y)=>x%3===0, (x,y)=>(x+y)%3===0,
+        (x,y)=>(Math.floor(x/3)+Math.floor(y/2))%2===0, (x,y)=>x*y%2+x*y%3===0,
+        (x,y)=>(x*y%2+x*y%3)%2===0, (x,y)=>((x+y)%2+x*y%3)%2===0];
+      const applyMask = m=>{ for(let y=0;y<size;y++) for(let x=0;x<size;x++) if(!fn[y][x] && maskFn[m](x,y)) mod[y][x] = !mod[y][x]; };
+      // Simple penalty (long runs, 2x2 blocks, dark balance) to pick a clean-looking mask.
+      const penalty = ()=>{
+        let p = 0;
+        for(let pass=0; pass<2; pass++) for(let a=0;a<size;a++){
+          let run = 1;
+          for(let b=1;b<size;b++){
+            const cur = pass ? mod[b][a] : mod[a][b], prev = pass ? mod[b-1][a] : mod[a][b-1];
+            if(cur===prev){ run++; if(run===5) p+=3; else if(run>5) p++; } else run = 1;
+          }
+        }
+        for(let y=0;y<size-1;y++) for(let x=0;x<size-1;x++){ const c = mod[y][x]; if(c===mod[y][x+1] && c===mod[y+1][x] && c===mod[y+1][x+1]) p+=3; }
+        let dark = 0; mod.forEach(r=> r.forEach(c=>{ if(c) dark++; }));
+        p += Math.floor(Math.abs(dark*20 - size*size*10) / (size*size)) * 10;
+        return p;
+      };
+      let best = 0, bestP = Infinity;
+      for(let m=0;m<8;m++){ applyMask(m); drawFormat(m); const p = penalty(); if(p<bestP){ bestP=p; best=m; } applyMask(m); }
+      applyMask(best); drawFormat(best);
+      return { size, mod };
+    }
+    function draw(canvas, text){
+      const q = encode(text, "M"), border = 4, n = q.size + border*2;
+      const scale = Math.max(2, Math.floor(528 / n));
+      canvas.width = canvas.height = n*scale;
+      const g = canvas.getContext("2d");
+      g.fillStyle = "#fff"; g.fillRect(0,0,canvas.width,canvas.height);
+      g.fillStyle = "#000";
+      for(let y=0;y<q.size;y++) for(let x=0;x<q.size;x++) if(q.mod[y][x]) g.fillRect((x+border)*scale,(y+border)*scale,scale,scale);
+      return q.size;
+    }
+    return { encode, draw };
+  })();
   // ---------- SETTINGS: device name, points types, devices, PIN ----------
   const devNameInput = document.getElementById("devNameInput");
   function agoLabel(ts){
@@ -2201,28 +2533,30 @@
         const n = prompt("New name for " + r.name, r.name); if(n==null) return;
         const nn = n.trim().slice(0,30); if(!nn) return;
         if(rewards.some(x=>x!==r && x.name.toLowerCase()===nn.toLowerCase())){ alert("You already have “"+nn+"”."); return; }
-        r.name = nn; saveJ(REWARDS_KEY, rewards); buildMethodChips(); renderSettings(); renderAll(); pushToCloud();
+        r.name = nn; r.u = Date.now(); saveJ(REWARDS_KEY, rewards); buildMethodChips(); renderSettings(); renderAll(); pushToCloud();
       }));
       box.querySelectorAll("[data-del]").forEach(b=> b.addEventListener("click", ()=>{
         const r = rewardById(b.dataset.del); if(!r) return;
         const n = rewardUseCount(r.id);
         if(n>0){ alert(r.name + " is used in " + n + " entr" + (n===1?"y":"ies") + ", so it can't be deleted without changing your history. You can rename it instead."); return; }
         if(!confirm("Delete " + r.name + "?")) return;
+        tombstone("rewards", [r.id]);
         rewards = rewards.filter(x=>x!==r); saveJ(REWARDS_KEY, rewards); buildMethodChips(); renderSettings(); renderAll(); pushToCloud();
       }));
     }
     // Devices
     const dl = document.getElementById("devicesList");
     const ids = Object.keys(devices).sort((a,b)=>(devices[b].lastSeen||0)-(devices[a].lastSeen||0));
-    dl.innerHTML = ids.map(id=>`<div class="set-row"><div><div>${esc(devName(id))}${id===device.id ? ` <span class="sub">(this phone)</span>` : ``}</div><div class="sub">last change ${agoLabel(devices[id].lastSeen)}</div></div></div>`).join("")
-      + (ids.length<2 ? `<div class="helper-text" style="margin:4px 0 0;">Other phones appear here once they sync with the same code.</div>` : ``);
+    dl.innerHTML = ids.map(id=>`<div class="set-row"><div><div>${esc(devName(id))}${id===device.id ? ` <span class="sub">(this phone)</span>` : ``}</div><div class="sub">last change ${agoLabel(devices[id].lastSeen)}</div></div>${id===device.id ? `` : `<div class="acts"><button class="link-btn" style="color:var(--expense);" data-rm="${esc(id)}">Remove</button></div>`}</div>`).join("")
+      + (ids.length<2 ? `<div class="helper-text" style="margin:4px 0 0;">Other phones appear here once they join. Use "Invite a phone" below.</div>` : ``);
+    dl.querySelectorAll("[data-rm]").forEach(b=> b.addEventListener("click", ()=> removePhone(b.dataset.rm)));
     renderPinSettings();
   }
   document.getElementById("devNameSave").addEventListener("click", ()=>{
     device.name = devNameInput.value.trim().slice(0,24);
     saveJ(DEVICE_KEY, device); registerSelf();
     renderSettings(); renderRecent(); renderHistory();
-    if(fbDb) pushToCloud();   // only share the new name once sync is connected
+    pushToCloud();
     const b = document.getElementById("devNameSave"); b.textContent = "Saved ✓"; setTimeout(()=>{ b.textContent = "Save"; }, 1500);
   });
   document.getElementById("srAdd").addEventListener("click", ()=>{
@@ -2329,9 +2663,197 @@
   let unlockedResolve; const whenUnlocked = new Promise(r=> unlockedResolve = r);
   if(pinIsSet()) showLock("unlock", ()=> unlockedResolve()); else { document.documentElement.classList.remove("locked"); unlockedResolve(); }
 
+
+  // ---------- INVITES: add a phone with a QR, remove a phone ----------
+  // The QR holds a link with a one-time invite ticket (plus your Firebase project details,
+  // which aren't secret). The ticket lives in Firestore for 10 minutes and works once; the
+  // secret sync code itself never goes into the QR.
+  const INVITE_MINUTES = 10;
+  const invitePanel = document.getElementById("invitePanel"), scanPanel = document.getElementById("scanPanel"), joinPanel = document.getElementById("joinPanel");
+  const b64url = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  const unb64url = str => decodeURIComponent(escape(atob(str.replace(/-/g,"+").replace(/_/g,"/"))));
+  let inviteTimer = null, inviteLink = "", pendingJoin = null, scanStream = null, scanLoop = null;
+
+  document.getElementById("inviteBtn").addEventListener("click", async ()=>{
+    const code = localStorage.getItem(SYNC_CODE_KEY), raw = localStorage.getItem(FB_CONFIG_KEY);
+    if(!fbDb || !code || !raw){ alert("Connect sync on this phone first (Manual setup, below). Then you can invite your other phone."); return; }
+    if(ledgerRevoked){ alert("This phone isn't on an active ledger. Join again with a new invite first."); return; }
+    if(!navigator.onLine){ alert("You're offline. Invites need internet on both phones."); return; }
+    let cfg; try{ cfg = parseConfig(raw); }catch(e){ alert("Couldn't read your Firebase config."); return; }
+    stopScan(); scanPanel.style.display = "none";
+    const info = document.getElementById("inviteInfo"), canvas = document.getElementById("qrCanvas");
+    invitePanel.style.display = "block"; canvas.style.opacity = ".15"; info.textContent = "Making an invite…";
+    const token = randChars(24, "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"), exp = Date.now() + INVITE_MINUTES*60000;
+    try{
+      await withTimeout(fbDb.collection("kpinvites").doc(token).set({ code, exp, used:false, by: device.name || "", createdAt: Date.now() }), 15000);
+    }catch(err){
+      console.error(err); invitePanel.style.display = "none";
+      alert("Couldn't create the invite. Check the internet connection. If it keeps failing, your Firebase rules need the update from the setup steps.");
+      return;
+    }
+    const small = { apiKey: cfg.apiKey, authDomain: cfg.authDomain, projectId: cfg.projectId, appId: cfg.appId };
+    inviteLink = location.origin + location.pathname + "#join=" + b64url(JSON.stringify({ v:1, t: token, c: small, by: device.name || "" }));
+    QR.draw(canvas, inviteLink);
+    canvas.style.opacity = "1";
+    clearInterval(inviteTimer);
+    const tick = ()=>{
+      const left = exp - Date.now();
+      if(left <= 0){ clearInterval(inviteTimer); canvas.style.opacity = ".15"; info.innerHTML = "<b>This invite has expired.</b> Tap “Invite a phone” for a fresh one."; return; }
+      const m = Math.floor(left/60000), sec = Math.floor((left%60000)/1000);
+      info.innerHTML = "On the other phone: open Kharcha Pani → ⚙️ → <b>Join with QR</b> and scan this.<br>Works once, for the next <b>" + m + ":" + String(sec).padStart(2,"0") + "</b>.";
+    };
+    tick(); inviteTimer = setInterval(tick, 1000);
+  });
+  document.getElementById("inviteShare").addEventListener("click", ()=>{
+    if(!inviteLink) return;
+    if(navigator.share){ navigator.share({ title:"Join my Kharcha Pani", text:"Open this on your phone to join my Kharcha Pani (works once, for 10 minutes):", url: inviteLink }).catch(()=>{}); }
+    else if(navigator.clipboard){ navigator.clipboard.writeText(inviteLink).then(()=> alert("Invite link copied."), ()=> prompt("Copy this invite link:", inviteLink)); }
+    else prompt("Copy this invite link:", inviteLink);
+  });
+  document.getElementById("inviteClose").addEventListener("click", ()=>{ clearInterval(inviteTimer); invitePanel.style.display = "none"; });
+
+  function parseInvite(text){
+    const str = String(text || ""), i = str.indexOf("#join=");
+    if(i < 0) return null;
+    try{ const p = JSON.parse(unb64url(str.slice(i+6).trim())); if(p && p.t && p.c && p.c.apiKey && p.c.projectId) return p; }catch(e){}
+    return null;
+  }
+  function openJoin(p){
+    pendingJoin = p;
+    stopScan(); scanPanel.style.display = "none"; invitePanel.style.display = "none";
+    const n = txns.length, already = localStorage.getItem(SYNC_CODE_KEY);
+    document.getElementById("joinInfo").innerHTML =
+      "You're joining the ledger shared by <b>" + esc(p.by || "another phone") + "</b>. Both phones will see and add to the same entries."
+      + (n ? "<br>The " + n + " entr" + (n===1?"y":"ies") + " already on this phone will be added to it, not lost." : "")
+      + (already ? "<br>This phone will stop syncing with the ledger it's on now." : "");
+    document.getElementById("joinName").value = device.name || "";
+    joinPanel.style.display = "block";
+    if(!syncSheet.classList.contains("active")) openSettings();
+    syncSheet.scrollTop = 0;
+  }
+  document.getElementById("joinCancel").addEventListener("click", ()=>{ pendingJoin = null; joinPanel.style.display = "none"; });
+  document.getElementById("joinGo").addEventListener("click", async ()=>{
+    const p = pendingJoin; if(!p) return;
+    const btn = document.getElementById("joinGo");
+    const name = document.getElementById("joinName").value.trim().slice(0,24);
+    if(!name){ alert("Give this phone a name first, e.g. DABBA."); return; }
+    if(!navigator.onLine){ alert("Connect to the internet to join."); return; }
+    btn.disabled = true; btn.textContent = "Joining…";
+    let app = null;
+    try{
+      app = firebase.initializeApp(p.c, "kp-join-" + Date.now());
+      const ref = app.firestore().collection("kpinvites").doc(p.t);
+      const snap = await withTimeout(ref.get(), 15000);
+      const d = snap.exists ? snap.data() : null;
+      if(!d || d.used || !(d.exp > Date.now()) || !d.code){ const e = new Error("expired"); e.expired = true; throw e; }
+      await withTimeout(ref.update({ used: true }), 15000);
+      device.name = name; saveJ(DEVICE_KEY, device); registerSelf();
+      localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(p.c)); localStorage.setItem(SYNC_CODE_KEY, d.code);
+      pendingJoin = null; joinPanel.style.display = "none";
+      initSync(p.c, d.code, true);
+      alert("Joined! This phone now shares a ledger with " + (p.by || "the other phone") + ".");
+    }catch(err){
+      console.error(err);
+      const gone = (err && (err.expired || err.code==="permission-denied"));
+      alert(gone ? "This invite has expired or was already used. Ask for a new QR." : "Couldn't join. Check the internet connection and try again, or ask for a new QR.");
+    }finally{
+      if(app) app.delete().catch(()=>{});
+      btn.disabled = false; btn.textContent = "Join";
+    }
+  });
+
+  // In-app scanner (Chrome on Android has QR reading built in). Fallbacks: the phone's own
+  // camera app (the QR is a normal link), or pasting the link.
+  async function startScan(){
+    clearInterval(inviteTimer); invitePanel.style.display = "none"; scanPanel.style.display = "block";
+    const info = document.getElementById("scanInfo"), video = document.getElementById("scanVideo");
+    if(!("BarcodeDetector" in window) || !navigator.mediaDevices){
+      video.style.display = "none";
+      info.innerHTML = "This phone can't scan inside the app. Scan the QR with your <b>camera app</b> instead, or paste the invite link below.";
+      return;
+    }
+    try{
+      const det = new BarcodeDetector({ formats:["qr_code"] });
+      scanStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:"environment" }, audio:false });
+      video.style.display = "block"; video.srcObject = scanStream; await video.play();
+      info.textContent = "Point the camera at the QR on the other phone.";
+      const loop = async ()=>{
+        if(!scanStream) return;
+        try{
+          const codes = await det.detect(video);
+          const hit = codes.map(c=> parseInvite(c.rawValue)).find(Boolean);
+          if(hit){ openJoin(hit); return; }
+          if(codes.length) info.textContent = "That QR isn't a Kharcha Pani invite.";
+        }catch(e){}
+        scanLoop = setTimeout(loop, 250);
+      };
+      loop();
+    }catch(err){
+      stopScan(); video.style.display = "none";
+      info.innerHTML = "Couldn't open the camera. Allow camera access and try again, or paste the invite link below.";
+    }
+  }
+  function stopScan(){
+    clearTimeout(scanLoop);
+    if(scanStream){ scanStream.getTracks().forEach(t=> t.stop()); scanStream = null; }
+    const v = document.getElementById("scanVideo"); if(v) v.srcObject = null;
+  }
+  document.getElementById("scanBtn").addEventListener("click", startScan);
+  document.getElementById("scanClose").addEventListener("click", ()=>{ stopScan(); scanPanel.style.display = "none"; });
+  document.getElementById("joinLinkBtn").addEventListener("click", ()=>{
+    const p = parseInvite(document.getElementById("joinLinkInput").value);
+    if(!p){ alert("That doesn't look like a Kharcha Pani invite link."); return; }
+    openJoin(p);
+  });
+
+  // Removing a phone: the ledger moves to a new secret code that the removed phone never
+  // learns. It keeps what it already had, but gets nothing new.
+  async function removePhone(id){
+    const name = devName(id);
+    const connected = fbDb && localStorage.getItem(SYNC_CODE_KEY) && !ledgerRevoked;
+    if(!connected){
+      if(!confirm("Remove " + name + " from this list?")) return;
+      tombstone("devices", [id]); delete devices[id]; saveJ(DEVICES_KEY, devices); renderSettings(); return;
+    }
+    if(!navigator.onLine){ alert("Removing a phone needs internet."); return; }
+    if(!confirm("Remove " + name + "?\n\nTo lock it out, Kharcha Pani moves your ledger to a new secret code. " + name +
+                " keeps what's already on it, but gets nothing new.\n\nAny OTHER phone you want to keep will need to join again with a new invite QR.")) return;
+    const oldRef = ledgerRef(), newCode = genCode(), newRef = fbDb.collection("expenseiq").doc(newCode);
+    try{
+      const merged = await withTimeout(fbDb.runTransaction(async tx=>{
+        const snap = await tx.get(oldRef);
+        const remote = snap.exists ? snap.data() : null;
+        const m = mergeState(localState(), remote);
+        // Every other phone is off the ledger until it rejoins (a rejoin brings it back).
+        const now = Date.now();
+        Object.keys(m.devices).forEach(d=>{ if(d!==device.id){ m.tomb.devices[d] = now; delete m.devices[d]; } });
+        m.devices[device.id] = { name: device.name || "", lastSeen: now + 1 };
+        tx.set(newRef, cleanForCloud(Object.assign({}, m, { updatedAt: now, v: 2 })));
+        // updatedAt 0 so a phone still on the old app version never mistakes this for newer data.
+        tx.set(oldRef, { revoked: true, revokedAt: now, updatedAt: 0, txns: [] });
+        return m;
+      }), 20000);
+      localStorage.setItem(SYNC_CODE_KEY, newCode);
+      applyState(mergeState(localState(), merged));
+      const raw = localStorage.getItem(FB_CONFIG_KEY);
+      initSync(parseConfig(raw), newCode, false);
+      renderSettings();
+      alert(name + " is removed. To keep another phone on this ledger, tap “Invite a phone” and scan the QR on it.");
+    }catch(err){
+      console.error(err);
+      alert("Couldn't remove " + name + " right now. Nothing was changed. Check the internet and try again.");
+    }
+  }
+  // Opened from an invite link (e.g. scanned with the phone's camera app)?
+  (function checkJoinLink(){
+    const p = parseInvite(location.hash);
+    if(!p) return;
+    try{ history.replaceState(history.state, "", location.pathname + location.search); }catch(e){}
+    whenUnlocked.then(()=> setTimeout(()=> openJoin(p), 300));
+  })();
   (function autoConnect(){
     const raw = localStorage.getItem(FB_CONFIG_KEY), code = localStorage.getItem(SYNC_CODE_KEY);
-    if(raw && code){ try{ initSync(JSON.parse(raw), code, false); }catch(e){} }
+    if(raw && code){ try{ initSync(parseConfig(raw), code, false); }catch(e){} }
   })();
 
   // ---------- INIT ----------
@@ -2353,7 +2875,7 @@
       "Tap Cancel to leave them exactly as they are."
     );
     if(ok){
-      bad.forEach(t=> t.paymentMethod = "");
+      bad.forEach(t=>{ t.paymentMethod = ""; t.u = Date.now(); });
       saveJ(STORE_KEY, txns);
       renderRecent(); renderHistory(); renderLedger(); pushToCloud();
       alert("Cleaned up " + bad.length + " entr" + (bad.length===1?"y":"ies") + ".");
@@ -2391,7 +2913,7 @@
     txns.forEach(t=>{
       const rule = CAT_MIGRATION[t.catId];
       if(!rule) return;
-      t.catId = rule.to;
+      t.catId = rule.to; t.u = Date.now();
       if(!t.subcategory && rule.fallbackSub) t.subcategory = rule.fallbackSub;
       changed++;
     });
@@ -2431,10 +2953,10 @@
     }
   }, 1400));
 
-  if("serviceWorker" in navigator){
-    const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{});`;
-    const swBlob = new Blob([swCode], {type:"application/javascript"});
-    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+  // Offline support: sw.js keeps a copy of the app and its libraries on the phone, so it opens
+  // with no internet. When online it always fetches the newest version first.
+  if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
   }
 })();
 </script>
