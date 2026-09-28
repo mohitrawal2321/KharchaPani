@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Kharcha Pani</title>
 <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIktoYXJjaGEgUGFuaSIsICJzaG9ydF9uYW1lIjogIktoYXJjaGEgUGFuaSIsICJzdGFydF91cmwiOiAiLiIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGEwZjBjIiwgInRoZW1lX2NvbG9yIjogIiMwYTBmMGMifQ==">
+<script>try{ if(localStorage.getItem("kharchapani_pin_v1")) document.documentElement.classList.add("locked"); }catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -246,6 +247,56 @@
   nav.bottomnav button .ic{ font-size:18px; }
   nav.bottomnav button.active{ color:var(--accent); }
   ::-webkit-scrollbar{ display:none; }
+
+  /* Payment options: points, split payments, income "received as" */
+  .link-btn{ background:none; border:none; color:var(--accent); font-size:12.5px; font-weight:600; padding:2px 0; cursor:pointer; font-family:inherit; }
+  .split-toggle-row{ margin:-6px 0 14px; }
+  .split-panel{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 10px 8px; margin-bottom:14px; }
+  .split-head{ display:flex; justify-content:space-between; align-items:center; font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:8px; }
+  .split-row{ display:flex; gap:6px; margin-bottom:8px; align-items:center; }
+  .split-row select{ flex:1.25; min-width:0; background:var(--card2); border:1px solid var(--border); color:var(--text); padding:9px 6px; border-radius:10px; font-size:14px; outline:none; }
+  .split-row input{ flex:1; min-width:0; background:var(--card2); border:1px solid var(--border); color:var(--text); padding:9px 8px; border-radius:10px; font-size:16px; outline:none; }
+  .split-row input.sp{ flex:.85; }
+  .split-row .irem{ background:none; border:none; color:var(--expense); font-size:16px; cursor:pointer; flex:none; width:24px; padding:0; }
+  .split-remaining{ font-size:12px; text-align:right; margin-top:6px; color:var(--muted); }
+  .split-remaining.ok{ color:var(--accent); }
+  .split-remaining.bad{ color:var(--expense); }
+  .pts-row{ display:flex; align-items:center; gap:10px; margin:-4px 0 14px; font-size:12px; color:var(--muted); }
+  .pts-row input{ width:120px; background:var(--card); border:1px solid var(--border); color:var(--text); padding:9px 10px; border-radius:10px; font-size:16px; outline:none; }
+  .recv-hint{ font-size:11.5px; color:var(--muted); margin:-6px 0 14px; line-height:1.45; }
+  .meta-line{ font-size:11px; color:var(--muted); margin:-8px 0 12px; line-height:1.55; }
+  .two-inputs{ display:flex; gap:8px; margin-top:8px; }
+  .two-inputs input{ flex:1; min-width:0; }
+
+  /* Settings sections */
+  .set-section{ border-top:1px solid var(--border); padding-top:14px; margin-top:16px; }
+  .set-title{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; font-weight:600; margin-bottom:10px; }
+  .set-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:13px; padding:7px 0; }
+  .set-row .sub{ font-size:11px; color:var(--muted); }
+  .set-row .acts{ display:flex; gap:12px; flex:none; }
+  .rw-row{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+  .rw-row:last-of-type{ border-bottom:none; }
+  .rw-row .rw-mid{ flex:1; min-width:0; }
+  .rw-row .rw-name{ font-size:13.5px; font-weight:600; }
+  .rw-row .rw-sub{ font-size:11px; color:var(--muted); }
+  .rw-row .rw-bal{ text-align:right; }
+  .rw-row .rw-pts{ font-size:14px; font-weight:700; }
+  .rw-row .rw-val{ font-size:11px; color:var(--muted); }
+
+  /* PIN lock */
+  .lock{ position:fixed; inset:0; z-index:100; background:var(--bg); display:none; flex-direction:column; align-items:center; justify-content:center; padding:24px 20px; }
+  .lock.active, html.locked .lock{ display:flex; }
+  html.locked #app{ visibility:hidden; }
+  .lock-title{ font-size:19px; font-weight:700; }
+  .lock-sub{ font-size:12.5px; color:var(--muted); margin-top:6px; text-align:center; }
+  .pin-dots{ display:flex; gap:16px; margin:22px 0 10px; }
+  .pin-dots span{ width:14px; height:14px; border-radius:50%; border:2px solid var(--muted); }
+  .pin-dots span.on{ background:var(--accent); border-color:var(--accent); }
+  .pin-dots.shake{ animation:shake .3s; }
+  @keyframes shake{ 0%,100%{transform:none} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  .lock-msg{ min-height:18px; font-size:12px; color:var(--expense); margin-bottom:14px; text-align:center; }
+  .lock .keypad{ width:100%; max-width:300px; }
+  .lock .keypad button.blank{ visibility:hidden; }
 </style>
 </head>
 <body>
@@ -295,13 +346,7 @@
           <span id="methodSummaryText">Any payment method</span>
           <span class="fs-right"><span class="fs-clear" id="methodClear" style="display:none;">Clear</span><span id="methodCaret">&#9662;</span></span>
         </div>
-        <div class="chip-row" id="methodChipRow" style="display:none; margin-bottom:0;">
-          <div class="chip" data-m="upi">UPI</div>
-          <div class="chip" data-m="cash">Cash</div>
-          <div class="chip" data-m="debit">Debit Card</div>
-          <div class="chip" data-m="credit">Credit Card</div>
-          <div class="chip" data-m="cc_settlement">Card Bill Payment</div>
-        </div>
+        <div class="chip-row" id="methodChipRow" style="display:none; margin-bottom:0;"></div>
         <div class="filter-row">
           <select id="fRange">
             <option value="all">All time</option>
@@ -411,6 +456,12 @@
         </div>
       </div>
 
+      <div class="card" id="rewardsCard" style="display:none;">
+        <h3>&#127873; Rewards wallet</h3>
+        <div id="rewardsList"></div>
+        <div class="lg-foot" style="margin:10px 0 0;">Points aren't money in your bank, so they never change Kharcha or Shesh. &#8377; values are what you entered. Tap one to see its history.</div>
+      </div>
+
       <div class="card">
         <h3>Last 6 months</h3>
         <canvas id="trendChart" height="180"></canvas>
@@ -459,20 +510,41 @@
   <div class="sheet" id="entrySheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header"><span class="emoji" id="sheetEmoji">&#128722;</span><span class="name" id="sheetName">Groceries</span></div>
+    <div class="meta-line" id="metaLine" style="display:none;"></div>
 
     <div class="type-toggle" id="sheetType">
       <button class="expense active" data-t="expense">Expense</button>
       <button class="income" data-t="income">Income</button>
     </div>
 
-    <div class="chip-row" id="payMethodRow">
-      <div class="chip active" data-m="upi">UPI</div>
-      <div class="chip" data-m="cash">Cash</div>
-      <div class="chip" data-m="debit">Debit Card</div>
-      <div class="chip" data-m="credit">Credit Card</div>
+    <!-- Expense: how it was paid -->
+    <div class="chip-row" id="payMethodRow"></div>
+    <div class="split-toggle-row" id="splitToggleRow"><button type="button" class="link-btn" id="splitOnBtn">&#8644; Split between methods (e.g. points + card)</button></div>
+    <div class="split-panel" id="splitPanel" style="display:none;">
+      <div class="split-head"><span>Split payment</span><button type="button" class="link-btn" id="splitOffBtn">Use one method</button></div>
+      <div id="splitRows"></div>
+      <button type="button" class="add-item-btn" id="splitAddBtn">+ Add another method</button>
+      <div class="split-remaining" id="splitRemaining"></div>
+    </div>
+
+    <!-- Income: where it landed -->
+    <div class="chip-row" id="recvRow" style="display:none;"></div>
+    <div class="recv-hint" id="recvHint" style="display:none;"></div>
+
+    <!-- New points / rewards type (inline) -->
+    <div class="field-row" id="newRewardRow" style="display:none;">
+      <label>New points / rewards type</label>
+      <input type="text" id="nrName" placeholder="e.g. Neu Coins, Air India miles">
+      <div class="two-inputs">
+        <input type="text" inputmode="decimal" id="nrPts" placeholder="Points you have now">
+        <input type="text" inputmode="decimal" id="nrWorth" placeholder="Worth &#8377;">
+      </div>
+      <div class="helper-text" style="margin:6px 0 8px;">Both optional. A current balance is saved as an "Opening balance" entry so your wallet starts at the right number.</div>
+      <div style="display:flex; gap:8px;"><button type="button" class="btn ghost" id="nrCancel">Cancel</button><button type="button" class="btn primary" id="nrAdd">Add</button></div>
     </div>
 
     <div class="amount-wrap"><span class="rupee">&#8377;</span><div class="amount-display" id="amountDisplay">0</div></div>
+    <div class="pts-row" id="ptsRow" style="display:none;"><span id="ptsLabel">Points used</span><input type="text" inputmode="decimal" id="ptsInput" placeholder="0"><span id="ptsHint"></span></div>
     <div class="keypad" id="keypad">
       <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
       <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
@@ -514,7 +586,39 @@
   <div class="sheet-backdrop" id="syncBackdrop"></div>
   <div class="sheet" id="syncSheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-header"><span class="emoji">&#9729;&#65039;</span><span class="name">Sync across devices</span></div>
+    <div class="sheet-header"><span class="emoji">&#9881;&#65039;</span><span class="name">Settings</span></div>
+
+    <div class="set-title">This phone</div>
+    <div class="field-row">
+      <label>Device name (shows on entries you add)</label>
+      <div class="code-row"><input type="text" id="devNameInput" maxlength="24" placeholder="e.g. DABBA"><button class="btn ghost" id="devNameSave">Save</button></div>
+    </div>
+
+    <div class="set-section">
+      <div class="set-title">App lock</div>
+      <div class="set-row"><div><div id="pinStatus">PIN lock is off</div><div class="sub">4-digit PIN, only on this phone. No fingerprint data is used.</div></div><div class="acts" id="pinActs"></div></div>
+    </div>
+
+    <div class="set-section">
+      <div class="set-title">Points &amp; rewards</div>
+      <div id="setRewardsList"></div>
+      <div class="field-row" style="margin-top:8px;">
+        <input type="text" id="srName" placeholder="New type, e.g. Neu Coins">
+        <div class="two-inputs">
+          <input type="text" inputmode="decimal" id="srPts" placeholder="Points you have now">
+          <input type="text" inputmode="decimal" id="srWorth" placeholder="Worth &#8377;">
+        </div>
+        <button class="btn ghost" id="srAdd" style="width:100%; margin-top:8px;">+ Add points type</button>
+      </div>
+    </div>
+
+    <div class="set-section">
+      <div class="set-title">Devices on this ledger</div>
+      <div id="devicesList"></div>
+    </div>
+
+    <div class="set-section">
+    <div class="set-title">Sync across devices</div>
     <div class="sync-status"><span class="sync-dot" id="syncStatusDot"></span><span id="syncStatusText">Not connected &mdash; data stays only on this device</span></div>
     <div class="field-row"><label>Firebase config (paste the whole object)</label><textarea id="fbConfigInput" placeholder='{ "apiKey": "...", "projectId": "...", ... }'></textarea></div>
     <div class="helper-text">From Firebase Console &rarr; Project settings &rarr; Your apps &rarr; Web app config. Same config on all devices. (If you already connected an older version of this app, paste the same config and sync code &mdash; your data reconnects automatically.)</div>
@@ -525,8 +629,25 @@
     <div class="helper-text">Treat this code like a password.</div>
     <div class="sheet-actions"><button class="btn ghost" id="syncCancelBtn">Close</button><button class="btn primary" id="syncConnectBtn">Connect</button></div>
     <div class="sheet-actions" style="margin-top:10px;"><button class="btn danger" id="clearDataBtn">Clear all local data</button></div>
+    </div>
   </div>
 
+</div>
+
+<!-- PIN LOCK -->
+<div class="lock" id="lockScreen">
+  <div class="lock-title" id="lockTitle">Enter PIN</div>
+  <div class="lock-sub" id="lockSub">Kharcha Pani is locked</div>
+  <div class="pin-dots" id="pinDots"><span></span><span></span><span></span><span></span></div>
+  <div class="lock-msg" id="lockMsg"></div>
+  <div class="keypad" id="lockPad">
+    <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+    <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+    <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+    <button type="button" class="blank">.</button><button type="button" data-k="0">0</button><button type="button" class="back" data-k="back">&#9003;</button>
+  </div>
+  <button type="button" class="link-btn" id="lockForgot">Forgot PIN?</button>
+  <button type="button" class="link-btn" id="lockCancel" style="display:none;">Cancel</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -549,7 +670,7 @@
     { id:"subscription",name:"Subscription",    emoji:"\u{1F4F1}", subcats:["Netflix","Prime","Spotify","Cloud"] },
     { id:"entertainment",name:"Entertainment",  emoji:"\u{1F3AC}", subcats:["Movies","Events","Games","Concerts"] },
     { id:"moneysent",  name:"Money Sent",       emoji:"\u{1F4B8}", subcats:["Family","Friend","Rent share","Gift"] },
-    { id:"income",     name:"Income",           emoji:"\u{1F4B0}", subcats:["Salary","Freelance","Interest","Refund","Bonus"] },
+    { id:"income",     name:"Income",           emoji:"\u{1F4B0}", subcats:["Salary","Freelance","Interest","Refund","Bonus","Cashback","Reward points"] },
     { id:"others",     name:"Others",           emoji:"\u{1F5C2}\uFE0F", subcats:[] },
   ];
   const catMap = {}; CATEGORIES.forEach(c=>catMap[c.id]=c);
@@ -583,6 +704,134 @@
   let lastSubcat = loadJ(LASTSUBCAT_KEY, {}); // { catId: name }
   let lastPayMethod = localStorage.getItem(LASTPAY_KEY) || "upi";
 
+  // ---------- POINTS, SPLITS, DEVICES: shared helpers ----------
+  // Money rules, in one place:
+  //  * Kharcha / Shesh / Money left only ever count money that left or reached your BANK.
+  //  * Credit card purchases wait until the bill is paid (unchanged).
+  //  * Anything paid with points never touches the bank, so it never enters Kharcha.
+  //    It lowers that points balance instead. The purchase itself still shows in
+  //    "Spent today" and in History, because you did buy the thing.
+  //  * Points or coins you earn go to the Rewards wallet, not to Income/Shesh.
+  //  * Card cashback given as a statement credit lowers "Card owed". It isn't bank income.
+  const REWARDS_KEY = "kharchapani_rewards_v1";   // [{id, name, rate}]  rate = rupees per point, last used
+  const DEVICE_KEY  = "kharchapani_device_v1";    // this phone: {id, name}
+  const DEVICES_KEY = "kharchapani_devices_v1";   // every phone on the ledger: {id: {name, lastSeen}}
+  const PIN_KEY     = "kharchapani_pin_v1";       // this phone only: {salt, hash}
+  let rewards = loadJ(REWARDS_KEY, []);
+  let devices = loadJ(DEVICES_KEY, {});
+  let device = loadJ(DEVICE_KEY, null);
+  const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const round2 = n => Math.round(n*100)/100;
+  const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  if(!device || !device.id){ device = { id: "d"+uid(), name: "" }; saveJ(DEVICE_KEY, device); }
+  function registerSelf(){ devices[device.id] = { name: device.name || "", lastSeen: Date.now() }; saveJ(DEVICES_KEY, devices); }
+  registerSelf();
+  function devName(id, snap){ const d = devices[id]; return (d && d.name) || snap || "Unnamed phone"; }
+  function stamp(t, isNew){
+    const now = Date.now();
+    if(isNew){ t.addedBy = device.id; t.addedByName = device.name || ""; t.addedAt = now; }
+    else { t.editedBy = device.id; t.editedByName = device.name || ""; t.editedAt = now; }
+    return t;
+  }
+  function whenLabel(ts){ return new Date(ts).toLocaleString("en-IN",{day:"numeric", month:"short", hour:"numeric", minute:"2-digit"}); }
+
+  const METHOD_NAMES = { upi:"UPI", cash:"Cash", debit:"Debit Card", credit:"Credit Card", cc_settlement:"Card Bill Payment", card_credit:"Card cashback", split:"Split" };
+  const BASE_METHODS = [["upi","UPI"],["cash","Cash"],["debit","Debit Card"],["credit","Credit Card"]];
+  const isPts = m => typeof m==="string" && m.indexOf("pt:")===0;
+  function rewardById(id){ return rewards.find(r=>r.id===id); }
+  function rateOf(m){ const r = rewardById(String(m).slice(3)); return (r && r.rate>0) ? r.rate : 1; }
+  function methodName(m){
+    if(isPts(m)){ const r = rewardById(m.slice(3)); return r ? r.name : "Points"; }
+    return METHOD_NAMES[m] || "UPI";
+  }
+  // The pieces a purchase was paid with. Old entries (and anything a not-yet-updated phone
+  // edited) fall back to their single paymentMethod, so they count exactly as before.
+  function partsOf(t){
+    if(t.type!=="expense" || t.isCC) return [];
+    if(Array.isArray(t.payments) && t.payments.length){
+      const s = t.payments.reduce((a,p)=>a+(Number(p.amt)||0),0);
+      if(Math.abs(s - t.amount) < 0.01) return t.payments;
+    }
+    return [{ m: t.paymentMethod || "", amt: t.amount }];
+  }
+  function sumParts(t, pred){ return partsOf(t).filter(p=>pred(p.m)).reduce((s,p)=>s+(Number(p.amt)||0),0); }
+  const isCashOutMethod = m => m!=="credit" && !isPts(m);
+  // Money that left the bank for this entry, on its own date.
+  function cashOutOf(t){ if(t.type!=="expense") return 0; if(t.isCC) return t.amount; return sumParts(t, isCashOutMethod); }
+  function creditOf(t){ return sumParts(t, m=> m==="credit"); }
+  function pointsSpentOf(t){ return sumParts(t, isPts); }
+  // Which dashboard/ledger line a payment piece belongs to. Unknown or blank = UPI, as the ledger always did.
+  function bucketOf(m){ if(m==="cash"||m==="debit"||m==="credit") return m; if(isPts(m)) return "points"; return "upi"; }
+  function bankIncomeOf(t){ return (t.type==="income" && !t.receivedAs) ? t.amount : 0; }
+  function cardCashbackOf(t){ return (t.type==="income" && t.receivedAs==="card_credit") ? t.amount : 0; }
+  function isOpening(t){ return t.subcategory==="Opening balance"; }
+  function rewardEarnedOf(t){ return (t.type==="income" && isPts(t.receivedAs) && !isOpening(t)) ? t.amount : 0; }
+  function txnMethods(t){
+    if(t.isCC) return ["cc_settlement"];
+    if(t.type==="income") return t.receivedAs ? [t.receivedAs] : [];
+    return partsOf(t).map(p=>p.m);
+  }
+  function methodLabelOf(t){
+    if(t.isCC) return "";
+    if(t.type==="income") return t.receivedAs ? methodName(t.receivedAs) : "";
+    const ps = partsOf(t);
+    if(ps.length>1) return ps.map(p=>methodName(p.m)).join(" + ");
+    return (ps[0] && ps[0].m) ? methodName(ps[0].m) : "";
+  }
+  function methodDetailOf(t){ // for CSV
+    if(t.isCC) return "Card Bill Payment";
+    if(t.type==="income"){
+      if(!t.receivedAs) return "";
+      return methodName(t.receivedAs) + (isPts(t.receivedAs) && t.pts ? " (" + nfmt(t.pts) + " pts)" : "");
+    }
+    const ps = partsOf(t);
+    return ps.map(p=> (p.m ? methodName(p.m) : "") + (ps.length>1 ? " " + fmt(p.amt) : "") + (isPts(p.m) && p.pts ? " (" + nfmt(p.pts) + " pts)" : "")).join(" + ");
+  }
+  function rewardBalances(){
+    const out = {}; rewards.forEach(r=> out[r.id] = { r, pts:0, amt:0, earnedM:0, usedM:0 });
+    const ym = todayISO().slice(0,7);
+    txns.forEach(t=>{
+      if(t.type==="income" && isPts(t.receivedAs)){
+        const b = out[t.receivedAs.slice(3)];
+        if(b){ b.pts += Number(t.pts)||0; b.amt += t.amount; if(monthKey(t.date)===ym && !isOpening(t)) b.earnedM += t.amount; }
+      }
+      partsOf(t).forEach(p=>{
+        if(!isPts(p.m)) return;
+        const b = out[p.m.slice(3)];
+        if(b){ b.pts -= Number(p.pts)||0; b.amt -= Number(p.amt)||0; if(monthKey(t.date)===ym) b.usedM += Number(p.amt)||0; }
+      });
+    });
+    return out;
+  }
+  function rewardUseCount(id){ const m = "pt:"+id; return txns.filter(t=> t.receivedAs===m || partsOf(t).some(p=>p.m===m)).length; }
+  function createReward(name, balPts, balWorth){
+    name = String(name||"").trim().slice(0,30);
+    if(!name){ alert("Give it a name first, e.g. Neu Coins."); return null; }
+    if(rewards.some(r=>r.name.toLowerCase()===name.toLowerCase())){ alert("You already have “"+name+"”."); return null; }
+    const pts = parseFloat(balPts), worth = parseFloat(balWorth);
+    const rate = (pts>0 && worth>0) ? worth/pts : 1;
+    const r = { id: uid(), name, rate };
+    rewards.push(r); saveJ(REWARDS_KEY, rewards);
+    if(pts>0){
+      txns.push(stamp({ id: uid(), catId:"income", amount: round2(worth>0 ? worth : pts*rate), type:"income",
+        note:"", date: todayISO(), paymentMethod:"", isCC:false, subcategory:"Opening balance",
+        receivedAs:"pt:"+r.id, pts: round2(pts) }, true));
+      saveJ(STORE_KEY, txns);
+    }
+    return r;
+  }
+  function mergeRewards(incoming){
+    (incoming||[]).forEach(r=>{ if(r && r.id && !rewards.some(x=>x.id===r.id)) rewards.push(r); });
+  }
+  function mergeDevices(incoming){
+    Object.entries(incoming||{}).forEach(([id,d])=>{
+      if(id===device.id) return;
+      const cur = devices[id];
+      if(!cur || (d.lastSeen||0) >= (cur.lastSeen||0)) devices[id] = d;
+    });
+    devices[device.id] = { name: device.name || "", lastSeen: (devices[device.id] && devices[device.id].lastSeen) || Date.now() };
+  }
+
   function subcatsFor(catId){
     const base = (catMap[catId] && catMap[catId].subcats) || [];
     const custom = customSubcats[catId] || [];
@@ -608,6 +857,16 @@
     txns.forEach(t=>{ if(t.isCC) return; if(new Date(t.date).getTime() < cutoff) return; counts[t.catId] = (counts[t.catId]||0) + 1; });
     return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,n).map(e=>e[0]);
   }
+  function cardOwedAll(){
+    let purchases = 0, paid = 0;
+    txns.forEach(t=>{ purchases += creditOf(t); if(t.isCC) paid += t.amount; paid += cardCashbackOf(t); });
+    return purchases - paid;
+  }
+  function moneyLeftAll(){
+    let inc = 0, out = 0;
+    txns.forEach(t=>{ inc += bankIncomeOf(t); out += cashOutOf(t); });
+    return inc - out;
+  }
   function renderCatGrid(){
     // Spent today counts everything bought today whatever you paid with, because as a
     // display figure that's what "spent" means day to day. Credit card BILL payments are
@@ -616,19 +875,21 @@
     const today = todayISO();
     const todayExp = txns.filter(t=> t.date===today && t.type==="expense" && !t.isCC);
     const todayTotal = todayExp.reduce((s,t)=>s+t.amount,0);
-    const todayCard = todayExp.filter(t=> t.paymentMethod==="credit").reduce((s,t)=>s+t.amount,0);
+    const todayCard = todayExp.reduce((s,t)=>s+creditOf(t),0);
+    const todayPts = todayExp.reduce((s,t)=>s+pointsSpentOf(t),0);
     document.getElementById("todaySpent").textContent = fmt(todayTotal);
     const note = document.getElementById("todayNote");
-    if(todayCard > 0){
-      note.textContent = "includes " + fmt(todayCard) + " on credit card";
+    const bits = [];
+    if(todayCard > 0) bits.push(fmt(todayCard) + " on credit card");
+    if(todayPts > 0) bits.push(fmt(todayPts) + " in points");
+    if(bits.length){
+      note.textContent = "includes " + bits.join(" · ");
       note.style.display = "block";
     } else {
       note.style.display = "none";
     }
 
-    const allCCPurchases = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="credit").reduce((s,t)=>s+t.amount,0);
-    const allCCPayments = txns.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
-    const owed = Math.max(0, allCCPurchases - allCCPayments);
+    const owed = Math.max(0, cardOwedAll());
     const ccSub = document.getElementById("ccOutstanding");
     ccSub.textContent = owed>0 ? (fmt(owed) + " outstanding") : "Settles what you already spent";
     ccSub.style.color = owed>0 ? "var(--expense)" : "var(--muted)";
@@ -658,14 +919,20 @@
   function txnRowEl(t){
     const c = catMap[t.catId] || catMap.others;
     const tag = t.subcategory ? (" \u00b7 " + t.subcategory) : "";
-    const ccTag = (t.paymentMethod==="credit" && !t.isCC) ? " \u00b7 CC" : "";
+    // Tag only what's worth a glance: card, points, splits, rewards. Plain UPI/cash/debit stay untagged as before.
+    const ml = methodLabelOf(t);
+    const plain = (ml==="UPI" || ml==="Cash" || ml==="Debit Card");
+    const ccTag = (!ml || plain) ? "" : (ml==="Credit Card" ? " \u00b7 CC" : " \u00b7 " + esc(ml));
+    // "by <phone>" only appears once more than one phone is on the ledger.
+    const who = t.editedBy || t.addedBy;
+    const byTag = (who && Object.keys(devices).length>1) ? " \u00b7 by " + esc(devName(who, t.editedBy ? t.editedByName : t.addedByName)) : "";
     const row = document.createElement("div");
     row.className = "txn-row";
     row.innerHTML = `
       <span class="emoji">${c.emoji}</span>
       <div class="mid">
         <div class="cat">${c.name}${tag}</div>
-        <div class="note">${(t.note ? t.note : t.date)}${ccTag}</div>
+        <div class="note">${(t.note ? t.note : t.date)}${ccTag}${byTag}</div>
       </div>
       <div class="amt ${t.type}">${t.type==="income"?"+":"-"}${fmt(t.amount)}</div>
     `;
@@ -690,7 +957,7 @@
     if(k==="back"){ amountStr = amountStr.slice(0,-1); }
     else if(k==="."){ if(!amountStr.includes(".")) amountStr += (amountStr===""?"0.":"."); }
     else { if(amountStr==="0") amountStr = k; else amountStr += k; }
-    renderAmount();
+    renderAmount(); refreshPtsRow(); refreshSplit();
   });
   const noteInput = document.getElementById("noteInput");
   const dateInput = document.getElementById("dateInput");
@@ -705,15 +972,240 @@
   const itemsContainer = document.getElementById("itemsContainer");
   const addItemBtn = document.getElementById("addItemBtn");
 
+  const splitToggleRow = document.getElementById("splitToggleRow");
+  const splitPanel = document.getElementById("splitPanel");
+  const splitRows = document.getElementById("splitRows");
+  const splitRemaining = document.getElementById("splitRemaining");
+  const recvRow = document.getElementById("recvRow");
+  const recvHint = document.getElementById("recvHint");
+  const ptsRow = document.getElementById("ptsRow");
+  const ptsInput = document.getElementById("ptsInput");
+  const ptsLabel = document.getElementById("ptsLabel");
+  const ptsHint = document.getElementById("ptsHint");
+  const newRewardRow = document.getElementById("newRewardRow");
+  const metaLine = document.getElementById("metaLine");
+
   let activeCatId = null, editingTxn = null, activeType = "expense", activePayMethod = "upi", activeSubcat = "";
+  let splitMode = false, activeRecv = "", ptsTouched = false, nrContext = "pay";
 
   function setType(t){
     activeType = t;
     [...sheetType.children].forEach(b=> b.classList.toggle("active", b.dataset.t===t));
-    payMethodRow.style.display = (t==="expense" && activeCatId!=="ccpayment") ? "flex" : "none";
+    refreshPayUI();
   }
-  function setPayMethod(m){ activePayMethod=m; [...payMethodRow.children].forEach(ch=>ch.classList.toggle("active", ch.dataset.m===m)); }
-  [...payMethodRow.children].forEach(ch=> ch.addEventListener("click", ()=> setPayMethod(ch.dataset.m)));
+  function isExpenseEntry(){ return activeType==="expense" && activeCatId!=="ccpayment"; }
+  function refreshPayUI(){
+    const exp = isExpenseEntry();
+    payMethodRow.style.display = (exp && !splitMode) ? "flex" : "none";
+    splitToggleRow.style.display = (exp && !splitMode) ? "block" : "none";
+    splitPanel.style.display = (exp && splitMode) ? "block" : "none";
+    const inc = activeType==="income";
+    recvRow.style.display = inc ? "flex" : "none";
+    let hint = "";
+    if(inc && activeRecv==="card_credit") hint = "Lowers what you owe on the credit card. Not added to Income or Shesh, because no money reached your bank.";
+    else if(inc && isPts(activeRecv)) hint = "Goes into your Rewards wallet. Not added to Income or Shesh — points aren't money in the bank.";
+    recvHint.textContent = hint; recvHint.style.display = hint ? "block" : "none";
+    refreshPtsRow(); refreshSplit();
+  }
+
+  function buildPayChips(){
+    payMethodRow.innerHTML = "";
+    const opts = [...BASE_METHODS, ...rewards.map(r=>["pt:"+r.id, "\u{1F381} " + r.name])];
+    opts.forEach(([m,label])=>{
+      const el = document.createElement("div");
+      el.className = "chip" + (m===activePayMethod ? " active" : ""); el.dataset.m = m; el.textContent = label;
+      el.addEventListener("click", ()=> setPayMethod(m));
+      payMethodRow.appendChild(el);
+    });
+    const add = document.createElement("div");
+    add.className = "chip dashed"; add.textContent = "+ Points";
+    add.addEventListener("click", ()=> toggleNewReward("pay"));
+    payMethodRow.appendChild(add);
+  }
+  function buildRecvChips(){
+    recvRow.innerHTML = "";
+    const opts = [["","Bank / UPI"],["card_credit","Card cashback"], ...rewards.map(r=>["pt:"+r.id, "\u{1F381} " + r.name])];
+    opts.forEach(([m,label])=>{
+      const el = document.createElement("div");
+      el.className = "chip" + (m===activeRecv ? " active" : ""); el.dataset.m = m; el.textContent = label;
+      el.addEventListener("click", ()=> setRecv(m));
+      recvRow.appendChild(el);
+    });
+    const add = document.createElement("div");
+    add.className = "chip dashed"; add.textContent = "+ Points";
+    add.addEventListener("click", ()=> toggleNewReward("recv"));
+    recvRow.appendChild(add);
+  }
+  function setPayMethod(m){
+    if(activePayMethod!==m) ptsTouched = false;
+    activePayMethod = m;
+    [...payMethodRow.children].forEach(ch=> ch.classList.toggle("active", ch.dataset.m===m));
+    refreshPtsRow();
+  }
+  function setRecv(m){
+    if(activeRecv!==m) ptsTouched = false;
+    activeRecv = m;
+    [...recvRow.children].forEach(ch=> ch.classList.toggle("active", ch.dataset.m===m));
+    refreshPayUI();
+  }
+
+  // Points box for a single-method entry. The rupee amount comes from the keypad; the points
+  // count is pre-filled from the rate you used last time for that type, and you can change it.
+  function currentPtsMethod(){
+    if(activeType==="income") return isPts(activeRecv) ? activeRecv : null;
+    return (isExpenseEntry() && !splitMode && isPts(activePayMethod)) ? activePayMethod : null;
+  }
+  function refreshPtsRow(){
+    const m = currentPtsMethod();
+    if(!m){ ptsRow.style.display = "none"; return; }
+    ptsRow.style.display = "flex";
+    ptsLabel.textContent = activeType==="income" ? "Points received" : "Points used";
+    if(!ptsTouched){ const a = currentAmount(); ptsInput.value = a>0 ? String(round2(a/rateOf(m))) : ""; }
+    ptsHint.textContent = "1 pt ≈ ₹" + round2(rateOf(m));
+  }
+  ptsInput.addEventListener("input", ()=>{ ptsTouched = true; });
+
+  // ----- split payment -----
+  function methodOptionsHTML(sel){
+    return [...BASE_METHODS, ...rewards.map(r=>["pt:"+r.id, r.name])]
+      .map(([m,l])=>`<option value="${esc(m)}"${m===sel?" selected":""}>${esc(l)}</option>`).join("");
+  }
+  function addSplitRow(m, amt, pts){
+    const row = document.createElement("div");
+    row.className = "split-row";
+    row.innerHTML = `<select class="sm">${methodOptionsHTML(m)}</select><input class="sa" type="text" inputmode="decimal" placeholder="₹"><input class="sp" type="text" inputmode="decimal" placeholder="pts"><button type="button" class="irem">✕</button>`;
+    const sel = row.querySelector(".sm"), sa = row.querySelector(".sa"), sp = row.querySelector(".sp");
+    if(amt!=null && amt!=="") sa.value = String(amt);
+    if(pts!=null && pts!==""){ sp.value = String(pts); row.dataset.pt = "1"; }
+    const sync = ()=>{
+      const pm = isPts(sel.value);
+      sp.style.display = pm ? "block" : "none";
+      if(pm && !row.dataset.pt){ const a = parseFloat(sa.value); sp.value = a>0 ? String(round2(a/rateOf(sel.value))) : ""; }
+      refreshSplit();
+    };
+    sel.addEventListener("change", ()=>{ row.dataset.pt = ""; sync(); });
+    sa.addEventListener("input", sync);
+    sp.addEventListener("input", ()=>{ row.dataset.pt = "1"; });
+    row.querySelector(".irem").addEventListener("click", ()=>{ if(splitRows.children.length>2){ row.remove(); refreshSplit(); } });
+    splitRows.appendChild(row);
+    sync();
+  }
+  function readSplit(){
+    return [...splitRows.children].map(r=>({ m: r.querySelector(".sm").value, amtStr: r.querySelector(".sa").value.trim(), ptsStr: r.querySelector(".sp").value.trim() }));
+  }
+  function refreshSplit(){
+    if(!splitMode) return;
+    const total = currentAmount(), rows = readSplit();
+    const filled = rows.filter(r=>r.amtStr!=="").reduce((s,r)=>s+(parseFloat(r.amtStr)||0),0);
+    const rem = round2(total - filled);
+    const blanks = rows.filter(r=>r.amtStr==="").length;
+    [...splitRows.children].forEach(r=>{
+      const sa = r.querySelector(".sa"), sp = r.querySelector(".sp"), m = r.querySelector(".sm").value;
+      const takesRest = blanks===1 && rem>0 && sa.value.trim()==="";
+      sa.placeholder = takesRest ? "₹" + nfmt(rem) : "₹";
+      sp.placeholder = (takesRest && isPts(m)) ? nfmt(round2(rem/rateOf(m))) + " pts" : "pts";
+    });
+    let cls = "", msg;
+    if(total<=0){ msg = "Type the full bill on the keypad below first"; }
+    else if(Math.abs(rem)<0.01 && blanks===0){ cls = "ok"; msg = "✓ Adds up to " + fmt(total); }
+    else if(blanks===1 && rem>0){ cls = "ok"; msg = "✓ The empty one takes the rest (" + fmt(rem) + ")"; }
+    else if(rem>0){ msg = fmt(rem) + " of " + fmt(total) + " still to assign"; }
+    else { cls = "bad"; msg = fmt(-rem) + " more than the bill of " + fmt(total); }
+    splitRemaining.className = "split-remaining " + cls; splitRemaining.textContent = msg;
+  }
+  function startSplit(parts){
+    splitMode = true; splitRows.innerHTML = "";
+    if(parts && parts.length>1){ parts.forEach(p=> addSplitRow(p.m, p.amt, isPts(p.m) ? p.pts : null)); }
+    else {
+      const first = activePayMethod;
+      const firstPts = rewards.length ? "pt:"+rewards[0].id : null;
+      const second = (firstPts && firstPts!==first) ? firstPts : (first==="credit" ? "upi" : "credit");
+      addSplitRow(first, "", null); addSplitRow(second, "", null);
+    }
+    refreshPayUI();
+  }
+  document.getElementById("splitOnBtn").addEventListener("click", ()=> startSplit(null));
+  document.getElementById("splitOffBtn").addEventListener("click", ()=>{ splitMode = false; refreshPayUI(); });
+  document.getElementById("splitAddBtn").addEventListener("click", ()=>{
+    const used = new Set(readSplit().map(r=>r.m));
+    const next = [...BASE_METHODS.map(b=>b[0]), ...rewards.map(r=>"pt:"+r.id)].find(m=>!used.has(m)) || "upi";
+    addSplitRow(next, "", null);
+  });
+
+  // Works out how an entry was paid / received. Returns {error} or {fields} ready to save.
+  function readPayment(amt){
+    const isCCMode = activeCatId==="ccpayment";
+    if(isCCMode) return { fields:{ paymentMethod:"cc_settlement" } };
+    if(activeType==="income"){
+      const f = { paymentMethod:"" };
+      if(activeRecv){
+        f.receivedAs = activeRecv;
+        if(isPts(activeRecv)){
+          const pts = parseFloat(ptsInput.value);
+          if(!(pts>0)) return { error:"How many points did you get? Fill in the points box." };
+          f.pts = round2(pts);
+        }
+      }
+      return { fields:f };
+    }
+    if(splitMode){
+      const rows = readSplit();
+      const blanks = rows.filter(r=>r.amtStr==="");
+      if(blanks.length>1) return { error:"Fill in the amount for each method. You can leave one empty and it takes the rest." };
+      const filled = rows.filter(r=>r.amtStr!=="").reduce((s,r)=>s+(parseFloat(r.amtStr)||0),0);
+      const rem = round2(amt - filled);
+      const parts = [];
+      for(const r of rows){
+        const a = r.amtStr==="" ? rem : parseFloat(r.amtStr);
+        if(!(a>0)) return { error:"Each method needs an amount above ₹0 (check " + methodName(r.m) + ")." };
+        if(parts.some(p=>p.m===r.m)) return { error: methodName(r.m) + " appears twice. Use each method once." };
+        const p = { m:r.m, amt: round2(a) };
+        if(isPts(r.m)){ const pts = r.ptsStr!=="" ? parseFloat(r.ptsStr) : round2(a/rateOf(r.m)); if(!(pts>0)) return { error:"How many " + methodName(r.m) + " points did you use?" }; p.pts = round2(pts); }
+        parts.push(p);
+      }
+      const sum = round2(parts.reduce((s,p)=>s+p.amt,0));
+      if(Math.abs(sum - amt) >= 0.01) return { error:"The split adds up to " + fmt(sum) + " but the bill is " + fmt(amt) + ". Make them match." };
+      if(parts.length===1) return { fields:{ paymentMethod: parts[0].m, payments: isPts(parts[0].m) ? parts : undefined } };
+      return { fields:{ paymentMethod:"split", payments: parts } };
+    }
+    const m = activePayMethod;
+    if(isPts(m)){
+      const pts = parseFloat(ptsInput.value);
+      if(!(pts>0)) return { error:"How many points did you use? Fill in the points box." };
+      return { fields:{ paymentMethod:m, payments:[{ m, amt: round2(amt), pts: round2(pts) }] } };
+    }
+    return { fields:{ paymentMethod:m } };
+  }
+  function applyPayment(t, f){
+    ["payments","receivedAs","pts"].forEach(k=> delete t[k]);
+    Object.keys(f).forEach(k=>{ if(f[k]!==undefined) t[k] = f[k]; });
+  }
+  // Remember the rupees-per-point you just used, so next time the points box pre-fills sensibly.
+  function learnRates(t){
+    let changed = false;
+    const learn = (m, amt, pts)=>{ const r = rewardById(String(m).slice(3)); if(r && amt>0 && pts>0){ r.rate = amt/pts; changed = true; } };
+    if(t.type==="income" && isPts(t.receivedAs)) learn(t.receivedAs, t.amount, t.pts);
+    (t.payments||[]).forEach(p=>{ if(isPts(p.m)) learn(p.m, p.amt, p.pts); });
+    if(changed) saveJ(REWARDS_KEY, rewards);
+  }
+
+  // ----- new points type, from inside the entry sheet -----
+  const nrName = document.getElementById("nrName"), nrPts = document.getElementById("nrPts"), nrWorth = document.getElementById("nrWorth");
+  function toggleNewReward(ctx){
+    nrContext = ctx;
+    const open = newRewardRow.style.display==="none";
+    newRewardRow.style.display = open ? "block" : "none";
+    if(open){ nrName.value = ""; nrPts.value = ""; nrWorth.value = ""; nrName.focus(); }
+  }
+  document.getElementById("nrCancel").addEventListener("click", ()=>{ newRewardRow.style.display = "none"; });
+  document.getElementById("nrAdd").addEventListener("click", ()=>{
+    const r = createReward(nrName.value, nrPts.value, nrWorth.value);
+    if(!r) return;
+    newRewardRow.style.display = "none";
+    buildPayChips(); buildRecvChips(); buildMethodChips();
+    if(nrContext==="recv") setRecv("pt:"+r.id); else setPayMethod("pt:"+r.id);
+    renderAll(); pushToCloud();
+  });
 
   function renderSubcatChips(){
     subcatChips.innerHTML = "";
@@ -759,13 +1251,38 @@
     sheetEmoji.textContent = c.emoji; sheetName.textContent = c.name;
     const isCCMode = catId === "ccpayment";
 
-    setType(txn ? txn.type : (catId==="income" ? "income" : "expense"));
-    setPayMethod(txn && txn.paymentMethod ? txn.paymentMethod : lastPayMethod);
-    sheetType.style.display = "none";
-    payMethodRow.style.display = (!isCCMode && activeType==="expense") ? "flex" : "none";
+    // Who added / last changed this entry.
+    if(txn && (txn.addedBy || txn.editedBy)){
+      let s = "";
+      if(txn.addedBy) s += "Added by " + esc(devName(txn.addedBy, txn.addedByName)) + " · " + whenLabel(txn.addedAt);
+      if(txn.editedBy) s += (s ? "<br>" : "") + "Last edited by " + esc(devName(txn.editedBy, txn.editedByName)) + " · " + whenLabel(txn.editedAt);
+      metaLine.innerHTML = s; metaLine.style.display = "block";
+    } else { metaLine.style.display = "none"; metaLine.innerHTML = ""; }
+    newRewardRow.style.display = "none";
 
     amountStr = txn ? String(txn.amount) : "";
     renderAmount();
+
+    // Restore how it was paid / received.
+    splitMode = false; ptsTouched = false;
+    let pm = lastPayMethod;
+    if(isPts(pm) && !rewardById(pm.slice(3))) pm = "upi";
+    activeRecv = "";
+    let splitParts = null;
+    if(txn && txn.type==="expense" && !txn.isCC){
+      const ps = partsOf(txn);
+      if(ps.length>1) splitParts = ps;
+      else if(ps[0] && ps[0].m){ pm = ps[0].m; if(isPts(pm) && ps[0].pts){ ptsInput.value = String(ps[0].pts); ptsTouched = true; } }
+    }
+    if(txn && txn.type==="income"){
+      activeRecv = txn.receivedAs || "";
+      if(isPts(activeRecv) && txn.pts){ ptsInput.value = String(txn.pts); ptsTouched = true; }
+    }
+    activePayMethod = pm;
+    buildPayChips(); buildRecvChips();
+    sheetType.style.display = "none";
+    setType(txn ? txn.type : (catId==="income" ? "income" : "expense"));
+    if(splitParts) startSplit(splitParts);
     noteInput.value = txn ? (txn.note||"") : "";
     dateInput.value = txn ? txn.date : todayISO();
 
@@ -784,6 +1301,7 @@
 
     normalActions.style.display = txn ? "none" : "flex";
     editActions.style.display = txn ? "flex" : "none";
+    entrySheet.scrollTop = 0;
     sheetBackdrop.classList.add("active"); entrySheet.classList.add("active");
     if(!sheetPushed){ try{ history.pushState({view:"sheet"}, ""); sheetPushed = true; }catch(e){} }
   }
@@ -798,21 +1316,26 @@
     const amt = currentAmount();
     if(amt<=0){ return; }
     const isCCMode = activeCatId === "ccpayment";
+    const pay = readPayment(amt);
+    if(pay.error){ alert(pay.error); return; }
     const newTxn = {
-      id: Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      id: uid(),
       catId: activeCatId, amount: amt, type: isCCMode ? "expense" : activeType,
       note: noteInput.value.trim(), date: dateInput.value || todayISO(),
-      // Income has no payment method. Without this it silently inherits the last one used,
-      // which is how salary entries ended up stored as credit card spending.
-      paymentMethod: isCCMode ? "cc_settlement" : (activeType==="income" ? "" : activePayMethod), isCC: isCCMode,
+      // Income has no payment method (see readPayment). Without this it silently inherits the
+      // last one used, which is how salary entries ended up stored as credit card spending.
+      isCC: isCCMode,
       subcategory: isCCMode ? "" : activeSubcat
     };
+    applyPayment(newTxn, pay.fields);
+    stamp(newTxn, true);
+    learnRates(newTxn);
     const items = (!isCCMode) ? collectItems() : [];
     if(items.length) newTxn.items = items;
     txns.push(newTxn); saveJ(STORE_KEY, txns); bumpUsage(activeCatId);
     if(!isCCMode){
       if(activeSubcat){ lastSubcat[activeCatId] = activeSubcat; saveJ(LASTSUBCAT_KEY, lastSubcat); }
-      lastPayMethod = activePayMethod; localStorage.setItem(LASTPAY_KEY, lastPayMethod);
+      if(activeType==="expense" && !splitMode){ lastPayMethod = activePayMethod; localStorage.setItem(LASTPAY_KEY, lastPayMethod); }
     }
     if(items.length){
       items.forEach(it=> pantry.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name:it.name, qty:it.qty, date:newTxn.date, catId:activeCatId, fromTxnId:newTxn.id }));
@@ -825,9 +1348,13 @@
     const amt = currentAmount();
     if(amt<=0 || !editingTxn) return;
     const isCCMode = editingTxn.catId === "ccpayment";
+    const pay = readPayment(amt);
+    if(pay.error){ alert(pay.error); return; }
     editingTxn.amount = amt; editingTxn.type = isCCMode ? "expense" : activeType;
     editingTxn.note = noteInput.value.trim(); editingTxn.date = dateInput.value || editingTxn.date;
-    if(!isCCMode){ editingTxn.paymentMethod = (activeType==="income") ? "" : activePayMethod; editingTxn.subcategory = activeSubcat; }
+    if(!isCCMode){ applyPayment(editingTxn, pay.fields); editingTxn.subcategory = activeSubcat; }
+    stamp(editingTxn, false);
+    learnRates(editingTxn);
 
     if(!isCCMode && PANTRY_CATS.has(editingTxn.catId)){
       const newItems = collectItems();
@@ -917,7 +1444,20 @@
   const methodChipRow = document.getElementById("methodChipRow");
   const methodClear = document.getElementById("methodClear");
   const methodCaret = document.getElementById("methodCaret");
-  const METHOD_NAMES = { upi:"UPI", cash:"Cash", debit:"Debit Card", credit:"Credit Card", cc_settlement:"Card Bill Payment" };
+  function buildMethodChips(){
+    const opts = [...BASE_METHODS, ["cc_settlement","Card Bill Payment"], ["card_credit","Card cashback"], ...rewards.map(r=>["pt:"+r.id, "\u{1F381} " + r.name])];
+    methodChipRow.innerHTML = "";
+    opts.forEach(([m,label])=>{
+      const el = document.createElement("div");
+      el.className = "chip" + (selMethods.has(m) ? " active" : ""); el.dataset.m = m; el.textContent = label;
+      el.addEventListener("click", ()=>{
+        if(selMethods.has(m)) selMethods.delete(m); else selMethods.add(m);
+        renderMethodChips(); renderHistory();
+      });
+      methodChipRow.appendChild(el);
+    });
+  }
+  buildMethodChips();
 
   (function buildCatChips(){
     CATEGORIES.forEach(c=>{
@@ -939,7 +1479,7 @@
   function renderMethodChips(){
     [...methodChipRow.children].forEach(el=> el.classList.toggle("active", selMethods.has(el.dataset.m)));
     methodSummaryText.textContent = selMethods.size===0 ? "Any payment method"
-      : (selMethods.size===1 ? METHOD_NAMES[[...selMethods][0]] : selMethods.size + " payment methods");
+      : (selMethods.size===1 ? methodName([...selMethods][0]) : selMethods.size + " payment methods");
     methodClear.style.display = selMethods.size ? "inline" : "none";
   }
   function setChipRowOpen(row, caret, open){
@@ -954,11 +1494,6 @@
     const id = el.dataset.cat;
     if(selCats.has(id)) selCats.delete(id); else selCats.add(id);
     renderCatChips(); refreshSubcatFilterOptions(); renderHistory();
-  }));
-  [...methodChipRow.children].forEach(el=> el.addEventListener("click", ()=>{
-    const m = el.dataset.m;
-    if(selMethods.has(m)) selMethods.delete(m); else selMethods.add(m);
-    renderMethodChips(); renderHistory();
   }));
 
   // Subcategories belong to one category, so this only makes sense with exactly one picked.
@@ -988,6 +1523,7 @@
     fCustomDateRow.style.display = fRange.value==="custom" ? "flex" : "none";
     if(p.range==="custom"){ fDateFrom.value = p.from || ""; fDateTo.value = p.to || ""; }
     selMethods.clear();
+    if(p.method) selMethods.add(p.method);
     renderMethodChips();
     fSearch.value = "";
   }
@@ -997,7 +1533,7 @@
     // No categories picked now means everything, credit card bill payments included.
     if(selCats.size) list = list.filter(t=> selCats.has(t.isCC ? "ccpayment" : t.catId));
     if(fSubcat.value) list = list.filter(t=>t.subcategory===fSubcat.value);
-    if(selMethods.size) list = list.filter(t=> selMethods.has(t.paymentMethod));
+    if(selMethods.size) list = list.filter(t=> txnMethods(t).some(m=> selMethods.has(m)));
     if(fRange.value==="month"){ const ym=todayISO().slice(0,7); list=list.filter(t=>monthKey(t.date)===ym); }
     else if(fRange.value==="custom"){
       if(fDateFrom.value) list = list.filter(t=> t.date >= fDateFrom.value);
@@ -1008,7 +1544,12 @@
     if(q) list = list.filter(t=> (t.note||"").toLowerCase().includes(q) || (t.subcategory||"").toLowerCase().includes(q));
     list.sort((a,b)=> fSort.value==="amount" ? (b.amount-a.amount) : (b.date+b.id).localeCompare(a.date+a.id));
 
-    const total = list.reduce((s,t)=> s + (t.type==="income"? t.amount : -t.amount), 0);
+    // With a payment filter on, a split bill only counts the part paid that way.
+    const shownAmt = t=>{
+      if(!selMethods.size || t.type!=="expense" || t.isCC) return t.amount;
+      return partsOf(t).filter(p=>selMethods.has(p.m)).reduce((s,p)=>s+(Number(p.amt)||0),0);
+    };
+    const total = list.reduce((s,t)=> s + (t.type==="income"? shownAmt(t) : -shownAmt(t)), 0);
     document.getElementById("fCount").textContent = list.length + " transaction" + (list.length===1?"":"s");
     document.getElementById("fTotal").textContent = fmt(Math.abs(total));
 
@@ -1139,12 +1680,15 @@
     monthTitle.textContent = monthLabel(dashYM);
     const monthTxns = txns.filter(t=> monthKey(t.date)===dashYM);
 
-    const income = monthTxns.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
-    const upiAmt = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="upi").reduce((s,t)=>s+t.amount,0);
-    const cashAmt = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="cash").reduce((s,t)=>s+t.amount,0);
-    const debitAmt = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="debit").reduce((s,t)=>s+t.amount,0);
+    const income = monthTxns.reduce((s,t)=>s+bankIncomeOf(t),0);
+    const byBucket = { upi:0, cash:0, debit:0, credit:0, points:0 };
+    monthTxns.forEach(t=> partsOf(t).forEach(p=>{ byBucket[bucketOf(p.m)] += Number(p.amt)||0; }));
+    const upiAmt = byBucket.upi, cashAmt = byBucket.cash, debitAmt = byBucket.debit;
     const paidNow = upiAmt + cashAmt + debitAmt;
-    const onCredit = monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="credit").reduce((s,t)=>s+t.amount,0);
+    const onCredit = byBucket.credit;
+    const onPoints = byBucket.points;
+    const rewardsEarned = monthTxns.reduce((s,t)=>s+rewardEarnedOf(t),0);
+    const cardCashback = monthTxns.reduce((s,t)=>s+cardCashbackOf(t),0);
     const ccPaidThisMonth = monthTxns.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
 
     // Kharcha = true cash-out this month (never includes new credit-card purchases until the month they're actually paid)
@@ -1162,19 +1706,22 @@
     document.getElementById("detDebit").textContent = fmt(debitAmt);
     document.getElementById("detCcPaid").textContent = fmt(ccPaidThisMonth);
     const onCreditNote = document.getElementById("detOnCredit");
-    onCreditNote.textContent = onCredit>0 ? ("+ " + fmt(onCredit) + " still on credit card, not yet paid (not counted above)") : "";
+    const notes = [];
+    if(onCredit>0) notes.push("+ " + fmt(onCredit) + " still on credit card, not yet paid (not counted above)");
+    if(onPoints>0) notes.push("+ " + fmt(onPoints) + " paid with points (not counted \u2014 no money left your bank)");
+    if(rewardsEarned>0) notes.push("\u{1F381} " + fmt(rewardsEarned) + " of points earned (in Rewards wallet, not in Income)");
+    if(cardCashback>0) notes.push("\u{1F4B3} " + fmt(cardCashback) + " card cashback (lowers card owed, not in Income)");
+    onCreditNote.innerHTML = notes.map(esc).join("<br>");
+    onCreditNote.style.display = notes.length ? "block" : "none";
 
-    const allIncome = txns.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
-    const allNonCCExpense = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
-    const allCCPayments = txns.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
-    const allCCPurchases = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="credit").reduce((s,t)=>s+t.amount,0);
-    document.getElementById("balMoneyLeft").textContent = fmt(allIncome-allNonCCExpense-allCCPayments);
-    document.getElementById("balCCOwed").textContent = fmt(Math.max(0, allCCPurchases-allCCPayments));
+    document.getElementById("balMoneyLeft").textContent = fmt(moneyLeftAll());
+    document.getElementById("balCCOwed").textContent = fmt(Math.max(0, cardOwedAll()));
 
     // Donut: cash-paid-only category totals, PLUS a dedicated Credit Card Bill Payment slice.
     // Together these always sum to exactly `kharcha` \u2014 same number, two views, never added together.
+    // A split bill only adds the part that left your bank.
     const byCat = {};
-    monthTxns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").forEach(t=>{ byCat[t.catId]=(byCat[t.catId]||0)+t.amount; });
+    monthTxns.filter(t=>t.type==="expense" && !t.isCC).forEach(t=>{ const v = cashOutOf(t); if(v>0) byCat[t.catId]=(byCat[t.catId]||0)+v; });
     const donutSlices = Object.entries(byCat).map(([id,amt])=>({ id, name: (catMap[id]||catMap.others).name, emoji:(catMap[id]||catMap.others).emoji, amt }));
     if(ccPaidThisMonth>0) donutSlices.push({ id:"ccpayment", name:"Credit Card Bill Payment", emoji:"\u{1F4B3}", amt:ccPaidThisMonth });
     donutSlices.sort((a,b)=>b.amt-a.amt);
@@ -1216,6 +1763,7 @@
     }
 
     renderCalendar(kharcha);
+    renderRewardsCard();
 
     const labels=[], incomeSeries=[], expenseSeries=[];
     const [y,m] = dashYM.split("-").map(Number);
@@ -1224,10 +1772,8 @@
       const ym = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
       labels.push(d.toLocaleDateString("en-IN",{month:"short"}));
       const mt = txns.filter(t=>monthKey(t.date)===ym);
-      incomeSeries.push(mt.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0));
-      const mtPaidNow = mt.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
-      const mtCcPaid = mt.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
-      expenseSeries.push(mtPaidNow + mtCcPaid);
+      incomeSeries.push(mt.reduce((s,t)=>s+bankIncomeOf(t),0));
+      expenseSeries.push(mt.reduce((s,t)=>s+cashOutOf(t),0));
     }
     const ctx = document.getElementById("trendChart").getContext("2d");
     if(trendChartInstance) trendChartInstance.destroy();
@@ -1237,17 +1783,33 @@
     ]}, options:{ responsive:true, plugins:{legend:{labels:{color:"#7a8580", font:{size:11}}}}, scales:{ x:{ticks:{color:"#7a8580",font:{size:11}},grid:{display:false}}, y:{ticks:{color:"#7a8580",font:{size:10}},grid:{color:"#1e2427"}} } } });
   }
 
+  // ---------- REWARDS WALLET ----------
+  function renderRewardsCard(){
+    const card = document.getElementById("rewardsCard");
+    const list = document.getElementById("rewardsList");
+    if(rewards.length===0){ card.style.display = "none"; return; }
+    card.style.display = "block";
+    const bal = rewardBalances();
+    list.innerHTML = rewards.map(r=>{
+      const b = bal[r.id];
+      const month = [];
+      if(b.earnedM>0) month.push("+" + fmt(b.earnedM) + " earned");
+      if(b.usedM>0) month.push("−" + fmt(b.usedM) + " used");
+      return `<div class="rw-row" data-id="${esc(r.id)}">
+        <span style="font-size:18px;">\u{1F381}</span>
+        <div class="rw-mid"><div class="rw-name">${esc(r.name)}</div><div class="rw-sub">${month.length ? "This month: " + month.join(" · ") : "No activity this month"}</div></div>
+        <div class="rw-bal"><div class="rw-pts" style="${b.pts<0?"color:var(--expense)":""}">${nfmt(b.pts)} pts</div><div class="rw-val">≈ ${fmt(b.amt)}</div></div>
+      </div>`;
+    }).join("");
+    list.querySelectorAll(".rw-row").forEach(el=> el.addEventListener("click", ()=> switchScreen("history", { method: "pt:" + el.dataset.id, range:"all" })));
+  }
+
   // ---------- CALENDAR DAY VIEW ----------
   // A day's figure follows exactly the same rule as Kharcha: money that actually left the
   // account that day. A credit card purchase contributes nothing on the day it was swiped;
   // it lands on the day its bill is paid. That keeps every rupee on the calendar exactly once.
   let selectedCalDay = null;
-  function dayCashOut(t){
-    if(t.type !== "expense") return 0;
-    if(t.isCC) return t.amount;
-    if(t.paymentMethod === "credit") return 0;
-    return t.amount;
-  }
+  function dayCashOut(t){ return cashOutOf(t); }
   function shortAmt(n){
     n = Math.round(n);
     if(n >= 100000) return (n/100000).toFixed(1).replace(/\.0$/,"") + "L";
@@ -1285,17 +1847,19 @@
     if(selectedCalDay && monthKey(selectedCalDay)===dashYM && byDay[selectedCalDay]){
       const dayTxns = monthTxns.filter(t=> t.date===selectedCalDay);
       const spent = dayTxns.filter(t=> dayCashOut(t)>0).sort((a,b)=> b.amount - a.amount);
-      const onCard = dayTxns.filter(t=> t.type==="expense" && !t.isCC && t.paymentMethod==="credit");
-      const cardTotal = onCard.reduce((s,t)=>s+t.amount,0);
+      const cardTotal = dayTxns.reduce((s,t)=>s+creditOf(t),0);
+      const ptsTotal = dayTxns.reduce((s,t)=>s+pointsSpentOf(t),0);
       const [dy,dm,dd] = [Number(selectedCalDay.slice(0,4)), Number(selectedCalDay.slice(5,7)), Number(selectedCalDay.slice(8,10))];
       const label = new Date(dy, dm-1, dd).toLocaleDateString("en-IN",{weekday:"long", day:"numeric", month:"long"});
       let p = `<div class="cd-head"><span class="cd-date">${label}</span><span class="cd-amt">${fmt(byDay[selectedCalDay])}</span></div>`;
       spent.forEach(t=>{
         const c = t.isCC ? catMap.ccpayment : (catMap[t.catId] || catMap.others);
-        const tag = t.isCC ? "" : (t.subcategory ? " \u00b7 " + t.subcategory : (t.paymentMethod ? " \u00b7 " + (METHOD_NAMES[t.paymentMethod]||t.paymentMethod) : ""));
-        p += `<div class="cd-row"><span>${c.name}${tag}</span><b>${fmt(t.amount)}</b></div>`;
+        const ml = methodLabelOf(t);
+        const tag = t.isCC ? "" : (t.subcategory ? " \u00b7 " + t.subcategory : (ml ? " \u00b7 " + esc(ml) : ""));
+        p += `<div class="cd-row"><span>${c.name}${tag}</span><b>${fmt(dayCashOut(t))}</b></div>`;
       });
       if(cardTotal>0) p += `<div class="cd-credit">+ ${fmt(cardTotal)} on the credit card this day \u2014 counted when you pay the bill, not today</div>`;
+      if(ptsTotal>0) p += `<div class="cd-credit">+ ${fmt(ptsTotal)} paid with points this day \u2014 no money left your bank</div>`;
       panel.innerHTML = p;
       panel.style.display = "block";
     } else {
@@ -1319,14 +1883,19 @@
     const byMonth = {};
     txns.forEach(t=>{
       const ym = monthKey(t.date);
-      if(!byMonth[ym]) byMonth[ym] = { ym, income:0, upi:0, cash:0, debit:0, ccPaid:0, onCredit:0 };
+      if(!byMonth[ym]) byMonth[ym] = { ym, income:0, upi:0, cash:0, debit:0, ccPaid:0, onCredit:0, points:0, ptsEarned:0, cardCb:0 };
       const b = byMonth[ym];
-      if(t.type==="income"){ b.income += t.amount; return; }
+      if(t.type==="income"){
+        if(t.receivedAs==="card_credit") b.cardCb += t.amount;
+        else if(isPts(t.receivedAs)) b.ptsEarned += rewardEarnedOf(t);
+        else b.income += t.amount;
+        return;
+      }
       if(t.isCC){ b.ccPaid += t.amount; return; }
-      if(t.paymentMethod==="credit"){ b.onCredit += t.amount; return; }
-      if(t.paymentMethod==="cash"){ b.cash += t.amount; }
-      else if(t.paymentMethod==="debit"){ b.debit += t.amount; }
-      else { b.upi += t.amount; }
+      partsOf(t).forEach(p=>{
+        const k = bucketOf(p.m), a = Number(p.amt)||0;
+        if(k==="credit") b.onCredit += a; else b[k] += a;
+      });
     });
     const rows = Object.values(byMonth).sort((a,b)=> a.ym.localeCompare(b.ym));
     let runLeft = 0, runOwed = 0;
@@ -1334,7 +1903,7 @@
       r.kharcha = r.upi + r.cash + r.debit + r.ccPaid;
       r.shesh = r.income - r.kharcha;
       runLeft += r.shesh;
-      runOwed += (r.onCredit - r.ccPaid);
+      runOwed += (r.onCredit - r.ccPaid - r.cardCb);
       r.runLeft = runLeft;
       r.runOwed = runOwed;
     });
@@ -1342,13 +1911,9 @@
   }
 
   function renderLedger(){
-    const allIncome = txns.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
-    const allNonCCExpense = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod!=="credit").reduce((s,t)=>s+t.amount,0);
-    const allCCPayments = txns.filter(t=>t.isCC).reduce((s,t)=>s+t.amount,0);
-    const allCCPurchases = txns.filter(t=>t.type==="expense" && !t.isCC && t.paymentMethod==="credit").reduce((s,t)=>s+t.amount,0);
-    const moneyLeft = allIncome - allNonCCExpense - allCCPayments;
+    const moneyLeft = moneyLeftAll();
     document.getElementById("lgMoneyLeft").textContent = fmt(moneyLeft);
-    document.getElementById("lgCCOwed").textContent = fmt(Math.max(0, allCCPurchases - allCCPayments));
+    document.getElementById("lgCCOwed").textContent = fmt(Math.max(0, cardOwedAll()));
 
     const table = document.getElementById("ledgerTable");
     const warn = document.getElementById("lgWarn");
@@ -1390,6 +1955,9 @@
           <div class="d-row"><span>Debit card</span><b>${fmt(r.debit)}</b></div>
           <div class="d-row"><span>Credit card bill paid</span><b>${fmt(r.ccPaid)}</b></div>
           ${ r.onCredit>0 ? `<div class="lg-note">+ ${fmt(r.onCredit)} spent on card this month, bill not yet paid \u2014 not counted above</div>` : `` }
+          ${ r.points>0 ? `<div class="lg-note">+ ${fmt(r.points)} paid with points \u2014 not counted above, no money left your bank</div>` : `` }
+          ${ r.ptsEarned>0 ? `<div class="lg-note">\u{1F381} ${fmt(r.ptsEarned)} of points earned \u2014 in Rewards wallet, not in Income</div>` : `` }
+          ${ r.cardCb>0 ? `<div class="lg-note">\u{1F4B3} ${fmt(r.cardCb)} card cashback \u2014 lowers card owed, not in Income</div>` : `` }
           <div class="d-row lg-sep"><span>Money left after this month</span><b style="color:var(--accent);">${fmt(r.runLeft)}</b></div>
           <div class="d-row"><span>Card owed at month end</span><b style="color:var(--expense);">${fmt(Math.max(0, r.runOwed))}</b></div>
           <div class="lg-link" data-open="${r.ym}">See all ${monthLabel(r.ym)} transactions</div>
@@ -1433,9 +2001,10 @@
       const rows = grouped[name].sort((a,b)=> a.date.localeCompare(b.date));
       const catTotal = rows.reduce((s,t)=> s + (t.type==="income"?t.amount:-t.amount), 0);
       out += name + " (" + rows.length + " transactions, net " + fmt(catTotal) + ")\n";
-      out += ["Date","Subcategory","Type","Payment Method","Amount","Note"].map(csvEscape).join(",") + "\n";
+      out += ["Date","Subcategory","Type","Payment Method","Amount","Note","Added by","Last edited by"].map(csvEscape).join(",") + "\n";
       rows.forEach(t=>{
-        out += [t.date, t.subcategory||"", t.type, t.paymentMethod||"", t.amount, t.note||""].map(csvEscape).join(",") + "\n";
+        out += [t.date, t.subcategory||"", t.type, methodDetailOf(t), t.amount, t.note||"",
+          t.addedBy ? devName(t.addedBy, t.addedByName) : "", t.editedBy ? devName(t.editedBy, t.editedByName) : ""].map(csvEscape).join(",") + "\n";
       });
       out += "\n";
     });
@@ -1446,7 +2015,7 @@
   });
 
   document.getElementById("exportBtn").addEventListener("click", ()=>{
-    const blob = new Blob([JSON.stringify({txns,usage,pantry,customSubcats}, null, 2)], {type:"application/json"});
+    const blob = new Blob([JSON.stringify({txns,usage,pantry,customSubcats,rewards,devices}, null, 2)], {type:"application/json"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href=url; a.download="kharcha-pani-backup-"+todayISO()+".json";
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
@@ -1483,14 +2052,18 @@
             incomingSubcats[catId].forEach(name=>{ if(!customSubcats[catId].includes(name)) customSubcats[catId].push(name); });
           });
 
+          mergeRewards(data.rewards); mergeDevices(data.devices);
           saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
+          saveJ(REWARDS_KEY,rewards); saveJ(DEVICES_KEY,devices); buildMethodChips();
           renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
           pushToCloud();
           alert("Merged " + newTxns.length + " new transaction(s). " + (data.txns.length - newTxns.length) + " duplicate(s) skipped.");
         } else {
           if(!confirm("This will DELETE everything currently in the app and replace it with only what's in this backup file. Are you sure?")) return;
           txns=data.txns; usage=data.usage||{}; pantry=data.pantry||[]; customSubcats=data.customSubcats||{};
+          rewards=data.rewards||[]; mergeDevices(data.devices);
           saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
+          saveJ(REWARDS_KEY,rewards); saveJ(DEVICES_KEY,devices); buildMethodChips();
           renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
           pushToCloud();
           alert("Backup restored (replaced).");
@@ -1523,6 +2096,8 @@
   document.getElementById("settingsBtn").addEventListener("click", ()=>{
     fbConfigInput.value = localStorage.getItem(FB_CONFIG_KEY) || "";
     syncCodeInput.value = localStorage.getItem(SYNC_CODE_KEY) || "";
+    renderSettings();
+    syncSheet.scrollTop = 0;
     syncBackdrop.classList.add("active"); syncSheet.classList.add("active");
     if(!syncPushed){ try{ history.pushState({view:"sheet"}, ""); syncPushed = true; }catch(e){} }
   });
@@ -1558,12 +2133,22 @@
         if(!snap.exists){ pushToCloud(); setSyncStatus("on","Connected \u2014 waiting for first sync"); return; }
         const data = snap.data();
         const remoteTs = data.updatedAt || 0;
-        if(remoteTs > localModified){
+        // A phone with no entries of its own (e.g. a new phone joining) always takes the
+        // cloud's data. Without this, renaming the new phone before connecting would make it
+        // look "newer" and it would push its empty ledger over yours.
+        const freshPhone = txns.length===0 && (data.txns||[]).length>0;
+        if(remoteTs > localModified || freshPhone){
           // Cloud genuinely has newer data than this device has seen \u2014 pull it down.
           txns=data.txns||[]; usage=data.usage||{}; pantry=data.pantry||[]; customSubcats=data.customSubcats||{};
+          // Points types and the phone list are merged, not replaced, so a phone still on the
+          // older app version (which doesn't know about them) can't wipe them out.
+          if(Array.isArray(data.rewards)){ const local = rewards; rewards = data.rewards.slice(); mergeRewards(local); }
+          mergeDevices(data.devices);
           localModified = remoteTs; localStorage.setItem(LOCAL_MODIFIED_KEY, String(localModified));
           saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
+          saveJ(REWARDS_KEY,rewards); saveJ(DEVICES_KEY,devices); buildMethodChips();
           renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
+          if(syncSheet.classList.contains("active")) renderSettings();
           setSyncStatus("on","Synced across your devices");
         } else if(remoteTs < localModified){
           // This device has changes the cloud doesn't have yet \u2014 push, never silently discard them.
@@ -1581,29 +2166,184 @@
     localStorage.setItem(LOCAL_MODIFIED_KEY, String(localModified));
     if(!fbDb) return;
     const code = localStorage.getItem(SYNC_CODE_KEY); if(!code) return;
-    fbDb.collection("expenseiq").doc(code).set({txns,usage,pantry,customSubcats,updatedAt:localModified}).catch(err=>{ console.error(err); setSyncStatus("err","Could not reach the cloud"); });
+    devices[device.id] = { name: device.name || "", lastSeen: localModified }; saveJ(DEVICES_KEY, devices);
+    fbDb.collection("expenseiq").doc(code).set({txns,usage,pantry,customSubcats,rewards,devices,updatedAt:localModified}).catch(err=>{ console.error(err); setSyncStatus("err","Could not reach the cloud"); });
   }
   document.getElementById("clearDataBtn").addEventListener("click", ()=>{
     if(confirm("Clear ALL data on this device? If sync is connected, this also clears it on your other devices.")){
-      txns=[]; usage={}; pantry=[]; customSubcats={};
-      saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
+      txns=[]; usage={}; pantry=[]; customSubcats={}; rewards=[];
+      saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats); saveJ(REWARDS_KEY,rewards);
+      buildMethodChips(); renderSettings();
       renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
       pushToCloud();
     }
   });
+  // ---------- SETTINGS: device name, points types, devices, PIN ----------
+  const devNameInput = document.getElementById("devNameInput");
+  function agoLabel(ts){
+    if(!ts) return "never";
+    const m = Math.round((Date.now()-ts)/60000);
+    if(m < 1) return "just now";
+    if(m < 60) return m + " min ago";
+    const h = Math.round(m/60); if(h < 24) return h + " h ago";
+    return Math.round(h/24) + " d ago";
+  }
+  function renderSettings(){
+    devNameInput.value = device.name || "";
+    // Points types
+    const box = document.getElementById("setRewardsList");
+    if(rewards.length===0){ box.innerHTML = `<div class="helper-text" style="margin:0;">None yet. Add one below, or tap "+ Points" while logging an entry.</div>`; }
+    else {
+      const bal = rewardBalances();
+      box.innerHTML = rewards.map(r=>`<div class="set-row"><div><div>\u{1F381} ${esc(r.name)}</div><div class="sub">${nfmt(bal[r.id].pts)} pts · ≈ ${fmt(bal[r.id].amt)} · 1 pt ≈ ₹${round2(r.rate||1)}</div></div><div class="acts"><button class="link-btn" data-ren="${esc(r.id)}">Rename</button><button class="link-btn" style="color:var(--expense);" data-del="${esc(r.id)}">Delete</button></div></div>`).join("");
+      box.querySelectorAll("[data-ren]").forEach(b=> b.addEventListener("click", ()=>{
+        const r = rewardById(b.dataset.ren); if(!r) return;
+        const n = prompt("New name for " + r.name, r.name); if(n==null) return;
+        const nn = n.trim().slice(0,30); if(!nn) return;
+        if(rewards.some(x=>x!==r && x.name.toLowerCase()===nn.toLowerCase())){ alert("You already have “"+nn+"”."); return; }
+        r.name = nn; saveJ(REWARDS_KEY, rewards); buildMethodChips(); renderSettings(); renderAll(); pushToCloud();
+      }));
+      box.querySelectorAll("[data-del]").forEach(b=> b.addEventListener("click", ()=>{
+        const r = rewardById(b.dataset.del); if(!r) return;
+        const n = rewardUseCount(r.id);
+        if(n>0){ alert(r.name + " is used in " + n + " entr" + (n===1?"y":"ies") + ", so it can't be deleted without changing your history. You can rename it instead."); return; }
+        if(!confirm("Delete " + r.name + "?")) return;
+        rewards = rewards.filter(x=>x!==r); saveJ(REWARDS_KEY, rewards); buildMethodChips(); renderSettings(); renderAll(); pushToCloud();
+      }));
+    }
+    // Devices
+    const dl = document.getElementById("devicesList");
+    const ids = Object.keys(devices).sort((a,b)=>(devices[b].lastSeen||0)-(devices[a].lastSeen||0));
+    dl.innerHTML = ids.map(id=>`<div class="set-row"><div><div>${esc(devName(id))}${id===device.id ? ` <span class="sub">(this phone)</span>` : ``}</div><div class="sub">last change ${agoLabel(devices[id].lastSeen)}</div></div></div>`).join("")
+      + (ids.length<2 ? `<div class="helper-text" style="margin:4px 0 0;">Other phones appear here once they sync with the same code.</div>` : ``);
+    renderPinSettings();
+  }
+  document.getElementById("devNameSave").addEventListener("click", ()=>{
+    device.name = devNameInput.value.trim().slice(0,24);
+    saveJ(DEVICE_KEY, device); registerSelf();
+    renderSettings(); renderRecent(); renderHistory();
+    if(fbDb) pushToCloud();   // only share the new name once sync is connected
+    const b = document.getElementById("devNameSave"); b.textContent = "Saved ✓"; setTimeout(()=>{ b.textContent = "Save"; }, 1500);
+  });
+  document.getElementById("srAdd").addEventListener("click", ()=>{
+    const nameEl = document.getElementById("srName"), ptsEl = document.getElementById("srPts"), worthEl = document.getElementById("srWorth");
+    const r = createReward(nameEl.value, ptsEl.value, worthEl.value);
+    if(!r) return;
+    nameEl.value = ""; ptsEl.value = ""; worthEl.value = "";
+    buildMethodChips(); renderSettings(); renderAll(); pushToCloud();
+  });
+
+  // ----- PIN lock -----
+  // The PIN lives only on this phone, stored as a salted SHA-256 hash (never the PIN itself).
+  // It hides the app from someone holding your unlocked phone; it doesn't encrypt your data.
+  const lockEl = document.getElementById("lockScreen");
+  const lockTitle = document.getElementById("lockTitle"), lockSub = document.getElementById("lockSub");
+  const pinDots = document.getElementById("pinDots"), lockMsg = document.getElementById("lockMsg");
+  const lockForgot = document.getElementById("lockForgot"), lockCancel = document.getElementById("lockCancel");
+  let pinBuf = "", lockMode = null, pinFirst = "", lockDone = null, failCount = 0, lockUntil = 0, pinBusy = false;
+  function pinRecord(){ return loadJ(PIN_KEY, null); }
+  function pinIsSet(){ const p = pinRecord(); return !!(p && p.hash); }
+  async function hashPin(pin, salt){
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(salt + ":" + pin));
+    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+  }
+  async function checkPin(pin){ const p = pinRecord(); if(!p) return true; return (await hashPin(pin, p.salt)) === p.hash; }
+  async function savePin(pin){ const salt = uid() + uid(); saveJ(PIN_KEY, { salt, hash: await hashPin(pin, salt) }); }
+  function renderDots(){ [...pinDots.children].forEach((d,i)=> d.classList.toggle("on", i < pinBuf.length)); }
+  function setLockText(){
+    const t = { unlock:["Enter PIN","Kharcha Pani is locked"], verify:["Enter current PIN","To change or turn off the lock"],
+                fresh:["Choose a 4-digit PIN","You'll enter it each time you open the app"], confirm:["Enter it again","To make sure it's right"] }[lockMode];
+    lockTitle.textContent = t[0]; lockSub.textContent = t[1];
+    lockForgot.style.display = lockMode==="unlock" ? "inline-block" : "none";
+    lockCancel.style.display = lockMode==="unlock" ? "none" : "inline-block";
+    renderDots();
+  }
+  function showLock(mode, onDone){ lockMode = mode; lockDone = onDone || null; pinBuf = ""; lockMsg.textContent = ""; setLockText(); lockEl.classList.add("active"); }
+  function hideLock(){ lockEl.classList.remove("active"); document.documentElement.classList.remove("locked"); lockMode = null; }
+  function finishLock(){ const cb = lockDone; lockDone = null; hideLock(); if(cb) cb(); }
+  function badPin(msg){ lockMsg.textContent = msg; pinDots.classList.remove("shake"); void pinDots.offsetWidth; pinDots.classList.add("shake"); }
+  async function handlePin(pin){
+    pinBusy = true;
+    try{
+      if(lockMode==="unlock" || lockMode==="verify"){
+        if(Date.now() < lockUntil){ badPin("Too many tries. Wait " + Math.ceil((lockUntil-Date.now())/1000) + " seconds."); return; }
+        if(await checkPin(pin)){ failCount = 0; finishLock(); }
+        else {
+          failCount++;
+          if(failCount >= 5){ failCount = 0; lockUntil = Date.now() + 30000; badPin("Too many tries. Wait 30 seconds."); }
+          else badPin("Wrong PIN");
+        }
+      } else if(lockMode==="fresh"){ pinFirst = pin; lockMode = "confirm"; lockMsg.textContent = ""; setLockText(); }
+      else if(lockMode==="confirm"){
+        if(pin===pinFirst){ await savePin(pin); pinFirst = ""; finishLock(); renderPinSettings(); }
+        else { pinFirst = ""; lockMode = "fresh"; setLockText(); badPin("Those didn't match. Choose your PIN again."); }
+      }
+    } finally { pinBusy = false; renderDots(); }
+  }
+  document.getElementById("lockPad").addEventListener("click", (e)=>{
+    const btn = e.target.closest("button"); if(!btn || !btn.dataset.k || pinBusy) return;
+    const k = btn.dataset.k;
+    if(k==="back") pinBuf = pinBuf.slice(0,-1);
+    else if(pinBuf.length < 4) pinBuf += k;
+    renderDots();
+    // Take the 4 digits and clear the buffer straight away, so fast typing never drops a digit.
+    if(pinBuf.length===4){ const pin = pinBuf; pinBuf = ""; handlePin(pin); }
+  });
+  lockCancel.addEventListener("click", ()=>{ lockDone = null; hideLock(); });
+  lockForgot.addEventListener("click", ()=>{
+    const code = localStorage.getItem(SYNC_CODE_KEY);
+    if(code){
+      const entered = prompt("Forgot your PIN? Enter your sync code (the one you used to connect sync) to remove the PIN.");
+      if(entered==null) return;
+      if(entered.trim()===code){ localStorage.removeItem(PIN_KEY); finishLock(); alert("PIN removed. You can set a new one in Settings."); }
+      else badPin("That sync code doesn't match.");
+    } else {
+      if(!confirm("Sync isn't set up on this phone, so the only way back in is to erase Kharcha Pani's data on this phone.\n\nEverything saved on this phone will be deleted. Continue?")) return;
+      if(!confirm("Last check: permanently erase all Kharcha Pani data on this phone?")) return;
+      Object.keys(localStorage).filter(k=>k.indexOf("kharchapani_")===0).forEach(k=>localStorage.removeItem(k));
+      location.reload();
+    }
+  });
+  function renderPinSettings(){
+    const on = pinIsSet();
+    document.getElementById("pinStatus").textContent = on ? "PIN lock is on" : "PIN lock is off";
+    const acts = document.getElementById("pinActs");
+    acts.innerHTML = on ? `<button class="link-btn" id="pinChange">Change</button><button class="link-btn" style="color:var(--expense);" id="pinOff">Turn off</button>`
+                        : `<button class="link-btn" id="pinSet">Set PIN</button>`;
+    if(on){
+      document.getElementById("pinChange").addEventListener("click", ()=> showLock("verify", ()=> showLock("fresh")));
+      document.getElementById("pinOff").addEventListener("click", ()=> showLock("verify", ()=>{ localStorage.removeItem(PIN_KEY); renderPinSettings(); }));
+    } else {
+      document.getElementById("pinSet").addEventListener("click", ()=>{
+        if(!(window.crypto && crypto.subtle)){ alert("PIN lock needs the app opened from its https:// address."); return; }
+        showLock("fresh");
+      });
+    }
+  }
+  // Lock again if the app sat in the background for more than a minute.
+  let hiddenAt = 0;
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden){ hiddenAt = Date.now(); return; }
+    if(pinIsSet() && hiddenAt && Date.now()-hiddenAt > 60000 && !lockMode) showLock("unlock");
+  });
+  let unlockedResolve; const whenUnlocked = new Promise(r=> unlockedResolve = r);
+  if(pinIsSet()) showLock("unlock", ()=> unlockedResolve()); else { document.documentElement.classList.remove("locked"); unlockedResolve(); }
+
   (function autoConnect(){
     const raw = localStorage.getItem(FB_CONFIG_KEY), code = localStorage.getItem(SYNC_CODE_KEY);
     if(raw && code){ try{ initSync(JSON.parse(raw), code, false); }catch(e){} }
   })();
 
   // ---------- INIT ----------
+  function renderAll(){ renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger(); }
   renderCatChips(); renderMethodChips();
   renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); refreshSubcatFilterOptions(); renderHistory(); renderLedger();
 
   // One-time offer to clear the stray payment method left on income entries by the old bug.
   // Nothing that produces a number reads this field for income, so no total can change.
+  // (These one-time prompts wait until the PIN screen is unlocked.)
   const INCOME_FIX_KEY = "kharchapani_incomefix_v1";
-  setTimeout(function(){
+  whenUnlocked.then(()=> setTimeout(function(){
     if(localStorage.getItem(INCOME_FIX_KEY)) return;
     const bad = txns.filter(t=> t.type==="income" && t.paymentMethod);
     if(bad.length === 0){ localStorage.setItem(INCOME_FIX_KEY,"done"); return; }
@@ -1619,7 +2359,7 @@
       alert("Cleaned up " + bad.length + " entr" + (bad.length===1?"y":"ies") + ".");
     }
     localStorage.setItem(INCOME_FIX_KEY,"done");
-  }, 800);
+  }, 800));
 
   // One-time category restructure. This only ever rewrites catId and subcategory \u2014 it never
   // touches an amount, a date, a type or the isCC flag, so Kharcha, Shesh, Money left and
@@ -1672,7 +2412,7 @@
     return changed;
   }
 
-  setTimeout(function(){
+  whenUnlocked.then(()=> setTimeout(function(){
     if(localStorage.getItem(CAT_FIX_KEY)) return;
     const affected = txns.filter(t=> CAT_MIGRATION[t.catId]).length;
     if(affected === 0){ localStorage.setItem(CAT_FIX_KEY,"done"); return; }
@@ -1689,7 +2429,7 @@
       alert("Updated " + n + " transaction" + (n===1?"":"s") + ".");
       localStorage.setItem(CAT_FIX_KEY,"done");
     }
-  }, 1400);
+  }, 1400));
 
   if("serviceWorker" in navigator){
     const swCode = `self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{});`;
