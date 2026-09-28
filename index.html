@@ -534,7 +534,7 @@
     <!-- New points / rewards type (inline) -->
     <div class="field-row" id="newRewardRow" style="display:none;">
       <label>New points / rewards type</label>
-      <input type="text" id="nrName" placeholder="e.g. Neu Coins, Air India miles">
+      <input type="text" id="nrName" placeholder="e.g. CC Points, Air India miles">
       <div class="two-inputs">
         <input type="text" inputmode="decimal" id="nrPts" placeholder="Points you have now">
         <input type="text" inputmode="decimal" id="nrWorth" placeholder="Worth &#8377;">
@@ -603,7 +603,7 @@
       <div class="set-title">Points &amp; rewards</div>
       <div id="setRewardsList"></div>
       <div class="field-row" style="margin-top:8px;">
-        <input type="text" id="srName" placeholder="New type, e.g. Neu Coins">
+        <input type="text" id="srName" placeholder="New type, e.g. CC Points">
         <div class="two-inputs">
           <input type="text" inputmode="decimal" id="srPts" placeholder="Points you have now">
           <input type="text" inputmode="decimal" id="srWorth" placeholder="Worth &#8377;">
@@ -806,7 +806,7 @@
   function rewardUseCount(id){ const m = "pt:"+id; return txns.filter(t=> t.receivedAs===m || partsOf(t).some(p=>p.m===m)).length; }
   function createReward(name, balPts, balWorth){
     name = String(name||"").trim().slice(0,30);
-    if(!name){ alert("Give it a name first, e.g. Neu Coins."); return null; }
+    if(!name){ alert("Give it a name first, e.g. CC Points."); return null; }
     if(rewards.some(r=>r.name.toLowerCase()===name.toLowerCase())){ alert("You already have “"+name+"”."); return null; }
     const pts = parseFloat(balPts), worth = parseFloat(balWorth);
     const rate = (pts>0 && worth>0) ? worth/pts : 1;
