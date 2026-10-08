@@ -2065,6 +2065,8 @@ Reply with the JSON object only.`;
   function tombstone(kind, ids){ const now = Date.now(); ids.forEach(id=>{ tomb[kind][id] = now; }); saveJ(TOMB_KEY, tomb); }
   let device = loadJ(DEVICE_KEY, null);
   const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  // An id made from a name, so two phones setting up the same thing agree on it (no doubles after sync).
+  const hashId = (prefix, s)=>{ let h = 2166136261; for(const ch of String(s).toLowerCase()) h = Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0; return prefix + h.toString(36); };
   const round2 = n => Math.round(n*100)/100;
   const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   if(!device || !device.id){ device = { id: "d"+uid(), name: "" }; saveJ(DEVICE_KEY, device); }
@@ -5438,7 +5440,8 @@ Reply with the JSON object only.`;
   function findOrMakeLoan(name, extra){
     const hit = setup.loans.find(l=> !l.closed && l.name.toLowerCase()===name.toLowerCase());
     if(hit) return hit;
-    const l = Object.assign({ id: "l" + uid(), name, emi: 0, day: 0, total: null, at: 0, closed: false, u: Date.now() }, extra||{});
+    const hid = hashId("l", name), id = setup.loans.some(x=>x.id===hid) ? "l" + uid() : hid;
+    const l = Object.assign({ id, name, emi: 0, day: 0, total: null, at: 0, closed: false, u: Date.now() }, extra||{});
     setup.loans.push(l); return l;
   }
   document.getElementById("loanBorrowBtn").addEventListener("click", ()=>{
@@ -5713,8 +5716,8 @@ Reply with the JSON object only.`;
     prefs.tidyHidden = true; savePrefs(); renderTidyBanner();
     if(syncPushed) history.back(); else { setStack.pop(); showSetPage(setStack[setStack.length-1] || "menu"); }
   });
-  document.getElementById("tidyApply").addEventListener("click", ()=>{
-    const picked = tidyPicked(); if(!picked.length) return;
+  // Applies tidy proposals; returns the entries as they were, for Undo.
+  function applyTidy(picked){
     const before = new Map();
     picked.forEach(p=>{
       const t = txns.find(x=>x.id===p.id); if(!t) return;
@@ -5732,12 +5735,16 @@ Reply with the JSON object only.`;
     setup.loans.forEach(l=>{
       if(l.lastEmiDate){
         delete l.lastEmiDate;
-        if(l.emi && !setup.dues.some(d=> d.loan===l.id)) setup.dues.push({ id: "u" + uid(), name: l.name, catId: "loanemi", sub: "EMI", amount: l.emi, day: l.day||1, pm: "upi", card: "", loan: l.id, skips: [], u: Date.now() });
+        if(l.emi && !setup.dues.some(d=> d.loan===l.id)) setup.dues.push({ id: hashId("u", "loanemi|" + l.name), name: l.name, catId: "loanemi", sub: "EMI", amount: l.emi, day: l.day||1, pm: "upi", card: "", loan: l.id, skips: [], u: Date.now() });
       }
     });
     saveJ(STORE_KEY, txns); refreshAfterSetup();
     pushToCloud([...before.keys()]);
-    const n = before.size;
+    return before;
+  }
+  document.getElementById("tidyApply").addEventListener("click", ()=>{
+    const picked = tidyPicked(); if(!picked.length) return;
+    const before = applyTidy(picked), n = before.size;
     if(syncPushed) history.back(); else { setStack.pop(); showSetPage(setStack[setStack.length-1] || "menu"); }
     showToast("Tidied " + n + " entr" + (n===1?"y":"ies"), "Undo", ()=>{
       const now = Date.now();
@@ -5745,6 +5752,90 @@ Reply with the JSON object only.`;
       saveJ(STORE_KEY, txns); renderAll(); pushToCloud([...before.keys()]);
     }, 8000);
   });
+
+  // ---------- ONE-TAP SETUP LINK ----------
+  // A link ending in #setup=<data> fills in cards, points types, people, routes and loans, tidies
+  // old entries and adds the monthly payments found in your entries, after one confirm. Your
+  // details travel only in the link, never in the app's code. Every item gets an id made from
+  // its name, so opening the link twice, or on both phones, never adds anything twice.
+  function parseSetup(text){
+    const s = String(text||""), i = s.indexOf("#setup=");
+    if(i < 0) return null;
+    try{ const d = JSON.parse(unb64url(s.slice(i+7).trim())); return (d && typeof d==="object") ? d : null; }catch(e){ return null; }
+  }
+  const strArr = a=> Array.isArray(a) ? a : [];
+  const nm = v=> String(v||"").trim().slice(0,30);
+  function applySetup(d){
+    const now = Date.now(), at = Number(d.at) > 0 && Number(d.at) <= now ? Number(d.at) : now;
+    let added = 0;
+    strArr(d.points).forEach(p=>{
+      const name = nm(p.name); if(!name || rewards.some(r=> r.name.toLowerCase()===name.toLowerCase())) return;
+      rewards.push({ id: hashId("r", name), name, rate: Number(p.rate) > 0 ? Number(p.rate) : 1, u: now }); added++;
+    });
+    saveJ(REWARDS_KEY, rewards);
+    strArr(d.cards).forEach(c=>{
+      const name = nm(c.name); if(!name || setup.cards.some(x=> x.name.toLowerCase()===name.toLowerCase())) return;
+      const r = rewards.find(x=> x.name.toLowerCase()===nm(c.points).toLowerCase());
+      setup.cards.push({ id: hashId("c", name), name, owed: round2(Number(c.owed)||0), at, day: Math.min(31, Math.max(0, parseInt(c.day,10)||0)), earn: Number(c.earn)||0, reward: r ? r.id : "", u: now }); added++;
+    });
+    strArr(d.people).forEach(n=>{
+      const name = String(n||"").trim().slice(0,20); if(!name || setup.people.some(x=> x.name.toLowerCase()===name.toLowerCase())) return;
+      setup.people.push({ id: hashId("p", name), name, u: now }); added++;
+    });
+    const addRoute = (from, to, code)=>{
+      from = String(from||"").trim().slice(0,24); to = String(to||"").trim().slice(0,24);
+      if(!from || !to || setup.routes.some(x=> x.from.toLowerCase()===from.toLowerCase() && x.to.toLowerCase()===to.toLowerCase())) return;
+      setup.routes.push({ id: hashId("t", from + ">" + to), from, to, code: String(code||"").slice(0,12), u: now }); added++;
+    };
+    strArr(d.routes).forEach(r=>{
+      addRoute(r.from, r.to, r.code);
+      if(r.back!==false){ const m = String(r.code||"").match(/^(.+?)2(.+)$/i); addRoute(r.to, r.from, m ? m[2] + "2" + m[1] : ""); }
+    });
+    strArr(d.loans).forEach(x=>{
+      const name = nm(x.name); if(!name) return;
+      const l = setup.loans.find(y=> y.name.toLowerCase()===name.toLowerCase()) || (added++, findOrMakeLoan(name));
+      if(Number(x.emi) > 0 && !l.emi){ l.emi = Number(x.emi); l.day = parseInt(x.day,10) || l.day; l.u = now; }
+    });
+    saveSetup();
+    let tidied = 0;
+    if(d.tidy){ const ps = tidyProposals(); if(ps.length) tidied = applyTidy(ps).size; }
+    if(d.dues) dueSuggestions().forEach(s=>{
+      const id = hashId("u", s.catId + "|" + s.name);
+      if(setup.dues.some(x=> x.id===id)) return;
+      setup.dues.push(Object.assign({ id, skips: [], u: now }, s)); added++;
+    });
+    if(d.me && setup.people.some(p=> p.name===d.me)) prefs.me = d.me;
+    if(d.dues || d.tidy) prefs.tidyHidden = false;
+    savePrefs(); buildMethodChips(); refreshAfterSetup();
+    return { added, tidied };
+  }
+  function runSetupLink(){
+    const d = parseSetup(location.hash); if(!d) return;
+    try{ history.replaceState(null, "", location.pathname + location.search); }catch(e){}
+    const bits = [];
+    if(strArr(d.cards).length) bits.push(strArr(d.cards).length + " credit cards with what you owe on each");
+    if(strArr(d.points).length) bits.push(strArr(d.points).length + " points types");
+    if(strArr(d.people).length) bits.push("people: " + strArr(d.people).join(", "));
+    if(strArr(d.routes).length) bits.push(strArr(d.routes).length + " travel routes, both ways");
+    if(strArr(d.loans).length) bits.push("loans: " + strArr(d.loans).map(l=>l.name).join(", "));
+    let tidyLine = "";
+    if(d.tidy){
+      const ps = tidyProposals(), n = new Set(ps.map(p=>p.id)).size;
+      if(n){
+        const after = txns.map(t=> JSON.parse(JSON.stringify(t))), byId = new Map(after.map(t=>[t.id,t]));
+        ps.forEach(p=>{ const t = byId.get(p.id); if(t) applyTidyTo(t, p); });
+        const a = tidyTotals(txns).left, b = tidyTotals(after).left;
+        tidyLine = "tidy " + n + " old entries (Money left " + fmt(a) + " → " + fmt(b) + ")";
+        bits.push(tidyLine);
+      }
+    }
+    if(d.dues) bits.push("monthly payments found in your entries, for Due this month");
+    if(d.me) bits.push("this phone belongs to " + d.me);
+    if(!confirm("Set up Kharcha Pani on this phone?\n\n• " + bits.join("\n• ") + "\n\nNo amount or date of any entry changes. Anything already set up is left as it is.")) return;
+    const r = applySetup(d);
+    showToast("All set" + (r.tidied ? " · tidied " + r.tidied + " entries" : ""), "", null, 4000);
+  }
+  window.addEventListener("hashchange", ()=> whenUnlocked.then(runSetupLink));
 
   // ----- PIN lock -----
   // The PIN lives only on this phone, stored as a salted SHA-256 hash (never the PIN itself).
@@ -6050,6 +6141,9 @@ Reply with the JSON object only.`;
     document.getElementById("welStart").addEventListener("click", done);
     document.getElementById("welJoin").addEventListener("click", ()=>{ done(); openSettings("sync"); startScan(); });
   })();
+
+  // A setup link waits for the PIN screen, then runs before the one-time prompts below.
+  whenUnlocked.then(()=> setTimeout(runSetupLink, 300));
 
   // One-time offer to clear the stray payment method left on income entries by the old bug.
   // Nothing that produces a number reads this field for income, so no total can change.
