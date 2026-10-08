@@ -523,6 +523,21 @@
   .sy-check.warn{ background:var(--saffron-dim); color:var(--saffron); }
   .sy-effect{ font-size:11.5px; color:var(--muted); line-height:1.5; }
   .sy-effect b{ color:var(--text); font-weight:700; }
+  /* scan a bill */
+  .bl-thumb{ width:44px; height:44px; border-radius:13px; object-fit:cover; border:1px solid var(--border); flex:none; background:var(--card2); }
+  .bl-wait{ text-align:center; padding:26px 8px; color:var(--muted); font-size:13px; line-height:1.5; }
+  .bl-wait b{ display:block; color:var(--text); font-size:15px; margin-bottom:4px; }
+  .bl-items{ background:var(--card); border:1px solid var(--border); border-radius:13px; padding:4px 10px; margin-bottom:8px; }
+  .bl-row{ display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); }
+  .bl-row:last-child{ border-bottom:none; }
+  .bl-row input[type=checkbox]{ width:20px; height:20px; accent-color:var(--accent); flex:none; margin:0; }
+  .bl-row .bn{ flex:1; min-width:0; }
+  .bl-row .bn input{ width:100%; background:transparent; border:none; color:var(--text); font-size:14px; font-weight:700; padding:0; outline:none; }
+  .bl-row .bn small{ display:block; font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bl-row .bq{ width:72px; flex:none; background:var(--card2); border:1px solid var(--border); color:var(--text); border-radius:8px; font-size:12px; padding:5px 6px; outline:none; }
+  .bl-row .bp{ width:58px; flex:none; text-align:right; font-size:12.5px; font-variant-numeric:tabular-nums; color:var(--muted); }
+  .bl-row.off .bn input, .bl-row.off .bq{ opacity:.45; text-decoration:line-through; }
+  .bl-tag{ font-size:9px; font-weight:800; color:var(--accent); background:var(--accent-dim); border-radius:99px; padding:1px 6px; margin-left:4px; vertical-align:1px; }
 </style>
 </head>
 <body>
@@ -607,6 +622,7 @@
     <section class="screen" id="screen-pantry">
       <div class="scr-head">
         <h1>Ghar ka stock</h1>
+        <button class="icon-btn" id="pScanBtn" aria-label="Scan a bill">&#128247;</button>
         <button class="icon-btn" id="pSearchBtn" aria-label="Search">&#128269;</button>
         <button class="icon-btn" id="pAddBtn" aria-label="Add an item">&#65291;</button>
       </div>
@@ -619,6 +635,7 @@
         </div>
         <div class="helper-text" style="margin-top:-6px;">Adds it as bought today. Items you add while logging Groceries or Shopping land here by themselves.</div>
       </div>
+      <input type="file" id="billFile" accept="image/*" style="display:none;">
       <datalist id="itemNamesList"></datalist>
       <div class="buybar" id="buyBar"></div>
       <div id="shelves"></div>
@@ -837,6 +854,31 @@
       <button class="btn ghost" id="syCancel">Cancel</button>
       <button class="btn ghost" id="syEdit">Edit</button>
       <button class="btn primary" id="sySave">Save</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM SHEET: scan a bill -->
+  <div class="sheet-backdrop" id="billBackdrop"></div>
+  <div class="sheet" id="billSheet">
+    <div class="sheet-handle"></div>
+    <div class="sy-head">
+      <img class="bl-thumb" id="blThumb" alt="">
+      <div class="sy-cat"><b id="blShop">Bill</b><span id="blSub"></span></div>
+      <div class="sy-amt"><b id="blAmt"></b><span class="sy-pill" id="blPill">Bill</span></div>
+    </div>
+    <div class="bl-wait" id="blWait"></div>
+    <div id="blBody">
+      <div class="sy-kv"><span>Date</span><input type="date" id="blDate" style="background:transparent; border:none; color:var(--text); font-size:12.5px; text-align:right; padding:0;"></div>
+      <div id="blWarnings"></div>
+      <div class="flabel" style="margin-top:2px;">Tick what goes in the pantry. Tap a name to fix it.</div>
+      <div class="bl-items" id="blItems"></div>
+      <div class="sy-check" id="blCheck"></div>
+      <div class="sy-effect" id="blEffect"></div>
+    </div>
+    <div class="sheet-actions" id="blActions">
+      <button class="btn ghost" id="blCancel">Cancel</button>
+      <button class="btn ghost" id="blPantry">Pantry only</button>
+      <button class="btn primary" id="blLog">Pantry + log</button>
     </div>
   </div>
 
@@ -1489,6 +1531,250 @@
   const api = { buildDraft, dateFrom, askAI, buildSchema, buildSystemPrompt, GEMINI_MODEL };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.SayItCore = api;
+})(typeof window !== "undefined" ? window : this);
+</script>
+<script>
+// Kharcha Pani — "Scan a bill": the AI request and the check.
+//
+// Two halves, kept in one file so the app and the tests run exactly the same code:
+//   1. askBill(): sends a photo of a bill to Google's Gemini with the instructions below, using
+//      YOUR OWN free Gemini key saved on this phone (the same key "Say it" uses). The AI only
+//      copies what is printed: shop, date, each line with its price, the bill total. It never
+//      adds anything up.
+//   2. buildBill(): the CODE side. It cleans the AI's list and does every check:
+//        * adds up the line prices itself and compares them with the total printed on the bill
+//        * turns the printed date into a real date (a future or impossible date becomes today)
+//        * matches names to items already in your pantry, so "Atta" stays one item
+//        * merges the same item bought twice on one bill
+//        * notices if you already logged an expense of this amount on that day
+//
+// This whole file is pasted into index.html as its own <script>. tests/run-tests.js loads
+// this file. If you change one copy, change both.
+
+(function (root) {
+  "use strict";
+
+  const GEMINI_MODEL = "gemini-3.8-flash";   // same free-tier model as "Say it"
+  const MAX_ITEMS = 60;
+
+  function buildBillSchema() {
+    const numOrNull = { type: ["number", "null"] };
+    const intOrNull = { type: ["integer", "null"] };
+    return {
+      type: "object",
+      additionalProperties: false,
+      required: ["status", "shop", "category", "bill_date", "bill_total", "items"],
+      properties: {
+        status: { type: "string", enum: ["ok", "not_a_bill", "unreadable"] },
+        shop: { type: "string" },
+        category: { type: "string", enum: ["groceries", "shopping", "other"] },
+        bill_date: {
+          type: "object",
+          additionalProperties: false,
+          required: ["day", "month", "year"],
+          properties: { day: intOrNull, month: intOrNull, year: intOrNull },
+        },
+        bill_total: numOrNull,
+        items: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["name", "bill_text", "qty", "price", "kind"],
+            properties: {
+              name: { type: "string" },
+              bill_text: { type: "string" },
+              qty: { type: "string" },
+              price: numOrNull,
+              kind: { type: "string", enum: ["item", "not_stock", "discount"] },
+            },
+          },
+        },
+      },
+    };
+  }
+
+  function buildBillPrompt(pantryNames) {
+    const known = (pantryNames || []).slice(0, 300).join(", ");
+    return `You read photos of Indian shop bills (kirana, supermarket, DMart, Ratnadeep, Reliance, chemist) and screenshots of online order summaries (Blinkit, Zepto, Instamart, BigBasket, Amazon) for a household pantry app. A screenshot of an order summary or invoice counts as a bill.
+Copy what is PRINTED. Never add, subtract or work out any number yourself.
+
+status: "ok" if it is a bill or receipt you can read. "not_a_bill" if the photo is not a bill. "unreadable" if it is a bill but too blurry, dark or cut off to read the lines.
+shop: the shop name as printed, short (e.g. "DMart", "Ramesh Kirana"). "" if none.
+category: "groceries" for food and household supplies, "shopping" for clothes, electronics and other goods, "other" for restaurants, services, fuel and anything else.
+bill_date: the date printed on the bill as day, month, year numbers. Indian bills write day first (07/10/26 is 7 October 2026). null for anything not printed.
+bill_total: the final amount payable as printed (Net amount, Grand total, To pay). null if you can't see it.
+items: every line of the bill, in order, max ${MAX_ITEMS}.
+  name: a short everyday name a family would say, 1 to 3 words, no brand or pack size unless it matters ("TATA SAMPANN TOOR DAL 1KG" -> "Toor dal", "AMUL TAAZA 500ML" -> "Milk", "SURF EXCEL MATIC 2KG" -> "Detergent", "AASHIRVAAD ATTA 10KG" -> "Atta").
+  If the same thing is already in this family's pantry, use their name for it exactly: ${known || "(pantry is empty)"}.
+  bill_text: the line as printed, shortened to 40 characters.
+  qty: the quantity or pack size as printed, like "1 kg", "2 x 500 g", "3". "" if none.
+  price: the line amount printed for that line (not the MRP, not the unit rate when a line total is printed). null if you can't read it.
+  kind: "item" for goods that go in a home pantry or cupboard. "not_stock" for carry bags, delivery or handling fees, service charge, tips, and tax lines printed as separate lines. "discount" for discounts, coupons, savings and round-off lines (give the price as printed, no sign needed).
+Do not list the subtotal, total, payment, change or tax-summary rows as items.
+
+Reply with the JSON object only.`;
+  }
+
+  // Sends one photo to Gemini. image: { mimeType, data } where data is base64 without the prefix.
+  // Returns { bill } or { error, reason }. reason: "key", "busy", "offline", "ai".
+  async function askBill(apiKey, image, ctx) {
+    ctx = ctx || {};
+    if (!apiKey) return { reason: "key", error: "Add your free Gemini key in Settings first." };
+    let res;
+    try {
+      res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: buildBillPrompt(ctx.pantryNames) }] },
+          contents: [{ role: "user", parts: [
+            { inlineData: { mimeType: image.mimeType, data: image.data } },
+            { text: "Today is " + ctx.today + ". Read this bill." },
+          ] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseJsonSchema: buildBillSchema(),
+            thinkingConfig: { thinkingLevel: "low" },
+            maxOutputTokens: 8000,
+          },
+        }),
+      });
+    } catch (e) {
+      return { reason: "offline", error: "Couldn't reach the AI. Check your internet and try again." };
+    }
+    if (res.status === 429) return { reason: "busy", error: "Google's free AI limit is used up for now. Try again later, or add items with ＋." };
+    if (res.status === 400 || res.status === 401 || res.status === 403) {
+      let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {}
+      if (/api key/i.test(msg)) return { reason: "key", error: "Google didn't accept your Gemini key. Check it in Settings." };
+      return { reason: "ai", error: "The AI couldn't take this photo" + (msg ? ": " + msg : ".") };
+    }
+    if (!res.ok) return { reason: "ai", error: "The AI didn't answer (error " + res.status + "). Try again." };
+    let data; try { data = await res.json(); } catch (e) { return { reason: "ai", error: "The AI's answer was garbled. Try again." }; }
+    const cand = (data.candidates || [])[0];
+    if (!cand || cand.finishReason === "SAFETY" || cand.finishReason === "PROHIBITED_CONTENT") return { reason: "ai", error: "The AI couldn't read that photo. Add the items with ＋ instead." };
+    if (cand.finishReason === "MAX_TOKENS") return { reason: "ai", error: "That bill was too long to read in one go. Photograph half of it at a time." };
+    const out = ((cand.content && cand.content.parts) || []).filter(p => !p.thought && typeof p.text === "string").map(p => p.text).join("");
+    try { return { bill: JSON.parse(out) }; }
+    catch (e) { return { reason: "ai", error: "The AI's answer was garbled. Try again." }; }
+  }
+
+  // ===== 2. The check =====
+
+  const round2 = n => Math.round(n * 100) / 100;
+  const isNum = v => typeof v === "number" && isFinite(v);
+  const rupees = n => (n < 0 ? "−" : "") + "₹" + Math.abs(round2(n)).toLocaleString("en-IN");
+  const DAY = 86400000;
+
+  // "07/10/26" arrives as {day:7, month:10, year:26}. Returns { date, note }.
+  function billDate(bd, today) {
+    const t = new Date(today + "T00:00:00Z");
+    bd = bd || {};
+    if (!isNum(bd.day) || !isNum(bd.month)) return { date: today, note: "No date on the bill, so it's set to today." };
+    let y = isNum(bd.year) ? Math.round(bd.year) : t.getUTCFullYear();
+    if (y < 100) y += 2000;
+    const m = Math.round(bd.month) - 1, d = Math.round(bd.day);
+    const dt = new Date(Date.UTC(y, m, d));
+    if (m < 0 || m > 11 || dt.getUTCMonth() !== m || dt.getUTCDate() !== d) return { date: today, note: "The date on the bill didn't make sense, so it's set to today." };
+    // Read without a year and it lands in the future: it was last year's.
+    if (dt > t && !isNum(bd.year)) { const back = new Date(Date.UTC(y - 1, m, d)); if (back.getUTCMonth() === m) return billDateCheck(back, t, today); }
+    return billDateCheck(dt, t, today);
+  }
+  function billDateCheck(dt, t, today) {
+    if (dt > t) return { date: today, note: "The bill's date is in the future, so it's set to today." };
+    const days = Math.round((t - dt) / DAY);
+    const iso = dt.toISOString().slice(0, 10);
+    if (days > 60) return { date: iso, note: "This bill is " + days + " days old. Change the date if that's wrong." };
+    return { date: iso, note: "" };
+  }
+
+  function cleanName(s) {
+    s = String(s || "").replace(/\s+/g, " ").trim().slice(0, 40);
+    if (!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  // bill: the AI's answer. ctx: { today, pantryNames: [..], txns: [{date, amount, type, catId, note}] }
+  // Returns { ok: true, ... } or { ok: false, message }.
+  function buildBill(bill, ctx) {
+    ctx = ctx || {};
+    const today = ctx.today;
+    if (!bill || typeof bill !== "object") return { ok: false, message: "The AI's answer was empty. Try again." };
+    if (bill.status === "not_a_bill") return { ok: false, message: "This doesn't look like a bill. Take a photo of the printed receipt." };
+    if (bill.status === "unreadable") return { ok: false, message: "Couldn't read this bill. Try again in good light, with the whole bill flat and straight." };
+    if (bill.status !== "ok") return { ok: false, message: "The AI's answer didn't make sense. Try again." };
+
+    // Your pantry names, also findable by their singular, so "Tomatoes" on a bill finds your "Tomato".
+    const known = new Map();
+    const one = k => k.replace(/(oes|ies|s)$/, m => m === "ies" ? "y" : m === "oes" ? "o" : "");
+    (ctx.pantryNames || []).forEach(n => { const k = String(n || "").trim().toLowerCase(); if (k && !known.has(k)) known.set(k, String(n).trim()); });
+    [...known.entries()].forEach(([k, n]) => { const s1 = one(k); if (s1 !== k && !known.has(s1)) known.set(s1, n); });
+    const findKnown = k => known.has(k) ? k : (known.has(one(k)) ? one(k) : null);
+
+    const warnings = [];
+    const lines = [];       // every bill line, for the sum
+    const byName = new Map();
+    const rows = [];        // what the preview shows
+    (Array.isArray(bill.items) ? bill.items : []).slice(0, MAX_ITEMS).forEach(raw => {
+      if (!raw || typeof raw !== "object") return;
+      const kind = ["item", "not_stock", "discount"].includes(raw.kind) ? raw.kind : "item";
+      let price = isNum(raw.price) ? round2(raw.price) : null;
+      if (price != null && kind === "discount") price = -Math.abs(price);
+      if (price != null && kind !== "discount" && price < 0) price = null;   // a minus on an item line is a misread
+      lines.push(price);
+      if (kind !== "item") return;
+      let name = cleanName(raw.name) || cleanName(raw.bill_text);
+      if (!name) return;
+      let k = name.toLowerCase();
+      const hit = findKnown(k);
+      if (hit) { name = known.get(hit); k = name.toLowerCase(); }
+      const qty = String(raw.qty || "").replace(/\s+/g, " ").trim().slice(0, 20);
+      const prev = byName.get(k);
+      if (prev) {   // same thing twice on one bill: one row
+        prev.qty = [prev.qty, qty].filter(Boolean).join(" + ").slice(0, 30);
+        prev.price = (prev.price == null || price == null) ? null : round2(prev.price + price);
+        prev.times++;
+        return;
+      }
+      const row = { name, qty, price, billText: String(raw.bill_text || "").trim().slice(0, 40), known: !!hit, take: true, times: 1 };
+      byName.set(k, row); rows.push(row);
+    });
+    if (!rows.length) return { ok: false, message: "Didn't find anything for the pantry on this bill." };
+
+    // The sum check, done here, never by the AI.
+    const total = isNum(bill.bill_total) && bill.bill_total > 0 ? round2(bill.bill_total) : null;
+    const unread = lines.filter(p => p == null).length;
+    const sum = round2(lines.reduce((s, p) => s + (p || 0), 0));
+    let check;
+    if (total == null && unread) check = { kind: "warn", text: "Couldn't read the total or every price. Check the amount if you log it as an expense." };
+    else if (total == null) check = { kind: "warn", text: "No total printed. The lines add up to " + rupees(sum) + "." };
+    else if (unread) check = { kind: "warn", text: unread + " price" + (unread > 1 ? "s" : "") + " couldn't be read, so the lines can't be checked against the " + rupees(total) + " total." };
+    else if (Math.abs(sum - total) < 1) check = { kind: "ok", text: "Lines add up to " + rupees(sum) + ", matches the bill total" };
+    else check = { kind: "warn", text: "Lines add up to " + rupees(sum) + " but the bill says " + rupees(total) + ". A line may be misread. The bill total is what gets logged." };
+    const amount = total != null ? total : (unread ? null : (sum > 0 ? sum : null));
+
+    const d = billDate(bill.bill_date, today);
+    if (d.note) warnings.push(d.note);
+
+    // Already logged? Same day, same amount (to the rupee), an expense.
+    let dupOf = null;
+    if (amount != null) {
+      dupOf = (ctx.txns || []).find(t => t && t.type === "expense" && t.date === d.date && isNum(t.amount) && Math.abs(t.amount - amount) < 1) || null;
+    }
+
+    const category = ["groceries", "shopping"].includes(bill.category) ? bill.category : "groceries";
+    return {
+      ok: true,
+      shop: String(bill.shop || "").trim().slice(0, 40),
+      category, date: d.date, amount, sum, total, check, warnings,
+      items: rows.map(r => ({ name: r.name, qty: r.qty, price: r.price, billText: r.billText, known: r.known, take: r.take })),
+      dupOf,
+    };
+  }
+
+  const api = { buildBill, billDate, askBill, buildBillSchema, buildBillPrompt, GEMINI_MODEL };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.BillCore = api;
 })(typeof window !== "undefined" ? window : this);
 </script>
 <script>
@@ -2319,7 +2605,7 @@
     }
     activePayMethod = pm;
     noteInput.value = txn ? (txn.note||"") : (preset && preset.note ? preset.note : "");
-    dateInput.value = txn ? txn.date : todayISO();
+    dateInput.value = txn ? txn.date : (preset && preset.date ? preset.date : todayISO());
     buildPayChips(); buildRecvChips();
     sheetType.style.display = "none";
     setType(txn ? txn.type : (catId==="income" ? "income" : "expense"));
@@ -2340,7 +2626,7 @@
       else if(preset && preset.items && preset.items.length){ preset.items.forEach(it=> addItemRow(it.name, it.qty)); }
       else if(!txn){ addItemRow(); }
     }
-    moreFold.open = !!((txn && txn.date!==todayISO()) || (preset && preset.items && preset.items.length));
+    moreFold.open = !!((txn && txn.date!==todayISO()) || (preset && preset.date && preset.date!==todayISO()) || (preset && preset.items && preset.items.length));
     updateFoldSum();
     renderAmount();
 
@@ -2499,6 +2785,7 @@
   window.addEventListener("popstate", function(e){
     if(sheetPushed){ sheetPushed = false; doCloseSheet(); return; }
     if(sayPushed){ sayPushed = false; doCloseSay(); return; }
+    if(billPushed){ billPushed = false; doCloseBill(); return; }
     if(pickPushed){ pickPushed = false; doClosePick(); return; }
     if(itemPushed){ itemPushed = false; doCloseItem(); return; }
     if(syncPushed){
@@ -3232,6 +3519,150 @@
     if(!ticked.length){ showToast("Tick what you bought first"); return; }
     openSheet("groceries", null, { items: ticked.map(i=>({ name:i.name, qty: i.last ? (i.last.qty||"") : "" })) });
   });
+  // ---------- PANTRY: scan a bill ----------
+  // The AI (Gemini, the same free key as "Say it") only copies what's printed on the photo.
+  // BillCore.buildBill (pasted above, same file the tests use) adds up the lines, checks them
+  // against the bill total, fixes the date and matches names to your pantry. Nothing is
+  // saved until you tap a button on the preview.
+  const billFile = document.getElementById("billFile");
+  const billBackdrop = document.getElementById("billBackdrop"), billSheet = document.getElementById("billSheet");
+  const blWait = document.getElementById("blWait"), blBody = document.getElementById("blBody"), blItems = document.getElementById("blItems");
+  const blPantry = document.getElementById("blPantry"), blLog = document.getElementById("blLog");
+  let billPushed = false, billDraft = null, billBusy = false;
+
+  document.getElementById("pScanBtn").addEventListener("click", ()=>{
+    if(!aiCfg.on || !aiCfg.key){ showToast("Scanning uses your free Gemini key", "Set up", ()=> openSettings("ai")); return; }
+    if(!navigator.onLine){ showToast("Scanning needs internet. Tap ＋ to add items by hand."); return; }
+    if(aiUsedToday() >= aiCfg.cap){ showToast("Today's " + aiCfg.cap + " AI reads are used up. Tap ＋ to add items."); return; }
+    if(billBusy) return;
+    billFile.value = ""; billFile.click();
+  });
+  billFile.addEventListener("change", ()=>{ const f = billFile.files && billFile.files[0]; if(f) scanBill(f); });
+
+  // Shrink the photo on the phone first: quicker to send and well inside the free limits.
+  function shrinkPhoto(file){
+    return new Promise((resolve, reject)=>{
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = ()=>{
+        const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        resolve(c.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error("photo")); };
+      img.src = url;
+    });
+  }
+
+  function billShow(mode, text){
+    blWait.style.display = mode==="ready" ? "none" : "block";
+    blBody.style.display = mode==="ready" ? "block" : "none";
+    blPantry.style.display = blLog.style.display = mode==="ready" ? "" : "none";
+    document.getElementById("blCancel").textContent = mode==="error" ? "Close" : "Cancel";
+    if(mode!=="ready"){
+      blWait.innerHTML = text;
+      document.getElementById("blShop").textContent = mode==="error" ? "Couldn't use this bill" : "Your bill";
+      document.getElementById("blSub").textContent = ""; document.getElementById("blAmt").textContent = "";
+      document.getElementById("blPill").style.display = "none";
+    }
+    billBackdrop.classList.add("active"); billSheet.classList.add("active");
+    if(!billPushed){ try{ history.pushState({view:"sheet"}, ""); billPushed = true; }catch(e){} }
+  }
+  function doCloseBill(){ billBackdrop.classList.remove("active"); billSheet.classList.remove("active"); billDraft = null; }
+  function closeBill(){ if(billPushed){ history.back(); } else { doCloseBill(); } }
+  billBackdrop.addEventListener("click", closeBill);
+  document.getElementById("blCancel").addEventListener("click", closeBill);
+
+  async function scanBill(file){
+    billBusy = true; billDraft = null;
+    let dataUrl;
+    try{ dataUrl = await shrinkPhoto(file); }
+    catch(e){ billBusy = false; billShow("error", "<b>That file isn't a photo</b>Pick a photo of the bill."); return; }
+    document.getElementById("blThumb").src = dataUrl;
+    billShow("wait", "<b>Reading the bill…</b>This takes a few seconds. Nothing is saved until you check it.");
+    aiBump();
+    const ctx = { today: todayISO(), pantryNames: [...new Set(pantry.map(p=> String(p.name||"").trim()).filter(Boolean))],
+                  txns: txns.map(t=>({ date:t.date, amount:t.amount, type:t.type, catId:t.catId, note:t.note })) };
+    const out = await BillCore.askBill(aiCfg.key, { mimeType:"image/jpeg", data: dataUrl.split(",")[1] }, ctx);
+    billBusy = false;
+    if(!billSheet.classList.contains("active")) return;   // closed while it was reading
+    if(out.error){ billShow("error", "<b>" + esc(out.error) + "</b>"); return; }
+    const r = BillCore.buildBill(out.bill, ctx);
+    if(!r.ok){ billShow("error", "<b>" + esc(r.message) + "</b>You can add items with ＋ instead."); return; }
+    openBillPreview(r);
+  }
+
+  function openBillPreview(r){
+    billDraft = r;
+    document.getElementById("blShop").textContent = r.shop || "Bill";
+    document.getElementById("blAmt").textContent = r.amount!=null ? rupee2(r.amount) : "₹?";
+    document.getElementById("blPill").style.display = "";
+    document.getElementById("blDate").value = r.date;
+    const ws = r.warnings.slice();
+    if(r.dupOf) ws.push("You already logged " + rupee2(r.dupOf.amount) + " on this day" + (r.dupOf.note ? " (" + r.dupOf.note + ")" : "") + ". If that's this bill, use Pantry only so it isn't counted twice.");
+    document.getElementById("blWarnings").innerHTML = ws.map(w=> `<div class="sy-check warn">${esc(w)}</div>`).join("");
+    blItems.innerHTML = r.items.map((it, i)=> `<div class="bl-row" data-i="${i}">
+        <input type="checkbox" ${it.take ? "checked" : ""} aria-label="Add to pantry">
+        <div class="bn"><input type="text" value="${esc(it.name)}" maxlength="40" aria-label="Name"><small>${it.known ? '<span class="bl-tag">IN PANTRY</span> ' : ""}${esc(it.billText)}</small></div>
+        <input type="text" class="bq" value="${esc(it.qty)}" placeholder="Qty" aria-label="Quantity">
+        <span class="bp">${it.price==null ? "?" : rupee2(it.price)}</span></div>`).join("");
+    const chk = document.getElementById("blCheck");
+    chk.className = "sy-check " + r.check.kind; chk.textContent = (r.check.kind==="ok" ? "✓ " : "") + r.check.text;
+    blLog.textContent = r.amount!=null ? "Pantry + log " + rupee2(r.amount) : "Pantry + log expense";
+    // If it looks already logged, make Pantry only the main button.
+    blLog.className = "btn " + (r.dupOf ? "ghost" : "primary");
+    blPantry.className = "btn " + (r.dupOf ? "primary" : "ghost");
+    billShow("ready");
+    refreshBill();
+    billSheet.scrollTop = 0;
+  }
+
+  // Read the rows back as they are now (ticks and fixed names).
+  function billPicked(){
+    return [...blItems.querySelectorAll(".bl-row")].map(row=>({
+      on: row.querySelector("input[type=checkbox]").checked,
+      name: row.querySelector(".bn input").value.replace(/\s+/g," ").trim().slice(0,40),
+      qty: row.querySelector(".bq").value.trim().slice(0,30),
+    })).filter(x=> x.on && x.name);
+  }
+  function refreshBill(){
+    if(!billDraft) return;
+    blItems.querySelectorAll(".bl-row").forEach(row=> row.classList.toggle("off", !row.querySelector("input[type=checkbox]").checked));
+    const picked = billPicked(), n = picked.length;
+    const d = document.getElementById("blDate").value || billDraft.date;
+    document.getElementById("blSub").textContent = billDraft.items.length + " item" + (billDraft.items.length===1 ? "" : "s") + " found on the bill";
+    const wanted = new Set(pantryItems().filter(onList).map(i=> i.key));
+    const listed = picked.filter(p=> wanted.has(p.name.toLowerCase())).map(p=>p.name);
+    let eff = n ? "<b>" + n + " item" + (n===1 ? "" : "s") + "</b> go on the Have shelf, bought " + esc(dateLabel(d)) + "." : "Nothing ticked.";
+    if(listed.length) eff += " " + esc(listed.slice(0,4).join(", ")) + (listed.length>4 ? " and " + (listed.length-4) + " more" : "") + " come off your shopping list.";
+    eff += "<br><b>Pantry only</b> doesn't change any money. <b>Pantry + log</b> opens the Groceries form with this bill filled in, so you pick how you paid.";
+    document.getElementById("blEffect").innerHTML = eff;
+    blPantry.disabled = blLog.disabled = !n;
+  }
+  blItems.addEventListener("input", refreshBill);
+  blItems.addEventListener("change", refreshBill);
+  document.getElementById("blDate").addEventListener("change", refreshBill);
+
+  blPantry.addEventListener("click", ()=>{
+    if(!billDraft) return;
+    const picked = billPicked(); if(!picked.length) return;
+    const d = document.getElementById("blDate").value || billDraft.date;
+    picked.forEach(it=> pantry.push({ id: uid(), name: it.name, qty: it.qty, date: d, catId: billDraft.category, u: Date.now() }));
+    saveJ(PANTRY_KEY, pantry); noteBought(picked.map(i=>i.name));
+    closeBill(); renderPantry(); pushToCloud();
+    showToast("✓ Added " + picked.length + " item" + (picked.length===1 ? "" : "s") + " to the pantry");
+  });
+  // Hand over to the normal entry form. Its Save adds the items to the pantry, linked to the expense.
+  blLog.addEventListener("click", ()=>{
+    if(!billDraft) return;
+    const picked = billPicked(); if(!picked.length) return;
+    const r = billDraft, d = document.getElementById("blDate").value || r.date;
+    doCloseBill(); if(billPushed){ billPushed = false; sheetPushed = true; }
+    openSheet(r.category, null, { amount: r.amount || 0, note: r.shop, date: d, items: picked.map(p=>({ name:p.name, qty:p.qty })) });
+  });
+
   // ---------- INSIGHTS ----------
   let dashYM = todayISO().slice(0,7);
   const monthTitle = document.getElementById("monthTitle");
