@@ -538,6 +538,50 @@
   .bl-row .bp{ width:58px; flex:none; text-align:right; font-size:12.5px; font-variant-numeric:tabular-nums; color:var(--muted); }
   .bl-row.off .bn input, .bl-row.off .bq{ opacity:.45; text-decoration:line-through; }
   .bl-tag{ font-size:9px; font-weight:800; color:var(--accent); background:var(--accent-dim); border-radius:99px; padding:1px 6px; margin-left:4px; vertical-align:1px; }
+
+  /* Cards, loans, monthly dues, routes, "For" tag, tidy-up */
+  .sum-loans{ display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; margin-top:9px; cursor:pointer; }
+  .sum-loans span{ color:var(--muted); }
+  .due-card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-top:12px; }
+  .due-card h4{ margin:0 0 4px; font-size:14px; display:flex; justify-content:space-between; align-items:center; }
+  .due-card h4 span{ font-size:11px; color:var(--muted); font-weight:700; }
+  .due-row{ display:flex; align-items:center; gap:9px; padding:8px 0; border-top:1px solid var(--border); }
+  .due-row:first-of-type{ border-top:0; }
+  .due-row .e{ font-size:17px; width:32px; height:32px; border-radius:10px; background:var(--card2); display:grid; place-items:center; flex:none; }
+  .due-row .m{ flex:1; min-width:0; }
+  .due-row .m b{ display:block; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .due-row .m span{ font-size:11px; color:var(--muted); }
+  .due-row .v{ font-weight:800; font-size:13.5px; font-variant-numeric:tabular-nums; }
+  .due-ok{ border:0; background:var(--accent); color:var(--on-accent); font-weight:800; border-radius:10px; padding:7px 11px; font-size:13px; cursor:pointer; }
+  .due-skip{ border:1px solid var(--border); background:transparent; color:var(--muted); font-weight:700; border-radius:10px; padding:6px 8px; font-size:11.5px; cursor:pointer; }
+  .due-done{ font-size:11.5px; color:var(--accent); font-weight:700; padding-top:8px; border-top:1px solid var(--border); }
+  .tidy-banner{ display:flex; gap:10px; align-items:center; background:var(--saffron-dim); border:1px solid var(--saffron-line); border-radius:14px; padding:10px 12px; margin-top:12px; cursor:pointer; }
+  .tidy-banner b{ display:block; font-size:13px; color:var(--text); }
+  .tidy-banner span{ font-size:11.5px; color:var(--saffron); }
+  .tidy-banner .x{ margin-left:auto; color:var(--muted); padding:4px; }
+  .row-label{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; font-weight:700; margin:0 2px 6px; }
+  .pay-hint{ font-size:11.5px; line-height:1.45; background:var(--blue-dim); color:var(--blue); border-radius:10px; padding:7px 10px; margin:-4px 0 12px; font-weight:600; }
+  .inline-form{ background:var(--card2); border:1px solid var(--border); border-radius:13px; padding:10px; margin:-4px 0 12px; }
+  .inline-form .two-inputs{ margin-top:0; }
+  .inline-form .acts{ display:flex; gap:8px; margin-top:8px; }
+  .cardx{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; margin-bottom:10px; cursor:pointer; }
+  .cardx .t{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .cardx .t b{ font-size:14.5px; }
+  .cardx .t .v{ font-weight:800; font-size:16px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .cardx .s{ font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.5; }
+  .cardx .acts{ display:flex; gap:14px; margin-top:8px; }
+  .big-total{ font-family:var(--display); font-size:30px; font-weight:700; margin:0 2px 10px; }
+  .tidy-row{ display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--border); font-size:12.5px; }
+  .tidy-row:first-child{ border-top:0; }
+  .tidy-row input{ margin-top:3px; width:18px; height:18px; accent-color:var(--accent); flex:none; }
+  .tidy-row .m{ flex:1; min-width:0; }
+  .tidy-row .m b{ display:block; font-size:13px; }
+  .tidy-row .m span{ color:var(--muted); font-size:11px; }
+  .tidy-row .to{ text-align:right; font-size:11.5px; flex:none; max-width:45%; }
+  .tidy-row .to s{ color:var(--muted); display:block; }
+  .tidy-row .to b{ color:var(--accent); }
+  .who-row{ display:flex; justify-content:space-between; font-size:13px; padding:7px 0; border-top:1px solid var(--border); }
+  .who-row:first-child{ border-top:0; }
 </style>
 </head>
 <body>
@@ -559,6 +603,18 @@
           <div class="tap" id="homeCardBox"><span id="homeCardLbl">Card owed</span><b class="bl" id="homeCard">&#8377;0</b></div>
         </div>
         <div class="sum-note" id="todayNote" style="display:none;"></div>
+        <div class="sum-loans" id="homeLoans" style="display:none;"><span>Loans owed</span><b id="homeLoansVal">&#8377;0 &rsaquo;</b></div>
+      </div>
+
+      <div class="tidy-banner" id="tidyBanner" style="display:none;">
+        <span style="font-size:20px;">&#129529;</span>
+        <div><b id="tidyBannerTitle">Some old entries could be tidied</b><span>Review the changes first. Nothing changes until you tap Apply.</span></div>
+        <span class="x" id="tidyBannerHide" aria-label="Hide">&#10005;</span>
+      </div>
+
+      <div class="due-card" id="dueCard" style="display:none;">
+        <h4>Due this month <span id="dueMonth"></span></h4>
+        <div id="dueList"></div>
       </div>
 
       <!-- SAY IT, DON'T TYPE IT (shown when AI is on in Settings) -->
@@ -684,6 +740,11 @@
         <div class="empty-hint" id="donutEmptyHint" style="display:none;">No spending logged this month yet.</div>
       </div>
 
+      <div class="card" id="whoCard" style="display:none;">
+        <h3>Who it was for <span class="muted" style="font-weight:600;">&middot; everything bought this month</span></h3>
+        <div id="whoList"></div>
+      </div>
+
       <div class="card" id="changesCard" style="display:none;">
         <h3 id="changesTitle">What changed</h3>
         <div id="changesList"></div>
@@ -775,6 +836,21 @@
     </div>
 
     <div class="chip-row scroll" id="shopRow" style="display:none;"></div>
+    <div id="routeBlock" style="display:none;">
+      <div class="row-label">Your routes</div>
+      <div class="chip-row" id="routeRow"></div>
+      <div class="inline-form" id="routeForm" style="display:none;">
+        <div class="two-inputs"><input type="text" id="rtFrom" class="inp" maxlength="24" placeholder="From, e.g. Home" list="placeList"><input type="text" id="rtTo" class="inp" maxlength="24" placeholder="To, e.g. Gym" list="placeList"></div>
+        <input type="text" id="rtCode" class="inp" maxlength="12" placeholder="Old short note, e.g. H2G (optional)" style="margin-top:8px;">
+        <label style="display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); margin-top:8px;"><input type="checkbox" id="rtBack" checked> Add the way back too</label>
+        <div class="acts"><button type="button" class="btn ghost small" id="rtCancel">Cancel</button><button type="button" class="btn primary small" id="rtSave">Add route</button></div>
+      </div>
+      <datalist id="placeList"></datalist>
+    </div>
+    <div id="loanBlock" style="display:none;">
+      <div class="row-label" id="loanLabel">Which loan?</div>
+      <div class="chip-row" id="loanRow"></div>
+    </div>
 
     <div class="amount-wrap"><span class="rupee">&#8377;</span><div class="amount-display" id="amountDisplay">0</div></div>
     <div class="pts-row" id="ptsRow" style="display:none;"><span id="ptsLabel">Points used</span><input type="text" inputmode="decimal" id="ptsInput" placeholder="0"><span id="ptsHint"></span></div>
@@ -791,6 +867,23 @@
     <!-- Income: where it landed -->
     <div class="chip-row" id="recvRow" style="display:none;"></div>
     <div class="recv-hint" id="recvHint" style="display:none;"></div>
+
+    <!-- Which credit card (purchase, bill payment or cashback) -->
+    <div id="cardBlock" style="display:none;">
+      <div class="row-label" id="cardLabel">Which card?</div>
+      <div class="chip-row" id="cardRow"></div>
+      <div class="pay-hint" id="cardHint" style="display:none;"></div>
+    </div>
+
+    <!-- Who it was for -->
+    <div id="forBlock" style="display:none;">
+      <div class="row-label">For</div>
+      <div class="chip-row" id="forRow"></div>
+      <div class="inline-form" id="forOther" style="display:none;">
+        <div class="chip-row" id="forAllRow" style="margin-bottom:8px;"></div>
+        <div class="code-row"><input type="text" id="forNewInput" class="inp" maxlength="20" placeholder="New name, e.g. Ankit"><button type="button" class="btn primary small" id="forNewAdd">Add</button></div>
+      </div>
+    </div>
 
     <!-- New points / rewards type (inline) -->
     <div class="field-row" id="newRewardRow" style="display:none;">
@@ -911,7 +1004,11 @@
       </div>
       <div class="grp">
         <div class="sr" data-go="cats"><div class="ic">&#128450;&#65039;</div><div class="m"><b>Categories &amp; shops</b><span>Order, hide, forget a shop</span></div><div class="r" id="rowCatsVal"></div></div>
-        <div class="sr" data-go="cards"><div class="ic" style="background:var(--saffron-dim);">&#127873;</div><div class="m"><b>Cards &amp; points</b><span id="rowCardsSub">Points types and card bill day</span></div><div class="r" id="rowCardsVal"></div></div>
+        <div class="sr" data-go="cards"><div class="ic" style="background:var(--blue-dim);">&#128179;</div><div class="m"><b>Cards &amp; points</b><span id="rowCardsSub">Your credit cards and points</span></div><div class="r" id="rowCardsVal"></div></div>
+        <div class="sr" data-go="loans"><div class="ic" style="background:var(--saffron-dim);">&#127974;</div><div class="m"><b>Loans</b><span id="rowLoansSub">Borrowed money and EMIs</span></div><div class="r" id="rowLoansVal"></div></div>
+        <div class="sr" data-go="dues"><div class="ic">&#128197;</div><div class="m"><b>Due every month</b><span id="rowDuesSub">Rent, EMIs, subscriptions, salary</span></div><div class="r" id="rowDuesVal"></div></div>
+        <div class="sr" data-go="people"><div class="ic">&#128101;</div><div class="m"><b>People &amp; routes</b><span id="rowPeopleSub">Who an entry was for, travel routes</span></div><div class="r" id="rowPeopleVal"></div></div>
+        <div class="sr" data-go="tidy"><div class="ic">&#129529;</div><div class="m"><b>Tidy old entries</b><span id="rowTidySub">Fix entries saved the old way</span></div><div class="r" id="rowTidyVal"></div></div>
       </div>
       <div class="grp">
         <div class="sr" data-go="lock"><div class="ic">&#128274;</div><div class="m"><b>App lock</b><span>4-digit PIN on this phone</span></div><div class="r" id="rowLockVal">Off</div></div>
@@ -1022,6 +1119,17 @@
     <!-- cards & points -->
     <div class="setv-page" data-page="cards">
       <div class="scr-head"><button class="icon-btn" data-back aria-label="Back">&lsaquo;</button><h1>Cards &amp; points</h1></div>
+      <div id="cardsTop"></div>
+      <div id="cardsList"></div>
+      <div class="sheet-actions" style="position:static; padding:0; border:0; margin-bottom:12px;"><button class="btn ghost" id="cardAddBtn">+ Add a card</button><button class="btn primary" id="cardPayBtn">Pay a card bill</button></div>
+      <div class="inline-form" id="cardForm" style="display:none; margin-top:0;">
+        <div class="field-row" style="margin-bottom:8px;"><label id="cfTitle">New card</label><input type="text" id="cfName" class="inp" maxlength="30" placeholder="Card name, e.g. Tata Neu Infinity" list="cardPresetList"></div>
+        <datalist id="cardPresetList"></datalist>
+        <div class="two-inputs"><input type="text" inputmode="decimal" id="cfOwed" class="inp" placeholder="Owed on it today &#8377;"><input type="text" inputmode="numeric" id="cfDay" class="inp" maxlength="2" placeholder="Statement day (1-31)"></div>
+        <div class="two-inputs" style="margin-top:8px;"><input type="text" inputmode="decimal" id="cfEarn" class="inp" placeholder="Points per &#8377;100 (optional)"><select id="cfReward" class="inp"></select></div>
+        <div class="helper-text" style="margin:8px 0 0;">"Owed today" is the outstanding amount in the card's app right now. From now on the app adds card buys and takes off bills you pay.</div>
+        <div class="acts"><button type="button" class="btn ghost small" id="cfCancel">Cancel</button><button type="button" class="btn danger small" id="cfDelete" style="display:none;">Delete</button><button type="button" class="btn primary small" id="cfSave" style="flex:1;">Save card</button></div>
+      </div>
       <div class="set-title">Points &amp; rewards</div>
       <div class="grp pad" id="setRewardsList"></div>
       <div class="field-row">
@@ -1032,12 +1140,62 @@
         </div>
         <button class="btn ghost" id="srAdd" style="width:100%; margin-top:8px;">+ Add points type</button>
       </div>
+      <div id="legacyDue">
       <div class="set-title">Credit card bill</div>
       <div class="field-row">
         <label>Bill due on day (1&ndash;31, optional)</label>
         <input type="text" inputmode="numeric" id="ccDueInput" maxlength="2" placeholder="e.g. 15">
       </div>
       <div class="helper-text">When set, Balances reminds you how much is owed before the due day. Only on this phone.</div>
+      </div>
+    </div>
+
+    <!-- loans -->
+    <div class="setv-page" data-page="loans">
+      <div class="scr-head"><button class="icon-btn" data-back aria-label="Back">&lsaquo;</button><h1>Loans</h1></div>
+      <div id="loansTop"></div>
+      <div id="loansList"></div>
+      <div class="note-box ok">Borrowed money goes into your bank balance but is <b>not income</b>. Each EMI or repayment comes out of the bank and lowers what you owe.</div>
+      <div class="sheet-actions" style="position:static; padding:0; border:0; margin-bottom:12px;"><button class="btn ghost" id="loanBorrowBtn">+ Borrowed money</button><button class="btn primary" id="loanNewBtn">+ New EMI</button></div>
+    </div>
+
+    <!-- due every month -->
+    <div class="setv-page" data-page="dues">
+      <div class="scr-head"><button class="icon-btn" data-back aria-label="Back">&lsaquo;</button><h1>Due every month</h1></div>
+      <div class="helper-text">These show on Home each month until you log them (tap &#10003;) or skip them. Nothing is saved without your tap.</div>
+      <div class="grp pad" id="duesList"></div>
+      <div id="duesSuggestBox" style="display:none;">
+        <div class="set-title">Seen every month in your entries</div>
+        <div class="grp pad" id="duesSuggest"></div>
+      </div>
+      <div class="set-title">Add one yourself</div>
+      <div class="inline-form" style="margin-top:0;">
+        <input type="text" id="dfName" class="inp" maxlength="30" placeholder="Name, e.g. Netflix">
+        <div class="two-inputs" style="margin-top:8px;"><input type="text" inputmode="decimal" id="dfAmt" class="inp" placeholder="Amount &#8377;"><input type="text" inputmode="numeric" id="dfDay" class="inp" maxlength="2" placeholder="Day of month"></div>
+        <select id="dfCat" class="inp" style="margin-top:8px;"></select>
+        <div class="acts"><button type="button" class="btn primary small" id="dfAdd" style="flex:1;">Add</button></div>
+      </div>
+    </div>
+
+    <!-- people -->
+    <div class="setv-page" data-page="people">
+      <div class="scr-head"><button class="icon-btn" data-back aria-label="Back">&lsaquo;</button><h1>People &amp; routes</h1></div>
+      <div class="helper-text">Each entry can say who it was for. Insights then shows spending per person.</div>
+      <div class="grp pad" id="peopleList"></div>
+      <div class="field-row"><div class="code-row"><input type="text" id="personNew" class="inp" maxlength="20" placeholder="Add a name, e.g. Priya"><button class="btn primary small" id="personAdd">Add</button></div></div>
+      <div class="field-row"><label>This phone is mostly used by</label><select id="personMe" class="inp"></select></div>
+      <div class="helper-text">New entries on this phone start with this name. You can change it on any entry.</div>
+      <div class="set-title">Saved travel routes</div>
+      <div class="grp pad" id="routesList"></div>
+    </div>
+
+    <!-- tidy old entries -->
+    <div class="setv-page" data-page="tidy">
+      <div class="scr-head"><button class="icon-btn" data-back aria-label="Back">&lsaquo;</button><h1>Tidy old entries</h1></div>
+      <div class="note-box plain">Nothing changes until you tap Apply. Untick anything that looks wrong.</div>
+      <div id="tidyGroups"></div>
+      <div class="note-box ok" id="tidyEffect" style="display:none;"></div>
+      <div class="sheet-actions" style="position:static; padding:0; border:0; margin-bottom:16px;"><button class="btn ghost" id="tidyLater">Not now</button><button class="btn primary" id="tidyApply">Apply changes</button></div>
     </div>
 
     <!-- app lock -->
@@ -1139,6 +1297,10 @@
     { id: "subscription",  name: "Subscription",      subcats: ["Netflix", "Prime", "Spotify", "Cloud"] },
     { id: "entertainment", name: "Entertainment",     subcats: ["Movies", "Events", "Games", "Concerts"] },
     { id: "moneysent",     name: "Money Sent",        subcats: ["Family", "Friend", "Rent share", "Gift"] },
+    { id: "personal",      name: "Personal care",     subcats: ["Salon", "Parlour", "Grooming", "Spa"] },
+    { id: "gifts",         name: "Gifts & festivals", subcats: ["Gift", "Festival", "Sweets", "Donation"] },
+    { id: "tax",           name: "Tax",               subcats: ["Income tax", "Property tax", "GST"] },
+    { id: "loanemi",       name: "Loans & EMI",       subcats: ["EMI", "Repayment"] },
     { id: "income",        name: "Income",            subcats: ["Salary", "Freelance", "Interest", "Refund", "Bonus", "Cashback", "Reward points"] },
     { id: "others",        name: "Others",            subcats: [] },
     { id: "ccpayment",     name: "Credit Card Bill Payment", subcats: [] },
@@ -1252,7 +1414,7 @@
   CATEGORIES (use the id)
   ${catLines}
 
-  Category hints: shops and apps for daily household items (DMart, Reliance Smart, kirana, sabzi, doodh) are groceries. Dmart and Reliance Smart are subcategory Supermarket. Paying off a credit card bill ("card ka bill bhara", "CC bill paid") is ccpayment, not bills. Petrol/diesel is transport, Fuel. Ola/Uber/Rapido cab is transport, Cab; Rapido bike is Bike taxi. Medicines/chemist is medical, Pharmacy. Sending money to family is moneysent, Family.
+  Category hints: shops and apps for daily household items (DMart, Reliance Smart, kirana, sabzi, doodh) are groceries. Dmart and Reliance Smart are subcategory Supermarket. Paying off a credit card bill ("card ka bill bhara", "CC bill paid") is ccpayment, not bills. Petrol/diesel is transport, Fuel. Ola/Uber/Rapido cab is transport, Cab; Rapido bike is Bike taxi. Medicines/chemist is medical, Pharmacy. Sending money to family is moneysent, Family. Salon, parlour, haircut, beard trim, threading are personal. Sweets, gifts, festival or puja spends, donations are gifts. Income tax, ITR, GST payments are tax. Loan EMIs and repaying a loan are loanemi.
 
   PAYMENT MODES (use the id)
   ${modeLines}
@@ -1357,7 +1519,7 @@
   // ===== 2. The money check =====
 
   const CAT_IDS = ["groceries", "outsidefood", "transport", "bills", "rent", "shopping", "health", "medical",
-    "travel", "subscription", "entertainment", "moneysent", "income", "others", "ccpayment"];
+    "travel", "subscription", "entertainment", "moneysent", "personal", "gifts", "tax", "loanemi", "income", "others", "ccpayment"];
   const BASE_SUBCATS = {
     groceries: ["Local shop", "Supermarket", "Household", "Blinkit", "Zepto", "Instamart", "BigBasket"],
     outsidefood: ["Restaurant", "Cafe", "Snacks", "Zomato", "Swiggy"],
@@ -1370,6 +1532,10 @@
     subscription: ["Netflix", "Prime", "Spotify", "Cloud"],
     entertainment: ["Movies", "Events", "Games", "Concerts"],
     moneysent: ["Family", "Friend", "Rent share", "Gift"],
+    personal: ["Salon", "Parlour", "Grooming", "Spa"],
+    gifts: ["Gift", "Festival", "Sweets", "Donation"],
+    tax: ["Income tax", "Property tax", "GST"],
+    loanemi: ["EMI", "Repayment"],
     income: ["Salary", "Freelance", "Interest", "Refund", "Bonus", "Cashback", "Reward points"],
   };
   const PANTRY_CATS = ["groceries", "shopping"];
@@ -1794,6 +1960,10 @@ Reply with the JSON object only.`;
     { id:"subscription",name:"Subscription",    emoji:"\u{1F4F1}", subcats:["Netflix","Prime","Spotify","Cloud"] },
     { id:"entertainment",name:"Entertainment",  emoji:"\u{1F3AC}", subcats:["Movies","Events","Games","Concerts"] },
     { id:"moneysent",  name:"Money Sent",       emoji:"\u{1F4B8}", subcats:["Family","Friend","Rent share","Gift"] },
+    { id:"personal",   name:"Personal care",    emoji:"\u{1F487}", subcats:["Salon","Parlour","Grooming","Spa"] },
+    { id:"gifts",      name:"Gifts & festivals",emoji:"\u{1F381}", subcats:["Gift","Festival","Sweets","Donation"] },
+    { id:"tax",        name:"Tax",              emoji:"\u{1F9FE}", subcats:["Income tax","Property tax","GST"] },
+    { id:"loanemi",    name:"Loans & EMI",      emoji:"\u{1F3E6}", subcats:["EMI","Repayment"] },
     { id:"income",     name:"Income",           emoji:"\u{1F4B0}", subcats:["Salary","Freelance","Interest","Refund","Bonus","Cashback","Reward points"] },
     { id:"others",     name:"Others",           emoji:"\u{1F5C2}\uFE0F", subcats:[] },
   ];
@@ -1810,6 +1980,19 @@ Reply with the JSON object only.`;
     { id:"transfer",        name:"Transfer",         emoji:"\u{1F4B8}", subcats:[] }
   ].forEach(c=> catMap[c.id]=c);
   const PANTRY_CATS = new Set(["groceries","shopping"]);
+  // Borrowed money: it lands in the bank like income, but it is owed back, so it is never
+  // counted as Income. Not a Home tile; it's logged from the Loans page.
+  catMap["loan"] = { id:"loan", name:"Borrowed money", emoji:"\u{1F91D}", subcats:[] };
+  // Custom subcategory names that were merged into a built-in one (old name -> new name, or
+  // null to just stop offering it). Custom names are shared between phones and can't be
+  // deleted from the list, so they are hidden here instead.
+  const MERGED_SUBCATS = {
+    groceries: { "Bigbasket":"BigBasket" },
+    transport: { "Bike":"Bike taxi" },
+    rent: { "Electricity bill":null, "Maintenance":null, "Electricity":null },
+    income: { "Borrow":null },
+    others: { "Education Loan":null }
+  };
 
 
   const STORE_KEY = "kharchapani_txns_v1";
@@ -1865,12 +2048,25 @@ Reply with the JSON object only.`;
   let rewards = loadJ(REWARDS_KEY, []);
   let devices = loadJ(DEVICES_KEY, {});
   let tomb = loadJ(TOMB_KEY, {});
-  ["txns","pantry","rewards","devices","pstate"].forEach(k=>{ if(!tomb[k]) tomb[k] = {}; });
+  // Things you set up once, shared between phones, each merged entry by entry like rewards:
+  //  cards:  {id, name, owed, at, day, earn, reward, u}  owed = what the card's app said at time `at`
+  //  loans:  {id, name, emi, day, total, at, closed, u}   total (optional) = owed at time `at`
+  //  dues:   {id, name, catId, sub, amount, day, pm, card, loan, skips:["YYYY-MM"], u}
+  //  routes: {id, from, to, code, u}
+  //  people: {id, name, u}
+  const SETUP_KEY = "kharchapani_setup_v1";
+  const SETUP_LISTS = ["cards","loans","dues","routes","people"];
+  let setup = loadJ(SETUP_KEY, {});
+  SETUP_LISTS.forEach(k=>{ if(!Array.isArray(setup[k])) setup[k] = []; });
+  function saveSetup(){ saveJ(SETUP_KEY, setup); }
+  ["txns","pantry","rewards","devices","pstate", ...SETUP_LISTS].forEach(k=>{ if(!tomb[k]) tomb[k] = {}; });
   // When an entry was last changed. Old entries have no time and count as 0 (oldest).
   const tsOf = x => (x && (x.u || x.editedAt || x.addedAt)) || 0;
   function tombstone(kind, ids){ const now = Date.now(); ids.forEach(id=>{ tomb[kind][id] = now; }); saveJ(TOMB_KEY, tomb); }
   let device = loadJ(DEVICE_KEY, null);
   const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  // An id made from a name, so two phones setting up the same thing agree on it (no doubles after sync).
+  const hashId = (prefix, s)=>{ let h = 2166136261; for(const ch of String(s).toLowerCase()) h = Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0; return prefix + h.toString(36); };
   const round2 = n => Math.round(n*100)/100;
   const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   if(!device || !device.id){ device = { id: "d"+uid(), name: "" }; saveJ(DEVICE_KEY, device); }
@@ -1913,7 +2109,9 @@ Reply with the JSON object only.`;
   function pointsSpentOf(t){ return sumParts(t, isPts); }
   // Which dashboard/ledger line a payment piece belongs to. Unknown or blank = UPI, as the ledger always did.
   function bucketOf(m){ if(m==="cash"||m==="debit"||m==="credit") return m; if(isPts(m)) return "points"; return "upi"; }
-  function bankIncomeOf(t){ return (t.type==="income" && !t.receivedAs) ? t.amount : 0; }
+  function bankIncomeOf(t){ return (t.type==="income" && !t.receivedAs && t.catId!=="loan") ? t.amount : 0; }
+  // Borrowed money reaches the bank (so it is in Money left) but is never Income.
+  function borrowedOf(t){ return (t.type==="income" && t.catId==="loan") ? t.amount : 0; }
   function cardCashbackOf(t){ return (t.type==="income" && t.receivedAs==="card_credit") ? t.amount : 0; }
   function isOpening(t){ return t.subcategory==="Opening balance"; }
   function rewardEarnedOf(t){ return (t.type==="income" && isPts(t.receivedAs) && !isOpening(t)) ? t.amount : 0; }
@@ -1985,7 +2183,8 @@ Reply with the JSON object only.`;
 
   function subcatsFor(catId){
     const base = (catMap[catId] && catMap[catId].subcats) || [];
-    const custom = customSubcats[catId] || [];
+    const merged = MERGED_SUBCATS[catId] || {};
+    const custom = (customSubcats[catId] || []).filter(c=> !(c in merged));
     return [...base, ...custom.filter(c=>!base.includes(c))];
   }
 
@@ -2014,9 +2213,83 @@ Reply with the JSON object only.`;
   }
   function moneyLeftAll(){
     let inc = 0, out = 0;
-    txns.forEach(t=>{ inc += bankIncomeOf(t); out += cashOutOf(t); });
+    txns.forEach(t=>{ inc += bankIncomeOf(t) + borrowedOf(t); out += cashOutOf(t); });
     return inc - out;
   }
+
+  // ---------- CARDS: what is owed on each one ----------
+  // Each card starts from the amount its app showed when you set it up (card.owed at time card.at).
+  // After that: + card purchases on it, − bills you paid for it, − cashback credited to it.
+  // Entries from before the start are already inside that starting figure, so they're skipped.
+  const isoOfTs = ts => new Date(ts).toISOString().slice(0,10);
+  function afterStart(t, at){
+    const d = isoOfTs(at);
+    if(t.date < d) return false;
+    if(t.addedAt) return t.addedAt > at;   // logged after setup (even if dated the same day)
+    return t.date > d;
+  }
+  function cardById(id){ return setup.cards.find(c=>c.id===id); }
+  function cardMoves(){
+    // Every card movement: {card (id or ""), amt (+ owed more, − owed less), t}
+    const out = [];
+    txns.forEach(t=>{
+      if(t.isCC){ out.push({ card: t.card||"", amt: -t.amount, t }); return; }
+      if(t.type==="income" && t.receivedAs==="card_credit"){ out.push({ card: t.card||"", amt: -t.amount, t }); return; }
+      if(t.type!=="expense") return;
+      partsOf(t).forEach(p=>{ if(p.m==="credit") out.push({ card: p.card || t.card || "", amt: Number(p.amt)||0, t }); });
+    });
+    return out;
+  }
+  // {byCard:{id: owed}, unpicked, unpickedN, total}
+  function cardsOwed(){
+    const byCard = {}; let unpicked = 0, unpickedN = 0;
+    const cards = setup.cards;
+    cards.forEach(c=> byCard[c.id] = Number(c.owed)||0);
+    const firstAt = cards.length ? Math.min(...cards.map(c=>c.at||0)) : 0;
+    cardMoves().forEach(mv=>{
+      const c = mv.card && cardById(mv.card);
+      if(c){ if(afterStart(mv.t, c.at||0)) byCard[c.id] += mv.amt; }
+      else if(cards.length && afterStart(mv.t, firstAt)){ unpicked += mv.amt; unpickedN++; }
+    });
+    let total = unpicked; Object.values(byCard).forEach(v=> total += v);
+    return { byCard, unpicked, unpickedN, total: round2(total) };
+  }
+  // What Home and Balances show: per-card when cards are set up, the old all-time sum otherwise.
+  function cardOwedNow(){ return setup.cards.length ? cardsOwed().total : cardOwedAll(); }
+  function nextDayOf(day){
+    const t = todayISO(), [y,m] = t.split("-").map(Number), today = Number(t.slice(8,10));
+    const pick = (yy,mm)=>{ const last = new Date(yy, mm, 0).getDate(); return new Date(yy, mm-1, Math.min(day,last)); };
+    let when = pick(y,m); if(today > when.getDate()) when = pick(m===12 ? y+1 : y, m===12 ? 1 : m+1);
+    return when.toLocaleDateString("en-IN",{ day:"numeric", month:"short" });
+  }
+  // Rough points a card earns on a purchase, from its points-per-₹100 rate.
+  function cardEarn(card, amt){
+    const per = Number(card && card.earn)||0;
+    if(!(per>0) || !(amt>0)) return null;
+    const pts = amt*per/100;
+    const r = card.reward ? rewardById(card.reward) : null;
+    return { pts, name: r ? r.name : "points", worth: r ? pts*(r.rate||1) : null };
+  }
+  function cardShort(id){ const c = cardById(id); return c ? c.name.split(/\s+/)[0].toUpperCase().slice(0,8) : "CARD"; }
+
+  // ---------- LOANS ----------
+  function loanById(id){ return setup.loans.find(l=>l.id===id); }
+  // {borrowed, repaid, owed (null when the total isn't known)}
+  function loanState(l){
+    let borrowed = 0, repaid = 0, bAfter = 0, rAfter = 0;
+    txns.forEach(t=>{
+      if(t.loan!==l.id) return;
+      const after = l.total!=null && l.at ? afterStart(t, l.at) : true;
+      if(t.type==="income"){ borrowed += t.amount; if(after) bAfter += t.amount; }
+      else if(t.type==="expense"){ repaid += t.amount; if(after) rAfter += t.amount; }
+    });
+    let owed = null;
+    if(l.total!=null) owed = Number(l.total) + bAfter - rAfter;
+    else if(borrowed>0) owed = borrowed - repaid;
+    if(owed!=null) owed = round2(Math.max(0, owed));
+    return { borrowed, repaid, owed };
+  }
+  function loansOwedTotal(){ return setup.loans.filter(l=>!l.closed).reduce((s,l)=> s + (loanState(l).owed||0), 0); }
   // Kharcha for one month: money that actually left the bank (same rule as Insights and the ledger).
   function monthKharcha(ym, uptoDay){
     return txns.filter(t=> monthKey(t.date)===ym && (!uptoDay || Number(t.date.slice(8,10))<=uptoDay)).reduce((s,t)=>s+cashOutOf(t),0);
@@ -2069,10 +2342,16 @@ Reply with the JSON object only.`;
     document.getElementById("homeMonth").textContent = fmt(monthKharcha(ym));
     // Bill payments bigger than the card purchases logged (usually a bill for spends from before
     // you started logging) show as "Card paid ahead" instead of hiding behind ₹0.
-    const owedNow = cardOwedAll();
-    document.getElementById("homeCardLbl").textContent = owedNow < 0 ? "Card paid ahead" : "Card owed";
+    const owedNow = cardOwedNow();
+    const many = setup.cards.length > 1;
+    document.getElementById("homeCardLbl").textContent = owedNow < 0 ? "Card paid ahead" : (many ? "Cards owed" : "Card owed");
     document.getElementById("homeCard").textContent = fmt(Math.abs(owedNow));
+    const lo = loansOwedTotal(), hl = document.getElementById("homeLoans");
+    hl.style.display = setup.loans.some(l=>!l.closed) ? "flex" : "none";
+    document.getElementById("homeLoansVal").innerHTML = fmt(lo) + " &rsaquo;";
 
+    renderDue();
+    renderTidyBanner();
     renderAgain();
 
     const cats = orderedCats();
@@ -2081,7 +2360,65 @@ Reply with the JSON object only.`;
     const rest = cats.length - Math.min(cats.length, HOME_TILES) + 1;   // + the card bill
     catGrid.appendChild(catTile({ emoji:"⋯", name:"" }, openPick, rest + " more", "more"));
   }
-  document.getElementById("homeCardBox").addEventListener("click", ()=> openSheet("ccpayment"));
+  // With cards set up, the box opens the cards page (each card, what's owed, Pay a bill).
+  document.getElementById("homeCardBox").addEventListener("click", ()=>{ if(setup.cards.length) openSettings("cards"); else openSheet("ccpayment"); });
+  document.getElementById("homeLoans").addEventListener("click", ()=> openSettings("loans"));
+
+  // ---------- DUE THIS MONTH ----------
+  // Fixed monthly payments (and salary). One counts as done when an entry this month is linked
+  // to it, or looks like it (same category, same name or type, amount within 20%).
+  function dueDoneTxn(d, ym){
+    return txns.find(t=> monthKey(t.date)===ym && (t.due===d.id || (
+      !t.due && t.catId===d.catId &&
+      ((t.note||"").trim().toLowerCase()===d.name.toLowerCase() || (d.sub && t.subcategory===d.sub) || (d.loan && t.loan===d.loan)) &&
+      Math.abs(t.amount - d.amount) <= Math.max(1, d.amount*0.2))));
+  }
+  function dueDateLabel(d, ym){
+    const [y,m] = ym.split("-").map(Number), last = new Date(y, m, 0).getDate();
+    return new Date(y, m-1, Math.min(d.day||1, last)).toLocaleDateString("en-IN",{ day:"numeric", month:"short" });
+  }
+  function renderDue(){
+    const card = document.getElementById("dueCard"), list = document.getElementById("dueList");
+    if(!setup.dues.length){ card.style.display = "none"; return; }
+    const ym = todayISO().slice(0,7);
+    const open = [], done = [];
+    [...setup.dues].sort((a,b)=> (a.day||0)-(b.day||0)).forEach(d=>{
+      if((d.skips||[]).includes(ym)) return;
+      if(dueDoneTxn(d, ym)) done.push(d); else open.push(d);
+    });
+    card.style.display = "block";
+    document.getElementById("dueMonth").textContent = new Date(ym+"-01T00:00:00").toLocaleDateString("en-IN",{month:"short"});
+    let html = open.map(d=>{
+      const c = catMap[d.catId] || catMap.others;
+      return `<div class="due-row"><div class="e">${c.emoji}</div><div class="m"><b>${esc(d.name)}</b><span>${Number(todayISO().slice(8,10)) > (d.day||1) ? "Was due" : "Due"} ${dueDateLabel(d, ym)} · ${esc(c.name)}</span></div><div class="v">${fmt(d.amount)}</div><button class="due-ok" data-log="${esc(d.id)}" aria-label="Log it">✓</button><button class="due-skip" data-skip="${esc(d.id)}">Skip</button></div>`;
+    }).join("");
+    if(done.length) html += `<div class="due-done">✓ Logged: ${done.map(d=>esc(d.name)).join(", ")}</div>`;
+    if(!open.length && !done.length) html = `<div class="due-done">Nothing left for this month</div>`;
+    list.innerHTML = html;
+    list.querySelectorAll("[data-log]").forEach(b=> b.addEventListener("click", ()=>{
+      const d = setup.dues.find(x=>x.id===b.dataset.log); if(!d) return;
+      openSheet(d.catId, null, { amount: d.amount, note: d.name, subcategory: d.sub||"", paymentMethod: d.pm||"", card: d.card||"", loan: d.loan||"", due: d.id });
+    }));
+    list.querySelectorAll("[data-skip]").forEach(b=> b.addEventListener("click", ()=>{
+      const d = setup.dues.find(x=>x.id===b.dataset.skip); if(!d) return;
+      d.skips = [...new Set([...(d.skips||[]), ym])].slice(-12); d.u = Date.now(); saveSetup();
+      renderDue(); pushToCloud();
+      showToast("Skipped " + d.name + " for this month", "Undo", ()=>{ d.skips = (d.skips||[]).filter(x=>x!==ym); d.u = Date.now(); saveSetup(); renderDue(); pushToCloud(); });
+    }));
+  }
+
+  // ---------- TIDY BANNER ----------
+  function renderTidyBanner(){
+    const el = document.getElementById("tidyBanner");
+    if(prefs.tidyHidden){ el.style.display = "none"; return; }
+    const n = tidyProposals().length;
+    el.style.display = n ? "flex" : "none";
+    if(n) document.getElementById("tidyBannerTitle").textContent = n + " old entr" + (n===1?"y":"ies") + " could be tidied";
+  }
+  document.getElementById("tidyBanner").addEventListener("click", (e)=>{
+    if(e.target.closest("#tidyBannerHide")){ prefs.tidyHidden = true; savePrefs(); renderTidyBanner(); showToast("Hidden. It's still in Settings › Tidy old entries."); return; }
+    openSettings("tidy");
+  });
 
   // "Do it again": the entries you repeat (same category, type, shop or note, and payment) in
   // the last 60 days. One tap opens the entry form filled in with the last amount, dated today.
@@ -2161,17 +2498,20 @@ Reply with the JSON object only.`;
     if(t.note) subBits.push(esc(c.name) + (t.subcategory ? " · " + esc(t.subcategory) : ""));
     else if(t.subcategory) subBits.push(esc(t.subcategory));
     if(showDate) subBits.push(dayName(t.date));
+    if(t.for) subBits.push("for " + esc(t.for));
     // "by <phone>" only appears once more than one phone is on the ledger.
     const who = t.editedBy || t.addedBy;
     if(who && Object.keys(devices).length>1) subBits.push("by " + esc(devName(who, t.editedBy ? t.editedByName : t.addedByName)));
     let tags = "";
     if(t.type==="expense" && !t.isCC){
       const ps = partsOf(t);
-      if(ps.some(p=>p.m==="credit")) tags += `<span class="tag c">CARD</span>`;
+      const cp = ps.find(p=>p.m==="credit");
+      if(cp) tags += `<span class="tag c">${esc((cp.card||t.card) ? cardShort(cp.card||t.card) : "CARD")}</span>`;
       if(ps.some(p=>isPts(p.m))) tags += `<span class="tag p">PTS</span>`;
       if(ps.length>1) tags += `<span class="tag s">SPLIT</span>`;
     } else if(t.type==="income"){
       if(t.receivedAs==="card_credit") tags += `<span class="tag c">CASHBACK</span>`;
+      else if(t.catId==="loan") tags += `<span class="tag s">BORROWED</span>`;
       else if(isPts(t.receivedAs)) tags += `<span class="tag p">PTS</span>`;
     }
     const row = document.createElement("div");
@@ -2214,7 +2554,7 @@ Reply with the JSON object only.`;
     if(k==="back"){ amountStr = amountStr.slice(0,-1); }
     else if(k==="."){ if(!amountStr.includes(".")) amountStr += (amountStr===""?"0.":"."); }
     else { if(amountStr==="0") amountStr = k; else amountStr += k; }
-    renderAmount(); refreshPtsRow(); refreshSplit();
+    renderAmount(); refreshPtsRow(); refreshSplit(); refreshCardUI();
   });
   const noteInput = document.getElementById("noteInput");
   const dateInput = document.getElementById("dateInput");
@@ -2243,6 +2583,11 @@ Reply with the JSON object only.`;
 
   let activeCatId = null, editingTxn = null, activeType = "expense", activePayMethod = "upi", activeSubcat = "";
   let splitMode = false, activeRecv = "", ptsTouched = false, nrContext = "pay";
+  let activeCard = "", activeFor = "", activeLoan = "", activeDue = "";
+  const cardBlock = document.getElementById("cardBlock"), cardRow = document.getElementById("cardRow"), cardHint = document.getElementById("cardHint");
+  const forBlock = document.getElementById("forBlock"), forRow = document.getElementById("forRow"), forOther = document.getElementById("forOther");
+  const loanBlock = document.getElementById("loanBlock"), loanRow = document.getElementById("loanRow");
+  const routeBlock = document.getElementById("routeBlock"), routeRow = document.getElementById("routeRow"), routeForm = document.getElementById("routeForm");
 
   function setType(t){
     activeType = t;
@@ -2260,8 +2605,176 @@ Reply with the JSON object only.`;
     if(inc && activeRecv==="card_credit") hint = "Lowers what you owe on the credit card. Not added to Income or Shesh, because no money reached your bank.";
     else if(inc && isPts(activeRecv)) hint = "Goes into your Rewards wallet. Not added to Income or Shesh — points aren't money in the bank.";
     recvHint.textContent = hint; recvHint.style.display = hint ? "block" : "none";
-    refreshPtsRow(); refreshSplit();
+    refreshPtsRow(); refreshSplit(); refreshCardUI(); refreshForUI(); refreshLoanUI();
   }
+
+  // ----- which credit card -----
+  function cardMode(){
+    if(!setup.cards.length) return "";
+    if(activeCatId==="ccpayment") return "bill";
+    if(activeType==="income") return activeRecv==="card_credit" ? "cashback" : "";
+    return (isExpenseEntry() && !splitMode && activePayMethod==="credit") ? "buy" : "";
+  }
+  function defaultCard(){
+    if(prefs.lastCard && cardById(prefs.lastCard)) return prefs.lastCard;
+    return setup.cards.length ? setup.cards[0].id : "";
+  }
+  function refreshCardUI(){
+    const mode = cardMode();
+    if(!mode){ cardBlock.style.display = "none"; return; }
+    if(!cardById(activeCard)) activeCard = defaultCard();
+    cardBlock.style.display = "block";
+    document.getElementById("cardLabel").textContent = mode==="bill" ? "Which card are you paying?" : mode==="cashback" ? "Which card got the cashback?" : "Which card?";
+    cardRow.innerHTML = "";
+    setup.cards.forEach(c=>{
+      const el = document.createElement("div");
+      el.className = "chip cc" + (c.id===activeCard ? " active" : ""); el.textContent = c.name;
+      el.addEventListener("click", ()=>{ activeCard = c.id; refreshCardUI(); });
+      cardRow.appendChild(el);
+    });
+    const c = cardById(activeCard), amt = currentAmount(), owed = cardsOwed().byCard[activeCard] || 0;
+    let h = "";
+    if(c && mode==="buy"){
+      h = c.name + " owed goes up" + (amt>0 ? " by " + rupeeExact(amt) : "") + ". Your bank balance doesn't change until you pay the bill.";
+      const e = cardEarn(c, amt);
+      if(e) h += " Earns about " + nfmt(e.pts) + " " + e.name + (e.worth!=null ? " (≈ " + fmt(e.worth) + ")" : "") + ".";
+    } else if(c && mode==="bill"){
+      h = "Owed on " + c.name + " now: " + fmt(owed) + ". This payment comes out of your bank and lowers what's owed.";
+    } else if(c && mode==="cashback"){
+      h = "Lowers what's owed on " + c.name + ". Not income, because no money reached your bank.";
+    }
+    cardHint.textContent = h; cardHint.style.display = h ? "block" : "none";
+  }
+
+  // ----- who it was for -----
+  function personUse(){
+    const n = {}, cutoff = Date.now() - 90*86400000;
+    txns.forEach(t=>{ if(t.for && new Date(t.date).getTime() >= cutoff) n[t.for] = (n[t.for]||0) + 1; });
+    return n;
+  }
+  function refreshForUI(){
+    if(activeCatId==="ccpayment"){ forBlock.style.display = "none"; return; }
+    forBlock.style.display = "block";
+    const names = setup.people.map(p=>p.name), use = personUse();
+    const main = [];
+    if(prefs.me && names.includes(prefs.me)) main.push(prefs.me);
+    names.filter(n=> n!==prefs.me).sort((a,b)=> (use[b]||0)-(use[a]||0)).forEach(n=>{ if(main.length<3) main.push(n); });
+    if(names.length>=2) main.push("Both");
+    if(activeFor && !main.includes(activeFor)) main.push(activeFor);
+    forRow.innerHTML = "";
+    main.forEach(n=>{
+      const el = document.createElement("div");
+      el.className = "chip" + (n===activeFor ? " active" : ""); el.textContent = n;
+      el.addEventListener("click", ()=>{ activeFor = (activeFor===n ? "" : n); forOther.style.display = "none"; refreshForUI(); });
+      forRow.appendChild(el);
+    });
+    const other = document.createElement("div");
+    other.className = "chip dashed"; other.textContent = names.length ? "Other…" : "+ Who's it for?";
+    other.addEventListener("click", ()=>{ forOther.style.display = forOther.style.display==="none" ? "block" : "none"; renderForAll(main); });
+    forRow.appendChild(other);
+    if(forOther.style.display!=="none") renderForAll(main);
+  }
+  function renderForAll(main){
+    const row = document.getElementById("forAllRow");
+    const rest = [...setup.people.map(p=>p.name), "Family"].filter((n,i,a)=> a.indexOf(n)===i && !main.includes(n));
+    row.innerHTML = "";
+    row.style.display = rest.length ? "flex" : "none";
+    rest.forEach(n=>{
+      const el = document.createElement("div");
+      el.className = "chip" + (n===activeFor ? " active" : ""); el.textContent = n;
+      el.addEventListener("click", ()=>{ activeFor = n; forOther.style.display = "none"; refreshForUI(); });
+      row.appendChild(el);
+    });
+  }
+  function addPerson(name){
+    name = String(name||"").trim().slice(0,20);
+    if(!name) return null;
+    const hit = setup.people.find(p=> p.name.toLowerCase()===name.toLowerCase());
+    if(hit) return hit.name;
+    setup.people.push({ id: uid(), name, u: Date.now() }); saveSetup(); pushToCloud();
+    return name;
+  }
+  document.getElementById("forNewAdd").addEventListener("click", ()=>{
+    const inp = document.getElementById("forNewInput"), n = addPerson(inp.value);
+    if(!n) return;
+    inp.value = ""; activeFor = n; forOther.style.display = "none"; refreshForUI();
+  });
+
+  // ----- which loan -----
+  function refreshLoanUI(){
+    const isLoanCat = activeCatId==="loan" || activeCatId==="loanemi";
+    const list = setup.loans.filter(l=> !l.closed || l.id===activeLoan);
+    if(!isLoanCat || !list.length){ loanBlock.style.display = "none"; return; }
+    loanBlock.style.display = "block";
+    document.getElementById("loanLabel").textContent = activeCatId==="loan" ? "Borrowed from" : "Which loan? (optional)";
+    loanRow.innerHTML = "";
+    list.forEach(l=>{
+      const el = document.createElement("div");
+      el.className = "chip" + (l.id===activeLoan ? " active" : ""); el.textContent = l.name;
+      el.addEventListener("click", ()=>{ activeLoan = (activeLoan===l.id && activeCatId!=="loan") ? "" : l.id; refreshLoanUI(); });
+      loanRow.appendChild(el);
+    });
+  }
+
+  // ----- travel routes -----
+  function routeLabel(r){ return r.from + " → " + r.to; }
+  function routeHistory(r){
+    const keys = [routeLabel(r).toLowerCase()]; if(r.code) keys.push(r.code.toLowerCase());
+    return txns.filter(t=> t.catId==="transport" && t.type==="expense" && keys.includes((t.note||"").trim().toLowerCase()))
+      .sort((a,b)=> (b.date+(b.addedAt||0)).localeCompare(a.date+(a.addedAt||0)));
+  }
+  function routeUsual(r){ const h = routeHistory(r).slice(0,5).map(t=>t.amount); return h.length ? median(h) : 0; }
+  function renderRoutes(){
+    const show = activeCatId==="transport" && activeType==="expense";
+    routeBlock.style.display = show ? "block" : "none";
+    if(!show) return;
+    if(setup.routes.length) shopRow.style.display = "none";
+    const cur = noteInput.value.trim().toLowerCase();
+    routeRow.innerHTML = "";
+    setup.routes.forEach(r=>{
+      const usual = routeUsual(r);
+      const el = document.createElement("div");
+      el.className = "chip" + (routeLabel(r).toLowerCase()===cur ? " active" : "");
+      el.textContent = routeLabel(r) + (usual ? " · " + fmt(usual) : "");
+      el.addEventListener("click", ()=> pickRoute(r));
+      routeRow.appendChild(el);
+    });
+    const add = document.createElement("div");
+    add.className = "chip dashed"; add.textContent = "+ Route";
+    add.addEventListener("click", ()=>{ routeForm.style.display = routeForm.style.display==="none" ? "block" : "none"; if(routeForm.style.display==="block") document.getElementById("rtFrom").focus(); });
+    routeRow.appendChild(add);
+    document.getElementById("placeList").innerHTML = [...new Set(setup.routes.flatMap(r=>[r.from, r.to]))].map(p=>`<option value="${esc(p)}">`).join("");
+  }
+  function pickRoute(r){
+    const label = routeLabel(r);
+    const already = noteInput.value.trim().toLowerCase()===label.toLowerCase();
+    noteInput.value = already ? "" : label;
+    if(!already && !editingTxn){
+      const last = routeHistory(r)[0];
+      if(!amountStr){ const u = routeUsual(r); if(u) amountStr = String(u); }
+      if(last && last.subcategory){ activeSubcat = last.subcategory; renderSubcatChips(); }
+      const pm = last ? (partsOf(last)[0]||{}).m : "";
+      if(pm && !splitMode && (!isPts(pm) || rewardById(pm.slice(3)))) setPayMethod(pm);
+      renderAmount();
+    }
+    renderRoutes(); updateFoldSum(); refreshCardUI();
+  }
+  document.getElementById("rtCancel").addEventListener("click", ()=>{ routeForm.style.display = "none"; });
+  document.getElementById("rtSave").addEventListener("click", ()=>{
+    const from = document.getElementById("rtFrom").value.trim().slice(0,24), to = document.getElementById("rtTo").value.trim().slice(0,24);
+    const code = document.getElementById("rtCode").value.trim().slice(0,12);
+    if(!from || !to){ alert("Fill in both places, e.g. Home and Gym."); return; }
+    const exists = (f,t)=> setup.routes.some(r=> r.from.toLowerCase()===f.toLowerCase() && r.to.toLowerCase()===t.toLowerCase());
+    const now = Date.now();
+    if(!exists(from,to)) setup.routes.push({ id: uid(), from, to, code, u: now });
+    if(document.getElementById("rtBack").checked && !exists(to,from)){
+      const m = code.match(/^(.+?)2(.+)$/i);   // H2G -> G2H
+      setup.routes.push({ id: uid(), from: to, to: from, code: m ? m[2] + "2" + m[1] : "", u: now });
+    }
+    saveSetup(); pushToCloud();
+    ["rtFrom","rtTo","rtCode"].forEach(id=> document.getElementById(id).value = "");
+    routeForm.style.display = "none"; renderRoutes();
+  });
 
   function buildPayChips(){
     payMethodRow.innerHTML = "";
@@ -2299,7 +2812,7 @@ Reply with the JSON object only.`;
     if(activePayMethod!==m) ptsTouched = false;
     activePayMethod = m;
     [...payMethodRow.children].forEach(ch=> ch.classList.toggle("active", ch.dataset.m===m));
-    refreshPtsRow();
+    refreshPtsRow(); refreshCardUI();
   }
   function setRecv(m){
     if(activeRecv!==m) ptsTouched = false;
@@ -2325,9 +2838,14 @@ Reply with the JSON object only.`;
   ptsInput.addEventListener("input", ()=>{ ptsTouched = true; });
 
   // ----- split payment -----
+  // Split rows list each credit card on its own ("credit|<card id>") once cards are set up.
+  function splitMethods(){
+    const cards = setup.cards.map(c=>["credit|"+c.id, "Card · " + c.name]);
+    return [...BASE_METHODS.filter(b=> !(cards.length && b[0]==="credit")), ...cards, ...rewards.map(r=>["pt:"+r.id, r.name])];
+  }
+  const splitM = v => String(v).split("|")[0];
   function methodOptionsHTML(sel){
-    return [...BASE_METHODS, ...rewards.map(r=>["pt:"+r.id, r.name])]
-      .map(([m,l])=>`<option value="${esc(m)}"${m===sel?" selected":""}>${esc(l)}</option>`).join("");
+    return splitMethods().map(([m,l])=>`<option value="${esc(m)}"${m===sel?" selected":""}>${esc(l)}</option>`).join("");
   }
   function addSplitRow(m, amt, pts){
     const row = document.createElement("div");
@@ -2337,7 +2855,7 @@ Reply with the JSON object only.`;
     if(amt!=null && amt!=="") sa.value = String(amt);
     if(pts!=null && pts!==""){ sp.value = String(pts); row.dataset.pt = "1"; }
     const sync = ()=>{
-      const pm = isPts(sel.value);
+      const pm = isPts(splitM(sel.value));
       sp.style.display = pm ? "block" : "none";
       if(pm && !row.dataset.pt){ const a = parseFloat(sa.value); sp.value = a>0 ? String(round2(a/rateOf(sel.value))) : ""; }
       refreshSplit();
@@ -2350,7 +2868,7 @@ Reply with the JSON object only.`;
     sync();
   }
   function readSplit(){
-    return [...splitRows.children].map(r=>({ m: r.querySelector(".sm").value, amtStr: r.querySelector(".sa").value.trim(), ptsStr: r.querySelector(".sp").value.trim() }));
+    return [...splitRows.children].map(r=>{ const v = r.querySelector(".sm").value; return { v, m: splitM(v), card: v.split("|")[1]||"", amtStr: r.querySelector(".sa").value.trim(), ptsStr: r.querySelector(".sp").value.trim() }; });
   }
   function refreshSplit(){
     if(!splitMode) return;
@@ -2359,7 +2877,7 @@ Reply with the JSON object only.`;
     const rem = round2(total - filled);
     const blanks = rows.filter(r=>r.amtStr==="").length;
     [...splitRows.children].forEach(r=>{
-      const sa = r.querySelector(".sa"), sp = r.querySelector(".sp"), m = r.querySelector(".sm").value;
+      const sa = r.querySelector(".sa"), sp = r.querySelector(".sp"), m = splitM(r.querySelector(".sm").value);
       const takesRest = blanks===1 && rem>0 && sa.value.trim()==="";
       sa.placeholder = takesRest ? "₹" + nfmt(rem) : "₹";
       sp.placeholder = (takesRest && isPts(m)) ? nfmt(round2(rem/rateOf(m))) + " pts" : "pts";
@@ -2374,30 +2892,33 @@ Reply with the JSON object only.`;
   }
   function startSplit(parts){
     splitMode = true; splitRows.innerHTML = "";
-    if(parts && parts.length>1){ parts.forEach(p=> addSplitRow(p.m, p.amt, isPts(p.m) ? p.pts : null)); }
+    const val = (m, card)=> (m==="credit" && setup.cards.length) ? "credit|" + (cardById(card) ? card : defaultCard()) : m;
+    if(parts && parts.length>1){ parts.forEach(p=> addSplitRow(val(p.m, p.card), p.amt, isPts(p.m) ? p.pts : null)); }
     else {
-      const first = activePayMethod;
+      const first = val(activePayMethod, activeCard);
       const firstPts = rewards.length ? "pt:"+rewards[0].id : null;
-      const second = (firstPts && firstPts!==first) ? firstPts : (first==="credit" ? "upi" : "credit");
+      const second = (firstPts && firstPts!==first) ? firstPts : (splitM(first)==="credit" ? "upi" : val("credit", activeCard));
       addSplitRow(first, "", null); addSplitRow(second, "", null);
     }
     refreshPayUI();
   }
   document.getElementById("splitOffBtn").addEventListener("click", ()=>{ splitMode = false; refreshPayUI(); });
   document.getElementById("splitAddBtn").addEventListener("click", ()=>{
-    const used = new Set(readSplit().map(r=>r.m));
-    const next = [...BASE_METHODS.map(b=>b[0]), ...rewards.map(r=>"pt:"+r.id)].find(m=>!used.has(m)) || "upi";
+    const used = new Set(readSplit().map(r=>r.v));
+    const next = splitMethods().map(x=>x[0]).find(m=>!used.has(m)) || "upi";
     addSplitRow(next, "", null);
   });
 
   // Works out how an entry was paid / received. Returns {error} or {fields} ready to save.
   function readPayment(amt){
     const isCCMode = activeCatId==="ccpayment";
-    if(isCCMode) return { fields:{ paymentMethod:"cc_settlement" } };
+    const pickedCard = (cardMode() && cardById(activeCard)) ? activeCard : undefined;
+    if(isCCMode) return { fields:{ paymentMethod:"cc_settlement", card: pickedCard } };
     if(activeType==="income"){
       const f = { paymentMethod:"" };
       if(activeRecv){
         f.receivedAs = activeRecv;
+        if(activeRecv==="card_credit") f.card = pickedCard;
         if(isPts(activeRecv)){
           const pts = parseFloat(ptsInput.value);
           if(!(pts>0)) return { error:"How many points did you get? Fill in the points box." };
@@ -2416,14 +2937,15 @@ Reply with the JSON object only.`;
       for(const r of rows){
         const a = r.amtStr==="" ? rem : parseFloat(r.amtStr);
         if(!(a>0)) return { error:"Each method needs an amount above ₹0 (check " + methodName(r.m) + ")." };
-        if(parts.some(p=>p.m===r.m)) return { error: methodName(r.m) + " appears twice. Use each method once." };
+        if(parts.some(p=> (p.m + "|" + (p.card||""))===(r.m + "|" + r.card))) return { error: methodName(r.m) + " appears twice. Use each method once." };
         const p = { m:r.m, amt: round2(a) };
+        if(r.m==="credit" && r.card) p.card = r.card;
         if(isPts(r.m)){ const pts = r.ptsStr!=="" ? parseFloat(r.ptsStr) : round2(a/rateOf(r.m)); if(!(pts>0)) return { error:"How many " + methodName(r.m) + " points did you use?" }; p.pts = round2(pts); }
         parts.push(p);
       }
       const sum = round2(parts.reduce((s,p)=>s+p.amt,0));
       if(Math.abs(sum - amt) >= 0.01) return { error:"The split adds up to " + fmt(sum) + " but the bill is " + fmt(amt) + ". Make them match." };
-      if(parts.length===1) return { fields:{ paymentMethod: parts[0].m, payments: isPts(parts[0].m) ? parts : undefined } };
+      if(parts.length===1) return { fields:{ paymentMethod: parts[0].m, payments: isPts(parts[0].m) ? parts : undefined, card: parts[0].card } };
       return { fields:{ paymentMethod:"split", payments: parts } };
     }
     const m = activePayMethod;
@@ -2432,10 +2954,10 @@ Reply with the JSON object only.`;
       if(!(pts>0)) return { error:"How many points did you use? Fill in the points box." };
       return { fields:{ paymentMethod:m, payments:[{ m, amt: round2(amt), pts: round2(pts) }] } };
     }
-    return { fields:{ paymentMethod:m } };
+    return { fields:{ paymentMethod:m, card: m==="credit" ? pickedCard : undefined } };
   }
   function applyPayment(t, f){
-    ["payments","receivedAs","pts"].forEach(k=> delete t[k]);
+    ["payments","receivedAs","pts","card"].forEach(k=> delete t[k]);
     Object.keys(f).forEach(k=>{ if(f[k]!==undefined) t[k] = f[k]; });
   }
   // Remember the rupees-per-point you just used, so next time the points box pre-fills sensibly.
@@ -2544,7 +3066,7 @@ Reply with the JSON object only.`;
     add.className = "chip dashed"; add.textContent = list.length ? "+ shop" : "+ Shop or note";
     add.addEventListener("click", ()=>{ moreFold.open = true; noteInput.focus(); });
     shopRow.appendChild(add);
-    shopRow.style.display = "flex";
+    shopRow.style.display = (activeCatId==="transport" && setup.routes.length) ? "none" : "flex";
   }
   // Picking a shop fills in the note, and (for a new entry) the type and payment you usually use there.
   function pickShop(g){
@@ -2564,7 +3086,7 @@ Reply with the JSON object only.`;
     if(itemsSection.style.display!=="none"){ const k = collectItems().length; bits.push(k ? k + " pantry item" + (k===1?"":"s") : "pantry items"); }
     foldSum.innerHTML = bits.join(" · ");
   }
-  noteInput.addEventListener("input", ()=>{ renderShopChips(); updateFoldSum(); });
+  noteInput.addEventListener("input", ()=>{ renderShopChips(); renderRoutes(); updateFoldSum(); });
   dateInput.addEventListener("change", updateFoldSum);
   itemsContainer.addEventListener("input", updateFoldSum);
 
@@ -2604,11 +3126,16 @@ Reply with the JSON object only.`;
       if(isPts(activeRecv) && txn.pts){ ptsInput.value = String(txn.pts); ptsTouched = true; }
     }
     activePayMethod = pm;
+    activeCard = txn ? (txn.card || (partsOf(txn).find(p=>p.m==="credit")||{}).card || "") : (preset && preset.card ? preset.card : "");
+    activeFor = txn ? (txn.for||"") : (preset && preset.for!=null ? preset.for : (prefs.me||""));
+    activeLoan = txn ? (txn.loan||"") : (preset && preset.loan ? preset.loan : "");
+    activeDue = txn ? (txn.due||"") : (preset && preset.due ? preset.due : "");
+    forOther.style.display = "none"; routeForm.style.display = "none";
     noteInput.value = txn ? (txn.note||"") : (preset && preset.note ? preset.note : "");
     dateInput.value = txn ? txn.date : (preset && preset.date ? preset.date : todayISO());
     buildPayChips(); buildRecvChips();
     sheetType.style.display = "none";
-    setType(txn ? txn.type : (catId==="income" ? "income" : "expense"));
+    setType(txn ? txn.type : ((catId==="income" || catId==="loan") ? "income" : "expense"));
     if(splitParts) startSplit(splitParts);
 
     activeSubcat = txn ? (txn.subcategory || "") : ((preset && preset.subcategory) ? preset.subcategory : (lastSubcat[catId] || ""));
@@ -2617,6 +3144,8 @@ Reply with the JSON object only.`;
     customSubcatRow.style.display = "none";
     renderSubcatChips();
     renderShopChips();
+    renderRoutes();
+    refreshCardUI(); refreshForUI(); refreshLoanUI();
 
     itemsContainer.innerHTML = "";
     const showItems = !isCCMode && PANTRY_CATS.has(catId);
@@ -2658,7 +3187,12 @@ Reply with the JSON object only.`;
       isCC: isCCMode,
       subcategory: isCCMode ? "" : activeSubcat
     };
+    if(activeCatId==="loan" && !loanById(activeLoan)){ alert("Pick who you borrowed from. Add them on the Loans page first."); return; }
     applyPayment(newTxn, pay.fields);
+    if(activeFor && !isCCMode) newTxn.for = activeFor;
+    if(activeLoan && (activeCatId==="loan" || activeCatId==="loanemi")) newTxn.loan = activeLoan;
+    if(activeDue) newTxn.due = activeDue;
+    if(newTxn.card){ prefs.lastCard = newTxn.card; savePrefs(); }
     stamp(newTxn, true);
     learnRates(newTxn);
     const items = (!isCCMode) ? collectItems() : [];
@@ -2689,6 +3223,9 @@ Reply with the JSON object only.`;
     editingTxn.amount = amt; editingTxn.type = isCCMode ? "expense" : activeType;
     editingTxn.note = noteInput.value.trim(); editingTxn.date = dateInput.value || editingTxn.date;
     if(!isCCMode){ applyPayment(editingTxn, pay.fields); editingTxn.subcategory = activeSubcat; }
+    else { if(pay.fields.card) editingTxn.card = pay.fields.card; else delete editingTxn.card; }
+    if(activeFor && !isCCMode) editingTxn.for = activeFor; else delete editingTxn.for;
+    if(activeLoan && (editingTxn.catId==="loan" || editingTxn.catId==="loanemi")) editingTxn.loan = activeLoan; else delete editingTxn.loan;
     stamp(editingTxn, false);
     learnRates(editingTxn);
 
@@ -2984,6 +3521,13 @@ Reply with the JSON object only.`;
   document.getElementById("sySave").addEventListener("click", ()=>{
     if(!sayDraft || document.getElementById("sySave").disabled) return;
     const newTxn = Object.assign({ id: uid() }, JSON.parse(JSON.stringify(sayDraft)));
+    // Which card and who it was for: the same defaults the entry form starts with.
+    if(setup.cards.length && !newTxn.isCC && partsOf(newTxn).some(p=>p.m==="credit")){
+      const c = defaultCard(); newTxn.card = c;
+      if(Array.isArray(newTxn.payments)) newTxn.payments.forEach(p=>{ if(p.m==="credit") p.card = c; });
+    }
+    if(newTxn.isCC && setup.cards.length===1) newTxn.card = setup.cards[0].id;
+    if(prefs.me && !newTxn.isCC && newTxn.type==="expense") newTxn.for = prefs.me;
     stamp(newTxn, true);
     learnRates(newTxn);
     txns.push(newTxn); saveJ(STORE_KEY, txns); bumpUsage(newTxn.isCC ? "ccpayment" : newTxn.catId);
@@ -3711,7 +4255,8 @@ Reply with the JSON object only.`;
 
     // Kharcha = true cash-out this month (never includes new credit-card purchases until the month they're actually paid)
     const kharcha = paidNow + ccPaidThisMonth;
-    const shesh = income - kharcha;
+    const borrowed = monthTxns.reduce((s,t)=>s+borrowedOf(t),0);
+    const shesh = income + borrowed - kharcha;
     document.getElementById("kharchaVal").innerHTML = "<small>₹</small>" + nfmt(kharcha);
     document.getElementById("incVal").textContent = fmt(income);
     const sheshEl = document.getElementById("sheshVal");
@@ -3745,6 +4290,7 @@ Reply with the JSON object only.`;
     if(onPoints>0) notes.push("+ " + fmt(onPoints) + " paid with points (not counted — no money left your bank)");
     if(rewardsEarned>0) notes.push("\u{1F381} " + fmt(rewardsEarned) + " of points earned (in Rewards wallet, not in Income)");
     if(cardCashback>0) notes.push("\u{1F4B3} " + fmt(cardCashback) + " card cashback (lowers card owed, not in Income)");
+    if(borrowed>0) notes.push("\u{1F91D} " + fmt(borrowed) + " borrowed (in Shesh because it reached your bank, but not Income: it's owed back)");
     onCreditNote.innerHTML = notes.map(esc).join("<br>");
     onCreditNote.style.display = notes.length ? "block" : "none";
 
@@ -3766,7 +4312,23 @@ Reply with the JSON object only.`;
     });
 
     renderChanges(isNow, upto, pym);
+    renderWho(monthTxns);
     renderCalendar(kharcha);
+  }
+
+  // Who the month's spending was for: everything bought, by the "For" tag (card buys included,
+  // since this is about who it was for, not when the bank paid).
+  function renderWho(monthTxns){
+    const card = document.getElementById("whoCard"), box = document.getElementById("whoList");
+    const by = {}; let tagged = 0, total = 0;
+    monthTxns.forEach(t=>{
+      if(t.type!=="expense" || t.isCC) return;
+      const k = t.for || ""; by[k] = (by[k]||0) + t.amount; total += t.amount; if(t.for) tagged++;
+    });
+    if(!tagged){ card.style.display = "none"; return; }
+    card.style.display = "block";
+    box.innerHTML = Object.entries(by).sort((a,b)=> (a[0]===""?1:0)-(b[0]===""?1:0) || b[1]-a[1]).map(([k,v])=>
+      `<div class="who-row"><span${k?"":` class="muted"`}>${k ? esc(k) : "Not tagged"}</span><b>${fmt(v)} <span class="muted" style="font-weight:600;">${total>0 ? Math.round(v/total*100) : 0}%</span></b></div>`).join("");
   }
 
   // "What changed": the biggest rise and the biggest drop against last month (to the same date
@@ -3913,10 +4475,11 @@ Reply with the JSON object only.`;
     const byMonth = {};
     txns.forEach(t=>{
       const ym = monthKey(t.date);
-      if(!byMonth[ym]) byMonth[ym] = { ym, income:0, upi:0, cash:0, debit:0, ccPaid:0, onCredit:0, points:0, ptsEarned:0, cardCb:0 };
+      if(!byMonth[ym]) byMonth[ym] = { ym, income:0, borrowed:0, upi:0, cash:0, debit:0, ccPaid:0, onCredit:0, points:0, ptsEarned:0, cardCb:0 };
       const b = byMonth[ym];
       if(t.type==="income"){
         if(t.receivedAs==="card_credit") b.cardCb += t.amount;
+        else if(t.catId==="loan") b.borrowed += t.amount;
         else if(isPts(t.receivedAs)) b.ptsEarned += rewardEarnedOf(t);
         else b.income += t.amount;
         return;
@@ -3931,7 +4494,7 @@ Reply with the JSON object only.`;
     let runLeft = 0, runOwed = 0;
     rows.forEach(r=>{
       r.kharcha = r.upi + r.cash + r.debit + r.ccPaid;
-      r.shesh = r.income - r.kharcha;
+      r.shesh = r.income + r.borrowed - r.kharcha;
       runLeft += r.shesh;
       runOwed += (r.onCredit - r.ccPaid - r.cardCb);
       r.runLeft = runLeft;
@@ -3943,13 +4506,18 @@ Reply with the JSON object only.`;
   function renderLedger(){
     const moneyLeft = moneyLeftAll();
     document.getElementById("lgMoneyLeft").textContent = (moneyLeft<0 ? "−" : "") + fmt(Math.abs(moneyLeft));
-    const owedRaw = cardOwedAll(), owed = Math.max(0, owedRaw);
-    document.getElementById("lgCCLbl").textContent = owedRaw < 0 ? "Card paid ahead" : "Card owed";
+    const owedRaw = cardOwedNow(), owed = Math.max(0, owedRaw);
+    document.getElementById("lgCCLbl").textContent = owedRaw < 0 ? "Card paid ahead" : (setup.cards.length>1 ? "Cards owed" : "Card owed");
     document.getElementById("lgCCOwed").textContent = fmt(Math.abs(owedRaw));
     // Card bill reminder, only when a due day is set in Settings > Cards & points.
     const due = document.getElementById("ccDueNote");
     const dd = parseInt(prefs.ccDueDay,10);
-    if(owed>0 && dd>=1 && dd<=31){
+    if(setup.cards.length){
+      // Each card has its own statement day now; the Cards page shows them.
+      const next = setup.cards.filter(c=>c.day).map(c=> c.name + " " + nextDayOf(c.day));
+      due.innerHTML = next.length ? "<b>Statements:</b> " + esc(next.join(" · ")) : "";
+      due.style.display = next.length ? "block" : "none";
+    } else if(owed>0 && dd>=1 && dd<=31){
       const t = todayISO(), [y,m] = t.split("-").map(Number), today = Number(t.slice(8,10));
       const pick = (yy,mm)=>{ const last = new Date(yy, mm, 0).getDate(); return new Date(yy, mm-1, Math.min(dd,last)); };
       let when = pick(y,m); if(today > when.getDate()) when = pick(m===12 ? y+1 : y, m===12 ? 1 : m+1);
@@ -4005,6 +4573,7 @@ Reply with the JSON object only.`;
           ${ r.points>0 ? `<div class="lg-note">+ ${fmt(r.points)} paid with points \u2014 not counted above, no money left your bank</div>` : `` }
           ${ r.ptsEarned>0 ? `<div class="lg-note">\u{1F381} ${fmt(r.ptsEarned)} of points earned \u2014 in Rewards wallet, not in Income</div>` : `` }
           ${ r.cardCb>0 ? `<div class="lg-note">\u{1F4B3} ${fmt(r.cardCb)} card cashback \u2014 lowers card owed, not in Income</div>` : `` }
+          ${ r.borrowed>0 ? `<div class="lg-note">\u{1F91D} ${fmt(r.borrowed)} borrowed \u2014 in Shesh, not in Income</div>` : `` }
           <div class="d-row lg-sep"><span>Money left after this month</span><b style="color:var(--accent);">${fmt(r.runLeft)}</b></div>
           <div class="d-row"><span>Card owed at month end</span><b style="color:var(--expense);">${fmt(Math.max(0, r.runOwed))}</b></div>
           <div class="lg-link" data-open="${r.ym}">See all ${monthLabel(r.ym)} transactions</div>
@@ -4048,9 +4617,10 @@ Reply with the JSON object only.`;
       const rows = grouped[name].sort((a,b)=> a.date.localeCompare(b.date));
       const catTotal = rows.reduce((s,t)=> s + (t.type==="income"?t.amount:-t.amount), 0);
       out += name + " (" + rows.length + " transactions, net " + fmt(catTotal) + ")\n";
-      out += ["Date","Subcategory","Type","Payment Method","Amount","Note","Added by","Last edited by"].map(csvEscape).join(",") + "\n";
+      out += ["Date","Subcategory","Type","Payment Method","Card","For","Amount","Note","Added by","Last edited by"].map(csvEscape).join(",") + "\n";
       rows.forEach(t=>{
-        out += [t.date, t.subcategory||"", t.type, methodDetailOf(t), t.amount, t.note||"",
+        const cid = t.card || (partsOf(t).find(p=>p.m==="credit"&&p.card)||{}).card;
+        out += [t.date, t.subcategory||"", t.type, methodDetailOf(t), cid && cardById(cid) ? cardById(cid).name : "", t.for||"", t.amount, t.note||"",
           t.addedBy ? devName(t.addedBy, t.addedByName) : "", t.editedBy ? devName(t.editedBy, t.editedByName) : ""].map(csvEscape).join(",") + "\n";
       });
       out += "\n";
@@ -4062,7 +4632,7 @@ Reply with the JSON object only.`;
   });
 
   document.getElementById("exportBtn").addEventListener("click", ()=>{
-    const blob = new Blob([JSON.stringify({txns,usage,pantry,customSubcats,rewards,devices,pstate}, null, 2)], {type:"application/json"});
+    const blob = new Blob([JSON.stringify({txns,usage,pantry,customSubcats,rewards,devices,pstate,setup}, null, 2)], {type:"application/json"});
     localStorage.setItem("kharchapani_lastbackup_v1", String(Date.now()));
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href=url; a.download="kharcha-pani-backup-"+todayISO()+".json";
@@ -4102,6 +4672,7 @@ Reply with the JSON object only.`;
 
           mergeRewards(data.rewards); mergeDevices(data.devices);
           (data.pstate||[]).forEach(r=>{ if(r && r.id && !pstate.some(x=>x.id===r.id)) pstate.push(r); }); saveJ(PSTATE_KEY, pstate);
+          SETUP_LISTS.forEach(k=> ((data.setup||{})[k]||[]).forEach(x=>{ if(x && x.id && !setup[k].some(y=>y.id===x.id)) setup[k].push(x); })); saveSetup();
           saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
           saveJ(REWARDS_KEY,rewards); saveJ(DEVICES_KEY,devices); buildMethodChips();
           renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
@@ -4118,6 +4689,11 @@ Reply with the JSON object only.`;
           pantry=(data.pantry||[]).map(p=>Object.assign({}, p, {u: nowR})); customSubcats=data.customSubcats||{};
           rewards=data.rewards||[]; mergeDevices(data.devices);
           tombstone("pstate", pstate.map(r=>r.id)); pstate=(data.pstate||[]).map(r=>Object.assign({}, r, {u: nowR})); saveJ(PSTATE_KEY, pstate);
+          SETUP_LISTS.forEach(k=>{
+            const inc = ((data.setup||{})[k]||[]).filter(x=>x && x.id), keep = new Set(inc.map(x=>x.id));
+            tombstone(k, setup[k].filter(x=>!keep.has(x.id)).map(x=>x.id));
+            setup[k] = inc.map(x=>Object.assign({}, x, {u: nowR}));
+          }); saveSetup();
           saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
           saveJ(REWARDS_KEY,rewards); saveJ(DEVICES_KEY,devices); buildMethodChips();
           renderCatGrid(); renderRecent(); renderDashboard(); renderPantry(); renderHistory(); renderLedger();
@@ -4151,7 +4727,11 @@ Reply with the JSON object only.`;
     if(name==="ai") renderAiSettings();
     if(name==="cats") renderCatsPage();
     if(name==="look") renderLook();
-    if(name==="cards") document.getElementById("ccDueInput").value = prefs.ccDueDay ? String(prefs.ccDueDay) : "";
+    if(name==="cards"){ document.getElementById("ccDueInput").value = prefs.ccDueDay ? String(prefs.ccDueDay) : ""; renderCardsPage(); }
+    if(name==="loans") renderLoansPage();
+    if(name==="dues") renderDuesPage();
+    if(name==="people") renderPeoplePage();
+    if(name==="tidy") renderTidyPage();
     if(name!=="sync"){ stopScan(); clearInterval(inviteTimer); document.getElementById("invitePanel").style.display = "none"; document.getElementById("scanPanel").style.display = "none"; }
   }
   function goSetPage(name){
@@ -4198,8 +4778,18 @@ Reply with the JSON object only.`;
     const av = document.getElementById("rowAiVal"); av.textContent = aiCfg.on ? "On" : "Off"; av.classList.toggle("on", !!aiCfg.on);
     document.getElementById("rowAiSub").textContent = aiCfg.on ? (aiCfg.key ? aiUsedToday() + " of " + aiCfg.cap + " used today" : "Add your free key to start") : "Type or speak entries";
     document.getElementById("rowCatsVal").textContent = (CATEGORIES.length - (prefs.hidden||[]).length) + " shown";
-    document.getElementById("rowCardsSub").textContent = rewards.length ? rewards.map(r=>r.name).join(", ") : "Points types and card bill day";
-    document.getElementById("rowCardsVal").textContent = rewards.length ? String(rewards.length) : "";
+    document.getElementById("rowCardsSub").textContent = setup.cards.length ? setup.cards.map(c=>c.name).join(", ") : (rewards.length ? rewards.map(r=>r.name).join(", ") : "Your credit cards and points");
+    document.getElementById("rowCardsVal").textContent = setup.cards.length ? fmt(cardOwedNow()) : (rewards.length ? String(rewards.length) : "");
+    const openLoans = setup.loans.filter(l=>!l.closed);
+    document.getElementById("rowLoansSub").textContent = openLoans.length ? openLoans.map(l=>l.name).join(", ") : "Borrowed money and EMIs";
+    document.getElementById("rowLoansVal").textContent = openLoans.length ? fmt(loansOwedTotal()) : "";
+    document.getElementById("rowDuesSub").textContent = setup.dues.length ? setup.dues.map(d=>d.name).slice(0,4).join(", ") + (setup.dues.length>4 ? "…" : "") : "Rent, EMIs, subscriptions, salary";
+    document.getElementById("rowDuesVal").textContent = setup.dues.length ? String(setup.dues.length) : "";
+    document.getElementById("rowPeopleSub").textContent = setup.people.length ? setup.people.map(p=>p.name).join(", ") : "Who an entry was for, travel routes";
+    document.getElementById("rowPeopleVal").textContent = setup.routes.length ? setup.routes.length + " route" + (setup.routes.length===1?"":"s") : "";
+    const tn = tidyCount();
+    document.getElementById("rowTidySub").textContent = tn ? tn + " old entr" + (tn===1?"y":"ies") + " could be tidied" : "Nothing to tidy";
+    document.getElementById("rowTidyVal").textContent = tn ? String(tn) : "";
     const lv = document.getElementById("rowLockVal"); lv.textContent = pinIsSet() ? "On" : "Off"; lv.classList.toggle("on", pinIsSet());
     document.getElementById("rowLookVal").textContent = { auto:"Phone", dark:"Dark", light:"Light" }[prefs.theme] || "Phone";
     const lb = parseInt(localStorage.getItem("kharchapani_lastbackup_v1")||"0",10);
@@ -4335,7 +4925,7 @@ Reply with the JSON object only.`;
   let changeSeq = 0, syncing = false, syncTimer = null;
   const TOMB_KEEP_MS = 180*86400000;
 
-  function localState(){ return { txns, pantry, usage, customSubcats, rewards, devices, tomb, pstate }; }
+  function localState(){ const s = { txns, pantry, usage, customSubcats, rewards, devices, tomb, pstate }; SETUP_LISTS.forEach(k=> s[k] = setup[k]); return s; }
   function mergeById(a, b, tA, tB, tsFn){
     const t = Object.assign({}, tA||{});
     Object.entries(tB||{}).forEach(([id,v])=>{ if(!(t[id] >= v)) t[id] = v; });
@@ -4353,6 +4943,7 @@ Reply with the JSON object only.`;
     const mp = mergeById(L.pantry, R.pantry, LT.pantry, RT.pantry, tsOf);
     const mr = mergeById(L.rewards, R.rewards, LT.rewards, RT.rewards, x=>x.u||0);
     const ms = mergeById(L.pstate, R.pstate, LT.pstate, RT.pstate, x=>x.u||0);
+    const su = {}; SETUP_LISTS.forEach(k=> su[k] = mergeById(L[k], R[k], LT[k], RT[k], x=>x.u||0));
     // Phones: keep the freshest record of each; drop removed phones (never this one).
     const devT = Object.assign({}, LT.devices||{}); Object.entries(RT.devices||{}).forEach(([id,v])=>{ if(!(devT[id] >= v)) devT[id] = v; });
     const devs = {};
@@ -4370,8 +4961,10 @@ Reply with the JSON object only.`;
     }));
     const cutoff = Date.now() - TOMB_KEEP_MS;
     const prune = o=>{ const out = {}; Object.entries(o).forEach(([k,v])=>{ if(v >= cutoff) out[k] = v; }); return out; };
-    return { txns: mt.list, pantry: mp.list, rewards: mr.list, devices: devs, usage: us, customSubcats: cs, pstate: ms.list,
+    const out = { txns: mt.list, pantry: mp.list, rewards: mr.list, devices: devs, usage: us, customSubcats: cs, pstate: ms.list,
              tomb: { txns: prune(mt.tomb), pantry: prune(mp.tomb), rewards: prune(mr.tomb), devices: prune(devT), pstate: prune(ms.tomb) } };
+    SETUP_LISTS.forEach(k=>{ out[k] = su[k].list; out.tomb[k] = prune(su[k].tomb); });
+    return out;
   }
   // Does the cloud copy lack anything this phone has?
   function cloudIsBehind(m, R){
@@ -4379,9 +4972,11 @@ Reply with the JSON object only.`;
     const RT = R.tomb || {};
     const behind = (list, rlist, fn)=>{ const rm = new Map((rlist||[]).map(x=>[x.id, fn(x)])); return list.some(x=> !rm.has(x.id) || fn(x) > rm.get(x.id)); };
     if(behind(m.txns, R.txns, tsOf) || behind(m.pantry, R.pantry, tsOf) || behind(m.rewards, R.rewards, x=>x.u||0) || behind(m.pstate||[], R.pstate, x=>x.u||0)) return true;
-    for(const k of ["txns","pantry","rewards","devices","pstate"]){
+    // A phone on the old version drops these lists when it uploads, so this puts them back.
+    if(SETUP_LISTS.some(k=> behind(m[k]||[], R[k], x=>x.u||0))) return true;
+    for(const k of ["txns","pantry","rewards","devices","pstate", ...SETUP_LISTS]){
       const rt = RT[k] || {};
-      if(Object.entries(m.tomb[k]).some(([id,v])=> !(rt[id] >= v))) return true;
+      if(Object.entries(m.tomb[k]||{}).some(([id,v])=> !(rt[id] >= v))) return true;
     }
     const rd = (R.devices||{})[device.id];
     if(!rd || rd.name !== (device.name||"")) return true;
@@ -4389,6 +4984,7 @@ Reply with the JSON object only.`;
   }
   function applyState(m){
     txns = m.txns; pantry = m.pantry; rewards = m.rewards; devices = m.devices; usage = m.usage; customSubcats = m.customSubcats; tomb = m.tomb; pstate = m.pstate || [];
+    SETUP_LISTS.forEach(k=>{ setup[k] = m[k] || []; if(!tomb[k]) tomb[k] = {}; }); saveSetup();
     saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats);
     saveJ(REWARDS_KEY,rewards); saveJ(DEVICES_KEY,devices); saveJ(TOMB_KEY,tomb); saveJ(PSTATE_KEY,pstate);
     buildMethodChips();
@@ -4487,6 +5083,7 @@ Reply with the JSON object only.`;
     const typed = prompt("This deletes every entry, pantry item and points type on this phone" + (localStorage.getItem(SYNC_CODE_KEY) ? ", and on your other phones too, because sync is on" : "") + ".\n\nType DELETE to go ahead.");
     if(typed!=null && typed.trim().toUpperCase()==="DELETE"){
       tombstone("txns", txns.map(t=>t.id)); tombstone("pantry", pantry.map(p=>p.id)); tombstone("rewards", rewards.map(r=>r.id)); tombstone("pstate", pstate.map(r=>r.id));
+      SETUP_LISTS.forEach(k=>{ tombstone(k, setup[k].map(x=>x.id)); setup[k] = []; }); saveSetup();
       txns=[]; usage={}; pantry=[]; customSubcats={}; rewards=[]; pstate=[];
       saveJ(STORE_KEY,txns); saveJ(USAGE_KEY,usage); saveJ(PANTRY_KEY,pantry); saveJ(SUBCAT_KEY,customSubcats); saveJ(REWARDS_KEY,rewards); saveJ(PSTATE_KEY,pstate);
       buildMethodChips(); renderSettings();
@@ -4698,6 +5295,547 @@ Reply with the JSON object only.`;
     nameEl.value = ""; ptsEl.value = ""; worthEl.value = "";
     buildMethodChips(); renderSettings(); renderAll(); pushToCloud();
   });
+
+  // ----- Cards, loans, monthly dues, people and tidy-up pages -----
+  // Opening the entry form from Settings: close Settings first, then open the form.
+  function fromSettings(fn){ closeSyncSheet(); setTimeout(fn, 160); }
+  function refreshAfterSetup(){ saveSetup(); renderAll(); renderSettingsMenu(); pushToCloud(); }
+  const ordinal = n => n + (([,"st","nd","rd"][n%100>>3^1&&n%10]) || "th");
+  const parseAmt = v => { const n = parseFloat(String(v||"").replace(/[₹,\s]/g,"")); return isFinite(n) ? round2(n) : NaN; };
+
+  // Points per ₹100 for a few common cards, from card review sites. Close, not exact; editable.
+  const CARD_PRESETS = { "Tata Neu Infinity":1.5, "Tata Neu Plus":1, "HSBC TravelOne":2, "HDFC Diners Club Privilege":2, "HDFC Regalia Gold":2.67, "Axis Atlas":2.5 };
+  let editingCardId = null;
+  function renderCardsPage(){
+    const top = document.getElementById("cardsTop"), list = document.getElementById("cardsList");
+    document.getElementById("legacyDue").style.display = setup.cards.length ? "none" : "block";
+    document.getElementById("cardPayBtn").style.display = setup.cards.length ? "" : "none";
+    document.getElementById("cardPresetList").innerHTML = Object.keys(CARD_PRESETS).map(n=>`<option value="${esc(n)}">`).join("");
+    if(!setup.cards.length){
+      top.innerHTML = `<div class="helper-text">Add each credit card with what its app says you owe today. Card owed on Home then splits by card.</div>`;
+      list.innerHTML = ""; return;
+    }
+    const co = cardsOwed(), ym = todayISO().slice(0,7), moves = cardMoves();
+    top.innerHTML = `<div class="row-label">${co.total<0 ? "Paid ahead on cards" : "Owed on all cards"}</div><div class="big-total">${fmt(Math.abs(co.total))}</div>`;
+    list.innerHTML = setup.cards.map(c=>{
+      const owed = co.byCard[c.id] || 0;
+      let spent = 0; moves.forEach(mv=>{ if(mv.card===c.id && mv.amt>0 && monthKey(mv.t.date)===ym) spent += mv.amt; });
+      const e = cardEarn(c, spent);
+      const bits = [];
+      if(c.day) bits.push("Statement " + nextDayOf(c.day));
+      if(spent>0) bits.push(fmt(spent) + " spent this month");
+      if(e) bits.push("≈ " + nfmt(Math.round(e.pts)) + " " + esc(e.name) + (e.worth!=null ? " (" + fmt(e.worth) + ")" : ""));
+      return `<div class="cardx"><div class="t"><b>\u{1F4B3} ${esc(c.name)}</b><span class="v">${owed<0?"−":""}${fmt(Math.abs(owed))}</span></div>
+        <div class="s">${owed<0 ? "Paid ahead. " : ""}${bits.join(" · ") || "Nothing on it this month"}</div>
+        <div class="acts"><button class="link-btn" data-cpay="${esc(c.id)}">Pay bill</button><button class="link-btn" data-cedit="${esc(c.id)}">Edit</button></div></div>`;
+    }).join("") + (co.unpickedN ? `<div class="cardx" style="cursor:default;"><div class="t"><b>No card picked</b><span class="v">${fmt(co.unpicked)}</span></div><div class="s">${co.unpickedN} card entr${co.unpickedN===1?"y":"ies"} since you added your cards don't say which card. Open them in History and pick one.</div></div>` : "");
+    list.querySelectorAll("[data-cpay]").forEach(b=> b.addEventListener("click", ()=>{
+      const c = cardById(b.dataset.cpay); if(!c) return;
+      const owed = cardsOwed().byCard[c.id] || 0;
+      fromSettings(()=> openSheet("ccpayment", null, { card: c.id, amount: owed>0 ? owed : 0 }));
+    }));
+    list.querySelectorAll("[data-cedit]").forEach(b=> b.addEventListener("click", ()=> openCardForm(b.dataset.cedit)));
+  }
+  function openCardForm(id){
+    const c = id ? cardById(id) : null;
+    editingCardId = c ? c.id : null;
+    document.getElementById("cfTitle").textContent = c ? "Edit " + c.name : "New card";
+    document.getElementById("cfName").value = c ? c.name : "";
+    document.getElementById("cfOwed").value = c ? String(round2(cardsOwed().byCard[c.id]||0)) : "";
+    document.getElementById("cfDay").value = c && c.day ? String(c.day) : "";
+    document.getElementById("cfEarn").value = c && c.earn ? String(c.earn) : "";
+    document.getElementById("cfReward").innerHTML = `<option value="">Points type (optional)</option>` + rewards.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join("");
+    document.getElementById("cfReward").value = c && c.reward && rewardById(c.reward) ? c.reward : "";
+    document.getElementById("cfDelete").style.display = c ? "" : "none";
+    document.getElementById("cardForm").style.display = "block";
+    document.getElementById("cfName").focus();
+  }
+  document.getElementById("cardAddBtn").addEventListener("click", ()=> openCardForm(null));
+  document.getElementById("cardPayBtn").addEventListener("click", ()=> fromSettings(()=> openSheet("ccpayment")));
+  document.getElementById("cfCancel").addEventListener("click", ()=>{ document.getElementById("cardForm").style.display = "none"; });
+  document.getElementById("cfName").addEventListener("input", ()=>{
+    const p = CARD_PRESETS[document.getElementById("cfName").value.trim()], earn = document.getElementById("cfEarn");
+    if(p!=null && !earn.value) earn.value = String(p);
+  });
+  document.getElementById("cfSave").addEventListener("click", ()=>{
+    const name = document.getElementById("cfName").value.trim().slice(0,30);
+    if(!name){ alert("Give the card a name, e.g. Tata Neu Infinity."); return; }
+    if(setup.cards.some(c=> c.id!==editingCardId && c.name.toLowerCase()===name.toLowerCase())){ alert("You already have “" + name + "”."); return; }
+    const owedTxt = document.getElementById("cfOwed").value.trim(), owed = owedTxt ? parseAmt(owedTxt) : 0;
+    if(isNaN(owed)){ alert("Owed today should be a number, e.g. 12500.50"); return; }
+    const dayTxt = document.getElementById("cfDay").value.trim(), day = dayTxt ? parseInt(dayTxt,10) : 0;
+    if(dayTxt && !(day>=1 && day<=31)){ alert("Statement day should be 1 to 31."); return; }
+    const earnTxt = document.getElementById("cfEarn").value.trim(), earn = earnTxt ? parseAmt(earnTxt) : 0;
+    if(earnTxt && !(earn>=0)){ alert("Points per ₹100 should be a number, e.g. 2"); return; }
+    const reward = document.getElementById("cfReward").value || "";
+    const now = Date.now();
+    const c = editingCardId ? cardById(editingCardId) : null;
+    if(c){
+      // A new "owed today" restarts the count from now; otherwise the start stays as it was.
+      if(Math.abs((cardsOwed().byCard[c.id]||0) - owed) >= 0.01){ c.owed = owed; c.at = now; }
+      Object.assign(c, { name, day, earn, reward, u: now });
+    } else {
+      setup.cards.push({ id: "c" + uid(), name, owed, at: now, day, earn, reward, u: now });
+    }
+    document.getElementById("cardForm").style.display = "none";
+    refreshAfterSetup(); renderCardsPage();
+  });
+  document.getElementById("cfDelete").addEventListener("click", ()=>{
+    const c = cardById(editingCardId); if(!c) return;
+    const n = cardMoves().filter(mv=> mv.card===c.id).length;
+    if(!confirm("Remove " + c.name + "?" + (n ? "\n\n" + n + " entr" + (n===1?"y uses":"ies use") + " it. They stay as they are, shown as \"No card picked\"." : ""))) return;
+    tombstone("cards", [c.id]); setup.cards = setup.cards.filter(x=>x!==c);
+    document.getElementById("cardForm").style.display = "none";
+    refreshAfterSetup(); renderCardsPage();
+  });
+
+  // Loans: borrowed money (owed back to a person) and EMIs.
+  function renderLoansPage(){
+    const top = document.getElementById("loansTop"), list = document.getElementById("loansList");
+    const open = setup.loans.filter(l=>!l.closed), closed = setup.loans.filter(l=>l.closed);
+    const unknown = open.filter(l=> loanState(l).owed==null).length;
+    top.innerHTML = open.length ? `<div class="row-label">Owed on loans</div><div class="big-total">${fmt(loansOwedTotal())}</div>${unknown ? `<div class="helper-text" style="margin-top:-6px;">${unknown} loan${unknown===1?" has":"s have"} no total yet, so ${unknown===1?"it isn't":"they aren't"} in this number.</div>` : ""}`
+      : `<div class="helper-text">No loans yet. Add money you borrowed, or an EMI.</div>`;
+    const row = l=>{
+      const s = loanState(l), bits = [];
+      if(l.emi) bits.push(fmt(l.emi) + " EMI" + (l.day ? " on the " + ordinal(l.day) : ""));
+      if(s.borrowed>0) bits.push("Borrowed " + fmt(s.borrowed));
+      if(s.repaid>0) bits.push("Paid back " + fmt(s.repaid));
+      const val = l.closed ? "Closed" : (s.owed==null ? `<span class="muted" style="font-size:12px;">Total not set</span>` : fmt(s.owed));
+      return `<div class="cardx"${l.closed ? ` style="opacity:.6;"` : ""}><div class="t"><b>\u{1F3E6} ${esc(l.name)}</b><span class="v">${val}</span></div>
+        <div class="s">${bits.join(" · ") || "Nothing logged yet"}</div>
+        <div class="acts">${l.closed ? "" : `<button class="link-btn" data-lpay="${esc(l.id)}">${l.emi ? "Log EMI" : "Log repayment"}</button><button class="link-btn" data-ltot="${esc(l.id)}">Set total left</button>`}<button class="link-btn" data-ledit="${esc(l.id)}">Edit</button><button class="link-btn" data-lclose="${esc(l.id)}">${l.closed ? "Reopen" : "Close"}</button></div></div>`;
+    };
+    list.innerHTML = [...open, ...closed].map(row).join("");
+    const L = id=> loanById(id);
+    list.querySelectorAll("[data-lpay]").forEach(b=> b.addEventListener("click", ()=>{
+      const l = L(b.dataset.lpay); if(!l) return;
+      fromSettings(()=> openSheet("loanemi", null, { amount: l.emi||0, note: l.name, subcategory: l.emi ? "EMI" : "Repayment", loan: l.id }));
+    }));
+    list.querySelectorAll("[data-ltot]").forEach(b=> b.addEventListener("click", ()=>{
+      const l = L(b.dataset.ltot); if(!l) return;
+      const v = prompt("How much is left to pay on " + l.name + " today? (from the lender or bank app)\n\nLeave empty if you don't know.", l.total!=null ? String(loanState(l).owed) : "");
+      if(v==null) return;
+      if(!v.trim()){ l.total = null; l.at = 0; }
+      else { const n = parseAmt(v); if(isNaN(n) || n<0){ alert("That should be an amount, e.g. 450000"); return; } l.total = n; l.at = Date.now(); }
+      l.u = Date.now(); refreshAfterSetup(); renderLoansPage();
+    }));
+    list.querySelectorAll("[data-ledit]").forEach(b=> b.addEventListener("click", ()=>{
+      const l = L(b.dataset.ledit); if(!l) return;
+      const n = prompt("Name of the loan", l.name); if(n==null) return;
+      const name = n.trim().slice(0,30) || l.name;
+      const e = prompt("Monthly EMI in ₹ (leave empty if there's no fixed EMI)", l.emi ? String(l.emi) : ""); if(e==null) return;
+      const emi = e.trim() ? parseAmt(e) : 0; if(isNaN(emi)){ alert("EMI should be an amount."); return; }
+      let day = l.day||0;
+      if(emi){ const d = prompt("Day of the month it's paid (1-31)", day ? String(day) : ""); if(d==null) return; day = parseInt(d,10); if(!(day>=1 && day<=31)) day = 0; }
+      Object.assign(l, { name, emi, day, u: Date.now() }); refreshAfterSetup(); renderLoansPage();
+    }));
+    list.querySelectorAll("[data-lclose]").forEach(b=> b.addEventListener("click", ()=>{
+      const l = L(b.dataset.lclose); if(!l) return;
+      l.closed = !l.closed; l.u = Date.now();
+      if(l.closed){ const ds = setup.dues.filter(d=> d.loan===l.id); if(ds.length && confirm("Also stop showing its EMI in Due this month?")){ tombstone("dues", ds.map(d=>d.id)); setup.dues = setup.dues.filter(d=> d.loan!==l.id); } }
+      refreshAfterSetup(); renderLoansPage();
+    }));
+  }
+  function findOrMakeLoan(name, extra){
+    const hit = setup.loans.find(l=> !l.closed && l.name.toLowerCase()===name.toLowerCase());
+    if(hit) return hit;
+    const hid = hashId("l", name), id = setup.loans.some(x=>x.id===hid) ? "l" + uid() : hid;
+    const l = Object.assign({ id, name, emi: 0, day: 0, total: null, at: 0, closed: false, u: Date.now() }, extra||{});
+    setup.loans.push(l); return l;
+  }
+  document.getElementById("loanBorrowBtn").addEventListener("click", ()=>{
+    const n = prompt("Who did you borrow from? e.g. Dad"); if(n==null || !n.trim()) return;
+    const l = findOrMakeLoan(n.trim().slice(0,30)); refreshAfterSetup();
+    fromSettings(()=> openSheet("loan", null, { loan: l.id, note: "From " + l.name }));
+  });
+  document.getElementById("loanNewBtn").addEventListener("click", ()=>{
+    const n = prompt("Name of the loan, e.g. Scooter EMI"); if(n==null || !n.trim()) return;
+    const e = prompt("Monthly EMI in ₹"); if(e==null) return;
+    const emi = parseAmt(e); if(!(emi>0)){ alert("EMI should be an amount, e.g. 4500"); return; }
+    const d = prompt("Day of the month it's paid (1-31)"); if(d==null) return;
+    const day = parseInt(d,10); if(!(day>=1 && day<=31)){ alert("Day should be 1 to 31."); return; }
+    const t = prompt("Total left to pay today, if you know it (leave empty if not)", ""); if(t==null) return;
+    const total = t.trim() ? parseAmt(t) : null;
+    const l = findOrMakeLoan(n.trim().slice(0,30), { emi, day, total: (total!=null && !isNaN(total)) ? total : null, at: (total!=null && !isNaN(total)) ? Date.now() : 0 });
+    if(!setup.dues.some(x=> x.loan===l.id)) setup.dues.push({ id: "u" + uid(), name: l.name, catId: "loanemi", sub: "EMI", amount: emi, day, pm: "upi", card: "", loan: l.id, skips: [], u: Date.now() });
+    refreshAfterSetup(); renderLoansPage();
+    showToast(l.name + " added. Its EMI shows in Due this month.");
+  });
+
+  // Due every month
+  const DUE_SKIP_CATS = new Set(["transport","groceries","outsidefood","shopping","entertainment","travel","medical","personal","gifts"]);
+  function dueSuggestions(){
+    const ym = todayISO().slice(0,7), months = [prevYM(ym), prevYM(prevYM(ym)), prevYM(prevYM(prevYM(ym)))];
+    const recent = txns.filter(t=> !t.isCC && !DUE_SKIP_CATS.has(t.catId) && t.catId!=="loan" && !t.receivedAs && (months.includes(monthKey(t.date)) || monthKey(t.date)===ym))
+      .sort((a,b)=> b.date.localeCompare(a.date));
+    const out = [], seen = new Set();
+    recent.forEach(seed=>{
+      const label = (seed.subcategory || seed.note || "").trim();
+      if(!label) return;
+      const key = seed.catId + "|" + label.toLowerCase();
+      if(seen.has(key)) return; seen.add(key);
+      const like = t=> t.catId===seed.catId && t.type===seed.type && !t.isCC &&
+        ((seed.subcategory && t.subcategory===seed.subcategory) || (t.note||"").toLowerCase().includes(label.toLowerCase()) || (seed.loan && t.loan===seed.loan));
+      const hits = months.map(m=> recent.filter(t=> monthKey(t.date)===m && like(t)));
+      if(hits.filter(h=>h.length===1).length < 2 || hits.some(h=>h.length>2)) return;
+      const amts = hits.filter(h=>h.length).map(h=>h[0].amount), mid = median(amts);
+      if(amts.some(a=> Math.abs(a-mid) > mid*0.15)) return;
+      const already = setup.dues.some(d=> d.catId===seed.catId && (d.name.toLowerCase()===label.toLowerCase() || (d.sub && d.sub===seed.subcategory) || (d.loan && d.loan===seed.loan)));
+      if(already) return;
+      const last = hits.find(h=>h.length)[0], lp = partsOf(last);
+      const loan = seed.loan && loanById(seed.loan);
+      out.push({ name: loan ? loan.name : label, catId: seed.catId, sub: seed.subcategory||"", amount: last.amount, day: Number(last.date.slice(8,10)),
+        pm: (lp.length===1 && lp[0].m) ? lp[0].m : (seed.type==="income" ? "" : "upi"), card: last.card || "", loan: seed.loan || "" });
+    });
+    return out.slice(0, 12);
+  }
+  function renderDuesPage(){
+    const list = document.getElementById("duesList");
+    const ds = [...setup.dues].sort((a,b)=>(a.day||0)-(b.day||0));
+    list.innerHTML = ds.length ? ds.map(d=>{ const c = catMap[d.catId]||catMap.others;
+      return `<div class="set-row"><div><div>${c.emoji} ${esc(d.name)}</div><div class="sub">${fmt(d.amount)} · ${ordinal(d.day||1)} of every month · ${esc(c.name)}</div></div><div class="acts"><button class="link-btn" data-dedit="${esc(d.id)}">Amount</button><button class="link-btn" style="color:var(--expense);" data-ddel="${esc(d.id)}">Remove</button></div></div>`; }).join("")
+      : `<div class="helper-text" style="margin:0;">Nothing yet. Add from the suggestions below, or your own.</div>`;
+    list.querySelectorAll("[data-ddel]").forEach(b=> b.addEventListener("click", ()=>{
+      const d = setup.dues.find(x=>x.id===b.dataset.ddel); if(!d) return;
+      tombstone("dues", [d.id]); setup.dues = setup.dues.filter(x=>x!==d); refreshAfterSetup(); renderDuesPage();
+    }));
+    list.querySelectorAll("[data-dedit]").forEach(b=> b.addEventListener("click", ()=>{
+      const d = setup.dues.find(x=>x.id===b.dataset.dedit); if(!d) return;
+      const v = prompt("Usual amount for " + d.name, String(d.amount)); if(v==null) return;
+      const n = parseAmt(v); if(!(n>0)){ alert("That should be an amount."); return; }
+      d.amount = n; d.u = Date.now(); refreshAfterSetup(); renderDuesPage();
+    }));
+    const sug = dueSuggestions(), sbox = document.getElementById("duesSuggest");
+    document.getElementById("duesSuggestBox").style.display = sug.length ? "block" : "none";
+    sbox.innerHTML = sug.map((s,i)=>{ const c = catMap[s.catId]||catMap.others;
+      return `<div class="set-row"><div><div>${c.emoji} ${esc(s.name)}</div><div class="sub">about ${fmt(s.amount)} around the ${ordinal(s.day)}</div></div><div class="acts"><button class="link-btn" data-sadd="${i}">+ Add</button></div></div>`; }).join("");
+    sbox.querySelectorAll("[data-sadd]").forEach(b=> b.addEventListener("click", ()=>{
+      const s = sug[+b.dataset.sadd]; if(!s) return;
+      setup.dues.push(Object.assign({ id: "u" + uid(), skips: [], u: Date.now() }, s)); refreshAfterSetup(); renderDuesPage();
+    }));
+    const sel = document.getElementById("dfCat");
+    if(!sel.options.length) sel.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}">${c.emoji} ${esc(c.name)}</option>`).join("");
+  }
+  document.getElementById("dfAdd").addEventListener("click", ()=>{
+    const name = document.getElementById("dfName").value.trim().slice(0,30);
+    const amount = parseAmt(document.getElementById("dfAmt").value), day = parseInt(document.getElementById("dfDay").value,10);
+    const catId = document.getElementById("dfCat").value || "others";
+    if(!name){ alert("Give it a name, e.g. Netflix."); return; }
+    if(!(amount>0)){ alert("Amount should be more than ₹0."); return; }
+    if(!(day>=1 && day<=31)){ alert("Day should be 1 to 31."); return; }
+    setup.dues.push({ id: "u" + uid(), name, catId, sub: "", amount, day, pm: catId==="income" ? "" : "upi", card: "", loan: "", skips: [], u: Date.now() });
+    ["dfName","dfAmt","dfDay"].forEach(id=> document.getElementById(id).value = "");
+    refreshAfterSetup(); renderDuesPage();
+  });
+
+  // People and saved travel routes
+  function renderPeoplePage(){
+    const list = document.getElementById("peopleList"), use = personUse();
+    list.innerHTML = setup.people.length ? setup.people.map(p=>
+      `<div class="set-row"><div><div>${esc(p.name)}${p.name===prefs.me ? ` <span class="sub">(this phone)</span>` : ""}</div><div class="sub">${use[p.name] ? use[p.name] + " entries in the last 3 months" : "Not used yet"}</div></div><div class="acts"><button class="link-btn" style="color:var(--expense);" data-pdel="${esc(p.id)}">Remove</button></div></div>`).join("")
+      : `<div class="helper-text" style="margin:0;">No names yet. Add the people you spend for, e.g. yourself and your partner.</div>`;
+    list.querySelectorAll("[data-pdel]").forEach(b=> b.addEventListener("click", ()=>{
+      const p = setup.people.find(x=>x.id===b.dataset.pdel); if(!p) return;
+      if(!confirm("Remove " + p.name + "? Old entries keep their \"for " + p.name + "\" tag.")) return;
+      tombstone("people", [p.id]); setup.people = setup.people.filter(x=>x!==p);
+      if(prefs.me===p.name){ prefs.me = ""; savePrefs(); }
+      refreshAfterSetup(); renderPeoplePage();
+    }));
+    const me = document.getElementById("personMe");
+    me.innerHTML = `<option value="">Nobody in particular</option>` + setup.people.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("");
+    me.value = setup.people.some(p=>p.name===prefs.me) ? prefs.me : "";
+    const rl = document.getElementById("routesList");
+    rl.innerHTML = setup.routes.length ? setup.routes.map(r=>
+      `<div class="set-row"><div><div>${esc(routeLabel(r))}</div><div class="sub">${r.code ? "Short code " + esc(r.code) + " · " : ""}${routeHistory(r).length} trips</div></div><div class="acts"><button class="link-btn" style="color:var(--expense);" data-rdel="${esc(r.id)}">Remove</button></div></div>`).join("")
+      : `<div class="helper-text" style="margin:0;">Add routes from Travel: tap the Travel tile, then "+ Route".</div>`;
+    rl.querySelectorAll("[data-rdel]").forEach(b=> b.addEventListener("click", ()=>{
+      const r = setup.routes.find(x=>x.id===b.dataset.rdel); if(!r) return;
+      tombstone("routes", [r.id]); setup.routes = setup.routes.filter(x=>x!==r); refreshAfterSetup(); renderPeoplePage();
+    }));
+  }
+  document.getElementById("personAdd").addEventListener("click", ()=>{
+    const inp = document.getElementById("personNew"), n = addPerson(inp.value);
+    if(!n) return;
+    inp.value = "";
+    if(setup.people.length===1 && !prefs.me){ prefs.me = n; savePrefs(); }
+    renderPeoplePage(); renderSettingsMenu();
+  });
+  document.getElementById("personMe").addEventListener("change", (e)=>{ prefs.me = e.target.value; savePrefs(); renderPeoplePage(); });
+
+  // ---------- TIDY OLD ENTRIES ----------
+  // Finds entries saved the old way and proposes a fix for each. Only category, subcategory,
+  // payment method, card and loan fields change; amounts and dates never do. Nothing is saved
+  // until you tap Apply, and the page shows exactly how your totals move first.
+  const CARD_WORDS = /credit card|\bcc\b|\bneu\b|hsbc|diners|\bdcp\b|travelone/i;
+  const CARD_NOISE = /credit card|\bcc\b|\bbill\b|\bneu\b|hsbc|diners|club|\bdcp\b|travelone|card|[-–:+.,]/gi;
+  const NAME_SKIP = new Set(["card","credit","club","bank","the","hdfc","icici","axis","sbi","tata"]);
+  function guessCard(note){
+    const n = (note||"").toLowerCase();
+    if(!n) return "";
+    const hit = setup.cards.find(c=> c.name.toLowerCase().split(/\s+/).some(w=> w.length>2 && !NAME_SKIP.has(w) && new RegExp("\\b" + w.replace(/[^a-z0-9]/g,"") + "\\b").test(n)));
+    if(hit) return hit.id;
+    if(/\bdcp\b/.test(n)){ const d = setup.cards.find(c=>/diners/i.test(c.name)); if(d) return d.id; }
+    return "";
+  }
+  const OTHERS_RULES = [
+    { to:"tax", re:/\bitr\b|income tax|\btax\b|\bgst\b/i, sub: n=> /gst/i.test(n) ? "GST" : /property/i.test(n) ? "Property tax" : "Income tax" },
+    { to:"loanemi", re:/\bemi\b|\bloan\b/i, sub: ()=> "EMI" },
+    { to:"personal", re:/salon|parlou?r|hair ?cut|beard|threading|\bnail|grooming|\bspa\b|wax|facial/i,
+      sub: n=> /parlou?r|threading|wax|facial/i.test(n) ? "Parlour" : /\bspa\b/i.test(n) ? "Spa" : /beard|hair ?cut|trim|shav/i.test(n) ? "Grooming" : "Salon" },
+    { to:"gifts", re:/sweet|laddu|chocolate|gift|rakhi|raksha|diwali|holi\b|festival|puja|pooja|dakshina|donation|shagun/i,
+      sub: n=> /donation|dakshina/i.test(n) ? "Donation" : /rakhi|raksha|diwali|holi\b|festival|puja|pooja/i.test(n) ? "Festival" : /gift/i.test(n) ? "Gift" : "Sweets" }
+  ];
+  const TIDY_GROUPS = [
+    ["card", "Card purchases saved as UPI or blank", "Card buys count in Kharcha when you pay the bill, not on the day you buy."],
+    ["bill", "Card bills saved in Others", "These become Card bill payments, so they lower what's owed on the card."],
+    ["borrow", "Borrowed money saved as income", "Moves to Loans. It stays in Money left but leaves Income."],
+    ["others", "Moved out of Others", "Into Tax, Personal care, Gifts & festivals, and Loans & EMI."],
+    ["home", "One home for each kind of spend", "Electricity and Maintenance to Bills, recharges to Bills, blood tests to Medical, and two spellings merged."]
+  ];
+  function tidyProposals(){
+    const out = [];
+    const catName = id=> id==="ccpayment" ? "Card bill" : (catMap[id]||catMap.others).name;
+    const where = (c,s)=> catName(c) + (s ? " · " + s : "");
+    txns.forEach(t=>{
+      const note = (t.note||"").trim(), sub = t.subcategory||"";
+      const add = (group, from, to, ch, extra)=> out.push(Object.assign({ id: t.id, group, title: note || sub || catName(t.catId), from, to, ch }, extra||{}));
+      if(t.type==="expense" && !t.isCC){
+        const ps = partsOf(t);
+        const looksCard = CARD_WORDS.test(note) || CARD_WORDS.test(sub);
+        const bare = !note.replace(CARD_NOISE, "").trim();
+        if(t.catId==="others" && looksCard && bare && ps.length===1 && ps[0].m!=="credit" && !isPts(ps[0].m)){
+          const card = guessCard(note);
+          add("bill", "Others", "Card bill" + (card ? " · " + cardById(card).name : ""), { catId:"ccpayment", isCC:true, paymentMethod:"cc_settlement", subcategory:"", payments:null, card });
+          return;
+        }
+        if(looksCard && ps.length===1 && (ps[0].m==="" || ps[0].m==="upi")){
+          const card = guessCard(note);
+          add("card", ps[0].m==="upi" ? "UPI" : "No method", "Credit card" + (card ? " · " + cardById(card).name : ""), { paymentMethod:"credit", payments:null, card });
+        }
+        if(t.catId==="others"){
+          const text = note + " " + sub;
+          if(/education loan/i.test(text)){
+            add("others", "Others", where("loanemi","EMI"), { catId:"loanemi", subcategory:"EMI" }, { loanName:"Education loan", emi:true });
+            return;
+          }
+          const rule = OTHERS_RULES.find(r=> r.re.test(text));
+          if(rule){ const s = rule.sub(text); add("others", "Others", where(rule.to, s), { catId: rule.to, subcategory: s }); }
+          return;
+        }
+        if(t.catId==="rent" && (/^electricity/i.test(sub) || /electric/i.test(note)))
+          add("home", where("rent", sub), where("bills","Electricity"), { catId:"bills", subcategory:"Electricity" });
+        else if(t.catId==="rent" && (sub==="Maintenance" || /^maintenance/i.test(note)))
+          add("home", where("rent", sub), where("bills","Maintenance"), { catId:"bills", subcategory:"Maintenance" });
+        else if(t.catId==="subscription" && /recharge|airtel|\bjio\b|\bvi\b|mobile/i.test(note + " " + sub))
+          add("home", where("subscription", sub), where("bills","Mobile"), { catId:"bills", subcategory:"Mobile" });
+        else if(t.catId==="health" && /blood|lab test|lipid|thyroid|\btest\b/i.test(note + " " + sub))
+          add("home", where("health", sub), where("medical","Lab test"), { catId:"medical", subcategory:"Lab test" });
+        else {
+          const m = MERGED_SUBCATS[t.catId];
+          if(m && sub in m && m[sub]) add("home", where(t.catId, sub), where(t.catId, m[sub]), { subcategory: m[sub] });
+        }
+      } else if(t.type==="income" && t.catId==="income" && /^borrow/i.test(sub)){
+        const who = note.replace(/^(borrowed\s+)?from\s+/i, "").trim().slice(0,30) || "Borrowed";
+        add("borrow", "Income · " + sub, "Borrowed from " + who, { catId:"loan", subcategory:"" }, { loanName: who });
+      }
+    });
+    return out;
+  }
+  function tidyCount(){ return new Set(tidyProposals().map(p=>p.id)).size; }
+  function applyTidyTo(t, p){
+    Object.entries(p.ch).forEach(([k,v])=>{ if(v===null || v==="") delete t[k]; else t[k] = v; });
+    if(p.ch.catId==="ccpayment") delete t.for;
+  }
+  // Money left, and each month's Income and Kharcha, for a list of entries.
+  function tidyTotals(list){
+    let left = 0; const m = {};
+    list.forEach(t=>{
+      const ym = monthKey(t.date); if(!m[ym]) m[ym] = { inc:0, kh:0 };
+      m[ym].inc += bankIncomeOf(t); m[ym].kh += cashOutOf(t);
+      left += bankIncomeOf(t) + borrowedOf(t) - cashOutOf(t);
+    });
+    return { left, m };
+  }
+  let tidyList = [];
+  function renderTidyPage(){
+    tidyList = tidyProposals();
+    const box = document.getElementById("tidyGroups");
+    if(!tidyList.length){
+      box.innerHTML = `<div class="note-box ok">Nothing to tidy. Every entry is saved the new way.</div>`;
+      document.getElementById("tidyEffect").style.display = "none";
+      document.getElementById("tidyApply").style.display = "none";
+      return;
+    }
+    document.getElementById("tidyApply").style.display = "";
+    box.innerHTML = TIDY_GROUPS.map(([g, title, why])=>{
+      const rows = tidyList.map((p,i)=>[p,i]).filter(([p])=>p.group===g);
+      if(!rows.length) return "";
+      return `<div class="set-title" style="display:flex; justify-content:space-between;"><span>${esc(title)} · ${rows.length}</span><button class="link-btn" data-tall="${g}">None</button></div>
+        <div class="helper-text" style="margin-top:-4px;">${esc(why)}</div>
+        <div class="grp pad">${rows.map(([p,i])=>{ const t = txns.find(x=>x.id===p.id);
+          return `<label class="tidy-row"><input type="checkbox" checked data-ti="${i}" data-g="${g}"><div class="m"><b>${esc(p.title)}</b><span>${esc(dayName(t.date))} · ${fmt(t.amount)}</span></div><div class="to"><s>${esc(p.from)}</s><b>${esc(p.to)}</b></div></label>`; }).join("")}</div>`;
+    }).join("");
+    box.querySelectorAll("input[data-ti]").forEach(c=> c.addEventListener("change", renderTidyEffect));
+    box.querySelectorAll("[data-tall]").forEach(b=> b.addEventListener("click", (e)=>{
+      e.preventDefault();
+      const cs = [...box.querySelectorAll(`input[data-g="${b.dataset.tall}"]`)], on = !cs.every(c=>c.checked);
+      cs.forEach(c=> c.checked = on); b.textContent = on ? "None" : "All";
+      renderTidyEffect();
+    }));
+    renderTidyEffect();
+  }
+  function tidyPicked(){ return [...document.querySelectorAll("#tidyGroups input[data-ti]:checked")].map(c=> tidyList[+c.dataset.ti]).filter(Boolean); }
+  function renderTidyEffect(){
+    const picked = tidyPicked(), el = document.getElementById("tidyEffect");
+    document.getElementById("tidyApply").disabled = !picked.length;
+    document.getElementById("tidyApply").style.opacity = picked.length ? "" : ".45";
+    if(!picked.length){ el.style.display = "none"; return; }
+    const after = txns.map(t=> JSON.parse(JSON.stringify(t)));
+    const byId = new Map(after.map(t=>[t.id,t]));
+    picked.forEach(p=>{ const t = byId.get(p.id); if(t) applyTidyTo(t, p); });
+    const A = tidyTotals(txns), B = tidyTotals(after);
+    const lines = [];
+    const n = new Set(picked.map(p=>p.id)).size;
+    const mon = ym=> new Date(ym+"-01T00:00:00").toLocaleDateString("en-IN",{month:"short", year:"2-digit"});
+    Object.keys(A.m).sort().forEach(ym=>{
+      const a = A.m[ym], b = B.m[ym];
+      if(Math.round(a.kh)!==Math.round(b.kh)) lines.push(`${mon(ym)} Kharcha ${fmt(a.kh)} → <b>${fmt(b.kh)}</b>`);
+      if(Math.round(a.inc)!==Math.round(b.inc)) lines.push(`${mon(ym)} Income ${fmt(a.inc)} → <b>${fmt(b.inc)}</b>`);
+    });
+    let html = `<b>${n} entr${n===1?"y":"ies"} will change.</b> No amount or date changes.<br>`;
+    if(Math.round(A.left)!==Math.round(B.left)) html += `Money left ${fmt(A.left)} → <b>${fmt(B.left)}</b>.<br>`;
+    else html += `Money left stays ${fmt(A.left)}.<br>`;
+    if(lines.length) html += lines.join("<br>");
+    else html += "No month's Income or Kharcha changes. Only categories and labels move.";
+    if(picked.some(p=>p.group==="card") && B.left > A.left + 0.5)
+      html += `<br><br>Why Money left goes up: those card purchases were counted as paid from the bank, and the card bills that paid for them were counted again. Now each rupee counts once, when the bill was paid.`;
+    el.innerHTML = html; el.style.display = "block";
+  }
+  document.getElementById("tidyLater").addEventListener("click", ()=>{
+    prefs.tidyHidden = true; savePrefs(); renderTidyBanner();
+    if(syncPushed) history.back(); else { setStack.pop(); showSetPage(setStack[setStack.length-1] || "menu"); }
+  });
+  // Applies tidy proposals; returns the entries as they were, for Undo.
+  function applyTidy(picked){
+    const before = new Map();
+    picked.forEach(p=>{
+      const t = txns.find(x=>x.id===p.id); if(!t) return;
+      if(!before.has(t.id)) before.set(t.id, JSON.parse(JSON.stringify(t)));
+      applyTidyTo(t, p);
+      if(p.loanName){
+        let l = setup.loans.find(x=> x.name.toLowerCase()===p.loanName.toLowerCase());
+        if(!l) l = findOrMakeLoan(p.loanName);
+        t.loan = l.id;
+        if(p.emi && (t.date >= (l.lastEmiDate||""))){ l.emi = t.amount; l.day = Number(t.date.slice(8,10)); l.lastEmiDate = t.date; l.u = Date.now(); }
+      }
+      stamp(t, false);
+    });
+    // An EMI loan found here also goes into Due this month.
+    setup.loans.forEach(l=>{
+      if(l.lastEmiDate){
+        delete l.lastEmiDate;
+        if(l.emi && !setup.dues.some(d=> d.loan===l.id)) setup.dues.push({ id: hashId("u", "loanemi|" + l.name), name: l.name, catId: "loanemi", sub: "EMI", amount: l.emi, day: l.day||1, pm: "upi", card: "", loan: l.id, skips: [], u: Date.now() });
+      }
+    });
+    saveJ(STORE_KEY, txns); refreshAfterSetup();
+    pushToCloud([...before.keys()]);
+    return before;
+  }
+  document.getElementById("tidyApply").addEventListener("click", ()=>{
+    const picked = tidyPicked(); if(!picked.length) return;
+    const before = applyTidy(picked), n = before.size;
+    if(syncPushed) history.back(); else { setStack.pop(); showSetPage(setStack[setStack.length-1] || "menu"); }
+    showToast("Tidied " + n + " entr" + (n===1?"y":"ies"), "Undo", ()=>{
+      const now = Date.now();
+      txns = txns.map(t=> before.has(t.id) ? Object.assign(before.get(t.id), { u: now }) : t);
+      saveJ(STORE_KEY, txns); renderAll(); pushToCloud([...before.keys()]);
+    }, 8000);
+  });
+
+  // ---------- ONE-TAP SETUP LINK ----------
+  // A link ending in #setup=<data> fills in cards, points types, people, routes and loans, tidies
+  // old entries and adds the monthly payments found in your entries, after one confirm. Your
+  // details travel only in the link, never in the app's code. Every item gets an id made from
+  // its name, so opening the link twice, or on both phones, never adds anything twice.
+  function parseSetup(text){
+    const s = String(text||""), i = s.indexOf("#setup=");
+    if(i < 0) return null;
+    try{ const d = JSON.parse(unb64url(s.slice(i+7).trim())); return (d && typeof d==="object") ? d : null; }catch(e){ return null; }
+  }
+  const strArr = a=> Array.isArray(a) ? a : [];
+  const nm = v=> String(v||"").trim().slice(0,30);
+  function applySetup(d){
+    const now = Date.now(), at = Number(d.at) > 0 && Number(d.at) <= now ? Number(d.at) : now;
+    let added = 0;
+    strArr(d.points).forEach(p=>{
+      const name = nm(p.name); if(!name || rewards.some(r=> r.name.toLowerCase()===name.toLowerCase())) return;
+      rewards.push({ id: hashId("r", name), name, rate: Number(p.rate) > 0 ? Number(p.rate) : 1, u: now }); added++;
+    });
+    saveJ(REWARDS_KEY, rewards);
+    strArr(d.cards).forEach(c=>{
+      const name = nm(c.name); if(!name || setup.cards.some(x=> x.name.toLowerCase()===name.toLowerCase())) return;
+      const r = rewards.find(x=> x.name.toLowerCase()===nm(c.points).toLowerCase());
+      setup.cards.push({ id: hashId("c", name), name, owed: round2(Number(c.owed)||0), at, day: Math.min(31, Math.max(0, parseInt(c.day,10)||0)), earn: Number(c.earn)||0, reward: r ? r.id : "", u: now }); added++;
+    });
+    strArr(d.people).forEach(n=>{
+      const name = String(n||"").trim().slice(0,20); if(!name || setup.people.some(x=> x.name.toLowerCase()===name.toLowerCase())) return;
+      setup.people.push({ id: hashId("p", name), name, u: now }); added++;
+    });
+    const addRoute = (from, to, code)=>{
+      from = String(from||"").trim().slice(0,24); to = String(to||"").trim().slice(0,24);
+      if(!from || !to || setup.routes.some(x=> x.from.toLowerCase()===from.toLowerCase() && x.to.toLowerCase()===to.toLowerCase())) return;
+      setup.routes.push({ id: hashId("t", from + ">" + to), from, to, code: String(code||"").slice(0,12), u: now }); added++;
+    };
+    strArr(d.routes).forEach(r=>{
+      addRoute(r.from, r.to, r.code);
+      if(r.back!==false){ const m = String(r.code||"").match(/^(.+?)2(.+)$/i); addRoute(r.to, r.from, m ? m[2] + "2" + m[1] : ""); }
+    });
+    strArr(d.loans).forEach(x=>{
+      const name = nm(x.name); if(!name) return;
+      const l = setup.loans.find(y=> y.name.toLowerCase()===name.toLowerCase()) || (added++, findOrMakeLoan(name));
+      if(Number(x.emi) > 0 && !l.emi){ l.emi = Number(x.emi); l.day = parseInt(x.day,10) || l.day; l.u = now; }
+    });
+    saveSetup();
+    let tidied = 0;
+    if(d.tidy){ const ps = tidyProposals(); if(ps.length) tidied = applyTidy(ps).size; }
+    if(d.dues) dueSuggestions().forEach(s=>{
+      const id = hashId("u", s.catId + "|" + s.name);
+      if(setup.dues.some(x=> x.id===id)) return;
+      setup.dues.push(Object.assign({ id, skips: [], u: now }, s)); added++;
+    });
+    if(d.me && setup.people.some(p=> p.name===d.me)) prefs.me = d.me;
+    if(d.dues || d.tidy) prefs.tidyHidden = false;
+    savePrefs(); buildMethodChips(); refreshAfterSetup();
+    return { added, tidied };
+  }
+  function runSetupLink(){
+    const d = parseSetup(location.hash); if(!d) return;
+    try{ history.replaceState(null, "", location.pathname + location.search); }catch(e){}
+    const bits = [];
+    if(strArr(d.cards).length) bits.push(strArr(d.cards).length + " credit cards with what you owe on each");
+    if(strArr(d.points).length) bits.push(strArr(d.points).length + " points types");
+    if(strArr(d.people).length) bits.push("people: " + strArr(d.people).join(", "));
+    if(strArr(d.routes).length) bits.push(strArr(d.routes).length + " travel routes, both ways");
+    if(strArr(d.loans).length) bits.push("loans: " + strArr(d.loans).map(l=>l.name).join(", "));
+    let tidyLine = "";
+    if(d.tidy){
+      const ps = tidyProposals(), n = new Set(ps.map(p=>p.id)).size;
+      if(n){
+        const after = txns.map(t=> JSON.parse(JSON.stringify(t))), byId = new Map(after.map(t=>[t.id,t]));
+        ps.forEach(p=>{ const t = byId.get(p.id); if(t) applyTidyTo(t, p); });
+        const a = tidyTotals(txns).left, b = tidyTotals(after).left;
+        tidyLine = "tidy " + n + " old entries (Money left " + fmt(a) + " → " + fmt(b) + ")";
+        bits.push(tidyLine);
+      }
+    }
+    if(d.dues) bits.push("monthly payments found in your entries, for Due this month");
+    if(d.me) bits.push("this phone belongs to " + d.me);
+    if(!confirm("Set up Kharcha Pani on this phone?\n\n• " + bits.join("\n• ") + "\n\nNo amount or date of any entry changes. Anything already set up is left as it is.")) return;
+    const r = applySetup(d);
+    showToast("All set" + (r.tidied ? " · tidied " + r.tidied + " entries" : ""), "", null, 4000);
+  }
+  window.addEventListener("hashchange", ()=> whenUnlocked.then(runSetupLink));
 
   // ----- PIN lock -----
   // The PIN lives only on this phone, stored as a salted SHA-256 hash (never the PIN itself).
@@ -5003,6 +6141,9 @@ Reply with the JSON object only.`;
     document.getElementById("welStart").addEventListener("click", done);
     document.getElementById("welJoin").addEventListener("click", ()=>{ done(); openSettings("sync"); startScan(); });
   })();
+
+  // A setup link waits for the PIN screen, then runs before the one-time prompts below.
+  whenUnlocked.then(()=> setTimeout(runSetupLink, 300));
 
   // One-time offer to clear the stray payment method left on income entries by the old bug.
   // Nothing that produces a number reads this field for income, so no total can change.
