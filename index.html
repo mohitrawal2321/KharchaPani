@@ -1596,7 +1596,7 @@
 
   function buildBillPrompt(pantryNames) {
     const known = (pantryNames || []).slice(0, 300).join(", ");
-    return `You read photos of Indian shop bills (kirana, supermarket, DMart, Reliance, Blinkit, Zepto, Instamart, BigBasket, chemist) for a household pantry app.
+    return `You read photos of Indian shop bills (kirana, supermarket, DMart, Ratnadeep, Reliance, chemist) and screenshots of online order summaries (Blinkit, Zepto, Instamart, BigBasket, Amazon) for a household pantry app. A screenshot of an order summary or invoice counts as a bill.
 Copy what is PRINTED. Never add, subtract or work out any number yourself.
 
 status: "ok" if it is a bill or receipt you can read. "not_a_bill" if the photo is not a bill. "unreadable" if it is a bill but too blurry, dark or cut off to read the lines.
@@ -1704,8 +1704,12 @@ Reply with the JSON object only.`;
     if (bill.status === "unreadable") return { ok: false, message: "Couldn't read this bill. Try again in good light, with the whole bill flat and straight." };
     if (bill.status !== "ok") return { ok: false, message: "The AI's answer didn't make sense. Try again." };
 
+    // Your pantry names, also findable by their singular, so "Tomatoes" on a bill finds your "Tomato".
     const known = new Map();
+    const one = k => k.replace(/(oes|ies|s)$/, m => m === "ies" ? "y" : m === "oes" ? "o" : "");
     (ctx.pantryNames || []).forEach(n => { const k = String(n || "").trim().toLowerCase(); if (k && !known.has(k)) known.set(k, String(n).trim()); });
+    [...known.entries()].forEach(([k, n]) => { const s1 = one(k); if (s1 !== k && !known.has(s1)) known.set(s1, n); });
+    const findKnown = k => known.has(k) ? k : (known.has(one(k)) ? one(k) : null);
 
     const warnings = [];
     const lines = [];       // every bill line, for the sum
@@ -1721,8 +1725,9 @@ Reply with the JSON object only.`;
       if (kind !== "item") return;
       let name = cleanName(raw.name) || cleanName(raw.bill_text);
       if (!name) return;
-      const k = name.toLowerCase();
-      if (known.has(k)) name = known.get(k);
+      let k = name.toLowerCase();
+      const hit = findKnown(k);
+      if (hit) { name = known.get(hit); k = name.toLowerCase(); }
       const qty = String(raw.qty || "").replace(/\s+/g, " ").trim().slice(0, 20);
       const prev = byName.get(k);
       if (prev) {   // same thing twice on one bill: one row
@@ -1731,7 +1736,7 @@ Reply with the JSON object only.`;
         prev.times++;
         return;
       }
-      const row = { name, qty, price, billText: String(raw.bill_text || "").trim().slice(0, 40), known: known.has(k), take: true, times: 1 };
+      const row = { name, qty, price, billText: String(raw.bill_text || "").trim().slice(0, 40), known: !!hit, take: true, times: 1 };
       byName.set(k, row); rows.push(row);
     });
     if (!rows.length) return { ok: false, message: "Didn't find anything for the pantry on this bill." };
