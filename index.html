@@ -541,7 +541,7 @@
         <div class="sum-split">
           <div><span>Spent today</span><b id="todaySpent">&#8377;0</b></div>
           <div><span id="homeMonthLbl">Kharcha this month</span><b id="homeMonth">&#8377;0</b></div>
-          <div class="tap" id="homeCardBox"><span>Card owed</span><b class="bl" id="homeCard">&#8377;0</b></div>
+          <div class="tap" id="homeCardBox"><span id="homeCardLbl">Card owed</span><b class="bl" id="homeCard">&#8377;0</b></div>
         </div>
         <div class="sum-note" id="todayNote" style="display:none;"></div>
       </div>
@@ -691,7 +691,7 @@
 
       <div class="balance-cards">
         <div class="bal-card left"><div class="lbl">Money left</div><div class="val" id="lgMoneyLeft">&#8377;0</div></div>
-        <div class="bal-card cc"><div class="lbl">Card owed</div><div class="val" id="lgCCOwed">&#8377;0</div></div>
+        <div class="bal-card cc"><div class="lbl" id="lgCCLbl">Card owed</div><div class="val" id="lgCCOwed">&#8377;0</div></div>
       </div>
       <div class="note-box warn" id="ccDueNote" style="display:none;"></div>
       <div class="lg-warn" id="lgWarn" style="display:none;"></div>
@@ -1781,7 +1781,11 @@
     const ym = today.slice(0,7);
     document.getElementById("homeMonthLbl").textContent = "Kharcha in " + new Date(ym+"-01T00:00:00").toLocaleDateString("en-IN",{month:"short"});
     document.getElementById("homeMonth").textContent = fmt(monthKharcha(ym));
-    document.getElementById("homeCard").textContent = fmt(Math.max(0, cardOwedAll()));
+    // Bill payments bigger than the card purchases logged (usually a bill for spends from before
+    // you started logging) show as "Card paid ahead" instead of hiding behind ₹0.
+    const owedNow = cardOwedAll();
+    document.getElementById("homeCardLbl").textContent = owedNow < 0 ? "Card paid ahead" : "Card owed";
+    document.getElementById("homeCard").textContent = fmt(Math.abs(owedNow));
 
     renderAgain();
 
@@ -3508,8 +3512,9 @@
   function renderLedger(){
     const moneyLeft = moneyLeftAll();
     document.getElementById("lgMoneyLeft").textContent = (moneyLeft<0 ? "−" : "") + fmt(Math.abs(moneyLeft));
-    const owed = Math.max(0, cardOwedAll());
-    document.getElementById("lgCCOwed").textContent = fmt(owed);
+    const owedRaw = cardOwedAll(), owed = Math.max(0, owedRaw);
+    document.getElementById("lgCCLbl").textContent = owedRaw < 0 ? "Card paid ahead" : "Card owed";
+    document.getElementById("lgCCOwed").textContent = fmt(Math.abs(owedRaw));
     // Card bill reminder, only when a due day is set in Settings > Cards & points.
     const due = document.getElementById("ccDueNote");
     const dd = parseInt(prefs.ccDueDay,10);
@@ -3518,6 +3523,9 @@
       const pick = (yy,mm)=>{ const last = new Date(yy, mm, 0).getDate(); return new Date(yy, mm-1, Math.min(dd,last)); };
       let when = pick(y,m); if(today > when.getDate()) when = pick(m===12 ? y+1 : y, m===12 ? 1 : m+1);
       due.innerHTML = "<b>Card bill due " + when.toLocaleDateString("en-IN",{ day:"numeric", month:"short" }) + ".</b> " + fmt(owed) + " comes out of Money left when you log the payment.";
+      due.style.display = "block";
+    } else if(owedRaw < 0){
+      due.innerHTML = "<b>Your card bill payments are " + fmt(-owedRaw) + " more than the card purchases logged here.</b> This usually means a bill covered spends from before you started logging. New card purchases count against this first, so Card owed stays at ₹0 until they pass it.";
       due.style.display = "block";
     } else due.style.display = "none";
     renderRewardsCard();
