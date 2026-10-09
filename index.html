@@ -1185,6 +1185,7 @@
     <div class="setv-page" data-page="dues">
       <div class="scr-head"><button class="icon-btn" data-back aria-label="Back">&lsaquo;</button><h1>Due every month</h1></div>
       <div class="helper-text">These show on Home each month until you log them (tap &#10003;) or skip them. Nothing is saved without your tap.</div>
+      <div class="seg" id="dueWhoSeg" style="display:none;"></div>
       <div class="grp pad" id="duesList"></div>
       <div id="duesSuggestBox" style="display:none;">
         <div class="set-title">Seen every month in your entries</div>
@@ -2443,8 +2444,17 @@ Reply with the JSON object only.`;
   // ---------- DUE THIS MONTH ----------
   // Fixed monthly payments (and salary). One counts as done when an entry this month is linked
   // to it, or looks like it (same category, same name or type, amount within 20%).
+  // Each person has their own list. Dues with no name belong to the main person.
+  function dueOwner(d){ return d.who || mainPerson(); }
+  // Whose list Home shows: the person picked in the switch, else whoever uses this phone.
+  function duePerson(){
+    const v = curView(); if(v) return v;
+    return (setup.people.length>1 && setup.people.some(p=>p.name===prefs.me)) ? prefs.me : "";
+  }
+  function duesOf(who){ return who ? setup.dues.filter(d=> dueOwner(d)===who) : setup.dues; }
   function dueDoneTxn(d, ym){
-    return txns.find(t=> monthKey(t.date)===ym && (t.due===d.id || (
+    const mine = t=> setup.people.length<2 || t.due===d.id || ownerOf(t)===dueOwner(d);
+    return txns.find(t=> monthKey(t.date)===ym && mine(t) && (t.due===d.id || (
       !t.due && t.catId===d.catId &&
       ((t.note||"").trim().toLowerCase()===d.name.toLowerCase() || (d.sub && t.subcategory===d.sub) || (d.loan && t.loan===d.loan)) &&
       Math.abs(t.amount - d.amount) <= Math.max(1, d.amount*0.2))));
@@ -2455,10 +2465,11 @@ Reply with the JSON object only.`;
   }
   function renderDue(){
     const card = document.getElementById("dueCard"), list = document.getElementById("dueList");
-    if(!setup.dues.length){ card.style.display = "none"; return; }
+    const myDues = duesOf(duePerson());
+    if(!myDues.length){ card.style.display = "none"; return; }
     const ym = todayISO().slice(0,7);
     const open = [], done = [];
-    [...setup.dues].sort((a,b)=> (a.day||0)-(b.day||0)).forEach(d=>{
+    [...myDues].sort((a,b)=> (a.day||0)-(b.day||0)).forEach(d=>{
       if((d.skips||[]).includes(ym)) return;
       if(dueDoneTxn(d, ym)) done.push(d); else open.push(d);
     });
@@ -2473,7 +2484,7 @@ Reply with the JSON object only.`;
     list.innerHTML = html;
     list.querySelectorAll("[data-log]").forEach(b=> b.addEventListener("click", ()=>{
       const d = setup.dues.find(x=>x.id===b.dataset.log); if(!d) return;
-      openSheet(d.catId, null, { amount: d.amount, note: d.name, subcategory: d.sub||"", paymentMethod: d.pm||"", card: d.card||"", loan: d.loan||"", due: d.id });
+      openSheet(d.catId, null, { amount: d.amount, note: d.name, subcategory: d.sub||"", paymentMethod: d.pm||"", card: d.card||"", loan: d.loan||"", due: d.id, by: dueOwner(d) });
     }));
     list.querySelectorAll("[data-skip]").forEach(b=> b.addEventListener("click", ()=>{
       const d = setup.dues.find(x=>x.id===b.dataset.skip); if(!d) return;
@@ -5592,9 +5603,10 @@ Reply with the JSON object only.`;
 
   // Due every month
   const DUE_SKIP_CATS = new Set(["transport","groceries","outsidefood","shopping","entertainment","travel","medical","personal","gifts"]);
-  function dueSuggestions(){
+  let duePageWho = "";
+  function dueSuggestions(who){
     const ym = todayISO().slice(0,7), months = [prevYM(ym), prevYM(prevYM(ym)), prevYM(prevYM(prevYM(ym)))];
-    const recent = txns.filter(t=> !t.isCC && !DUE_SKIP_CATS.has(t.catId) && t.catId!=="loan" && t.catId!=="opening" && t.type!=="transfer" && !t.receivedAs && (months.includes(monthKey(t.date)) || monthKey(t.date)===ym))
+    const recent = txns.filter(t=> (!who || ownerOf(t)===who) && !t.isCC && !DUE_SKIP_CATS.has(t.catId) && t.catId!=="loan" && t.catId!=="opening" && t.type!=="transfer" && !t.receivedAs && (months.includes(monthKey(t.date)) || monthKey(t.date)===ym))
       .sort((a,b)=> b.date.localeCompare(a.date));
     const out = [], seen = new Set();
     recent.forEach(seed=>{
@@ -5608,7 +5620,7 @@ Reply with the JSON object only.`;
       if(hits.filter(h=>h.length===1).length < 2 || hits.some(h=>h.length>2)) return;
       const amts = hits.filter(h=>h.length).map(h=>h[0].amount), mid = median(amts);
       if(amts.some(a=> Math.abs(a-mid) > mid*0.15)) return;
-      const already = setup.dues.some(d=> d.catId===seed.catId && (d.name.toLowerCase()===label.toLowerCase() || (d.sub && d.sub===seed.subcategory) || (d.loan && d.loan===seed.loan)));
+      const already = duesOf(who).some(d=> d.catId===seed.catId && (d.name.toLowerCase()===label.toLowerCase() || (d.sub && d.sub===seed.subcategory) || (d.loan && d.loan===seed.loan)));
       if(already) return;
       const last = hits.find(h=>h.length)[0], lp = partsOf(last);
       const loan = seed.loan && loanById(seed.loan);
@@ -5618,8 +5630,13 @@ Reply with the JSON object only.`;
     return out.slice(0, 12);
   }
   function renderDuesPage(){
-    const list = document.getElementById("duesList");
-    const ds = [...setup.dues].sort((a,b)=>(a.day||0)-(b.day||0));
+    const list = document.getElementById("duesList"), seg = document.getElementById("dueWhoSeg");
+    const names = setup.people.length>1 && mainPerson() ? peopleMainFirst().map(p=>p.name) : [];
+    if(!names.includes(duePageWho)) duePageWho = names.length ? (duePerson() || names[0]) : "";
+    seg.style.display = names.length ? "flex" : "none";
+    seg.innerHTML = names.map(n=>`<button class="${n===duePageWho?"on":""}" data-dw="${esc(n)}" style="flex:1;">${esc(n)}'s</button>`).join("");
+    seg.querySelectorAll("[data-dw]").forEach(b=> b.addEventListener("click", ()=>{ duePageWho = b.dataset.dw; renderDuesPage(); }));
+    const ds = [...duesOf(duePageWho)].sort((a,b)=>(a.day||0)-(b.day||0));
     list.innerHTML = ds.length ? ds.map(d=>{ const c = catMap[d.catId]||catMap.others;
       return `<div class="set-row"><div><div>${c.emoji} ${esc(d.name)}</div><div class="sub">${fmt(d.amount)} · ${ordinal(d.day||1)} of every month · ${esc(c.name)}</div></div><div class="acts"><button class="link-btn" data-dedit="${esc(d.id)}">Amount</button><button class="link-btn" style="color:var(--expense);" data-ddel="${esc(d.id)}">Remove</button></div></div>`; }).join("")
       : `<div class="helper-text" style="margin:0;">Nothing yet. Add from the suggestions below, or your own.</div>`;
@@ -5633,13 +5650,13 @@ Reply with the JSON object only.`;
       const n = parseAmt(v); if(!(n>0)){ alert("That should be an amount."); return; }
       d.amount = n; d.u = Date.now(); refreshAfterSetup(); renderDuesPage();
     }));
-    const sug = dueSuggestions(), sbox = document.getElementById("duesSuggest");
+    const sug = dueSuggestions(duePageWho), sbox = document.getElementById("duesSuggest");
     document.getElementById("duesSuggestBox").style.display = sug.length ? "block" : "none";
     sbox.innerHTML = sug.map((s,i)=>{ const c = catMap[s.catId]||catMap.others;
       return `<div class="set-row"><div><div>${c.emoji} ${esc(s.name)}</div><div class="sub">about ${fmt(s.amount)} around the ${ordinal(s.day)}</div></div><div class="acts"><button class="link-btn" data-sadd="${i}">+ Add</button></div></div>`; }).join("");
     sbox.querySelectorAll("[data-sadd]").forEach(b=> b.addEventListener("click", ()=>{
       const s = sug[+b.dataset.sadd]; if(!s) return;
-      setup.dues.push(Object.assign({ id: "u" + uid(), skips: [], u: Date.now() }, s)); refreshAfterSetup(); renderDuesPage();
+      setup.dues.push(Object.assign({ id: "u" + uid(), skips: [], u: Date.now() }, s, duePageWho ? { who: duePageWho } : {})); refreshAfterSetup(); renderDuesPage();
     }));
     const sel = document.getElementById("dfCat");
     if(!sel.options.length) sel.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}">${c.emoji} ${esc(c.name)}</option>`).join("");
@@ -5651,7 +5668,7 @@ Reply with the JSON object only.`;
     if(!name){ alert("Give it a name, e.g. Netflix."); return; }
     if(!(amount>0)){ alert("Amount should be more than ₹0."); return; }
     if(!(day>=1 && day<=31)){ alert("Day should be 1 to 31."); return; }
-    setup.dues.push({ id: "u" + uid(), name, catId, sub: "", amount, day, pm: catId==="income" ? "" : "upi", card: "", loan: "", skips: [], u: Date.now() });
+    setup.dues.push(Object.assign({ id: "u" + uid(), name, catId, sub: "", amount, day, pm: catId==="income" ? "" : "upi", card: "", loan: "", skips: [], u: Date.now() }, duePageWho ? { who: duePageWho } : {}));
     ["dfName","dfAmt","dfDay"].forEach(id=> document.getElementById(id).value = "");
     refreshAfterSetup(); renderDuesPage();
   });
