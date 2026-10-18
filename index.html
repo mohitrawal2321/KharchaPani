@@ -575,6 +575,9 @@
   .cardx .t .v{ font-weight:800; font-size:16px; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .cardx .s{ font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.5; }
   .cardx .acts{ display:flex; gap:14px; margin-top:8px; }
+  .emi-bar{ height:6px; background:var(--card2); border-radius:3px; margin:8px 0 4px; overflow:hidden; }
+  .emi-bar i{ display:block; height:100%; background:var(--accent); border-radius:3px; }
+  .emi-tag{ display:inline-block; font-size:10.5px; font-weight:700; color:var(--blue, var(--accent)); background:var(--blue-dim, var(--accent-dim)); border-radius:6px; padding:1px 6px; margin-left:4px; vertical-align:2px; }
   .big-total{ font-family:var(--display); font-size:30px; font-weight:700; margin:0 2px 10px; }
   .tidy-row{ display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--border); font-size:12.5px; }
   .tidy-row:first-child{ border-top:0; }
@@ -1177,7 +1180,21 @@
       <div class="scr-head"><button class="icon-btn" data-back aria-label="Back">&lsaquo;</button><h1>Loans</h1></div>
       <div id="loansTop"></div>
       <div id="loansList"></div>
-      <div class="note-box ok">Borrowed money goes into your bank balance but is <b>not income</b>. Each EMI or repayment comes out of the bank and lowers what you owe.</div>
+      <div class="inline-form" id="emiForm" style="display:none; margin:0 0 12px;">
+        <div class="set-title" id="emiFormTitle" style="margin-top:2px;">New EMI</div>
+        <div class="row-label">What is it?</div>
+        <input type="text" id="efName" class="inp" maxlength="30" placeholder="e.g. Laptop, Scooter">
+        <div class="two-inputs" style="margin-top:10px;"><div style="flex:1;"><div class="row-label">What it cost</div><input type="text" inputmode="decimal" id="efCost" class="inp" placeholder="&#8377; e.g. 81000"></div><div style="flex:1;"><div class="row-label">How many months</div><input type="text" inputmode="numeric" id="efMonths" class="inp" maxlength="3" placeholder="e.g. 12"></div></div>
+        <div class="row-label" style="margin-top:10px;">Paid from</div>
+        <div class="chip-row" id="efFrom"></div>
+        <div class="two-inputs" style="margin-top:10px;"><div style="flex:1;"><div class="row-label">First EMI date</div><input type="date" id="efFirst" class="inp"></div><div style="flex:1;"><div class="row-label">EMIs already paid</div><input type="text" inputmode="numeric" id="efPaid" class="inp" maxlength="3" placeholder="0"></div></div>
+        <div class="row-label" style="margin-top:10px;">Monthly EMI</div>
+        <input type="text" inputmode="decimal" id="efEmi" class="inp" placeholder="&#8377;">
+        <div class="helper-text" id="efEmiHint" style="margin:6px 2px 0;"></div>
+        <div class="note-box ok" id="efSum" style="margin:10px 0 0; display:none;"></div>
+        <div class="acts" style="margin-top:10px;"><button type="button" class="btn ghost small" id="efCancel" style="flex:1;">Cancel</button><button type="button" class="btn primary small" id="efSave" style="flex:2;">Save EMI</button></div>
+      </div>
+      <div class="note-box ok">Borrowed money goes into your bank balance but is <b>not income</b>. An EMI from the bank comes out of your bank balance. An EMI on a card adds to what you owe on that card. Either way it lowers what you still owe on the loan.</div>
       <div class="sheet-actions" style="position:static; padding:0; border:0; margin-bottom:12px;"><button class="btn ghost" id="loanBorrowBtn">+ Borrowed money</button><button class="btn primary" id="loanNewBtn">+ New EMI</button></div>
     </div>
 
@@ -2088,6 +2105,8 @@ Reply with the JSON object only.`;
   // Things you set up once, shared between phones, each merged entry by entry like rewards:
   //  cards:  {id, name, owed, at, day, earn, reward, u}  owed = what the card's app said at time `at`
   //  loans:  {id, name, emi, day, total, at, closed, u}   total (optional) = owed at time `at`
+  //          EMIs set up with the form also have {cost, months, paid0, first, pm, card}:
+  //          paid0 = EMIs already paid at time `at`, pm/card = paid from the bank ("upi") or a card
   //  dues:   {id, name, catId, sub, amount, day, pm, card, loan, skips:["YYYY-MM"], u}
   //  routes: {id, from, to, code, u}
   //  people: {id, name, u}
@@ -2345,6 +2364,19 @@ Reply with the JSON object only.`;
     if(owed!=null) owed = round2(Math.max(0, owed));
     return { borrowed, repaid, owed };
   }
+  // EMIs paid on a loan set up with a number of months: the ones already paid when it was
+  // set up, plus every EMI logged against it since.
+  function emiPaidCount(l){ return (l.paid0||0) + txns.filter(t=> t.loan===l.id && t.type==="expense" && (!l.at || afterStart(t, l.at))).length; }
+  // After the last EMI is logged, the loan closes itself and leaves Due this month.
+  function emiCheckDone(id){
+    const l = loanById(id);
+    if(!l || l.closed || !l.months || emiPaidCount(l) < l.months) return;
+    l.closed = true; l.u = Date.now();
+    const ds = setup.dues.filter(d=> d.loan===l.id);
+    if(ds.length){ tombstone("dues", ds.map(d=>d.id)); setup.dues = setup.dues.filter(d=> d.loan!==l.id); }
+    refreshAfterSetup();
+    showToast(l.name + " is fully paid and closed \u{1F389}");
+  }
   function loansOwedTotal(){ return setup.loans.filter(l=>!l.closed).reduce((s,l)=> s + (loanState(l).owed||0), 0); }
   // Kharcha for one month: money that actually left the bank (same rule as Insights and the ledger).
   function monthKharcha(ym, uptoDay){
@@ -2476,8 +2508,9 @@ Reply with the JSON object only.`;
     card.style.display = "block";
     document.getElementById("dueMonth").textContent = new Date(ym+"-01T00:00:00").toLocaleDateString("en-IN",{month:"short"});
     let html = open.map(d=>{
-      const c = catMap[d.catId] || catMap.others;
-      return `<div class="due-row"><div class="e">${c.emoji}</div><div class="m"><b>${esc(d.name)}</b><span>${Number(todayISO().slice(8,10)) > (d.day||1) ? "Was due" : "Due"} ${dueDateLabel(d, ym)} · ${esc(c.name)}</span></div><div class="v">${fmt(d.amount)}</div><button class="due-ok" data-log="${esc(d.id)}" aria-label="Log it">✓</button><button class="due-skip" data-skip="${esc(d.id)}">Skip</button></div>`;
+      const c = catMap[d.catId] || catMap.others, l = d.loan && loanById(d.loan);
+      const extra = (d.pm==="credit" && cardById(d.card) ? " · " + esc(cardById(d.card).name) : "") + (l && l.months ? " · " + Math.min(l.months, emiPaidCount(l)+1) + " of " + l.months : "");
+      return `<div class="due-row"><div class="e">${c.emoji}</div><div class="m"><b>${esc(d.name)}</b><span>${Number(todayISO().slice(8,10)) > (d.day||1) ? "Was due" : "Due"} ${dueDateLabel(d, ym)} · ${esc(c.name)}${extra}</span></div><div class="v">${fmt(d.amount)}</div><button class="due-ok" data-log="${esc(d.id)}" aria-label="Log it">✓</button><button class="due-skip" data-skip="${esc(d.id)}">Skip</button></div>`;
     }).join("");
     if(done.length) html += `<div class="due-done">✓ Logged: ${done.map(d=>esc(d.name)).join(", ")}</div>`;
     if(!open.length && !done.length) html = `<div class="due-done">Nothing left for this month</div>`;
@@ -3332,6 +3365,7 @@ Reply with the JSON object only.`;
     }
     closeSheet(); renderCatGrid(); renderRecent(); renderHistory(); renderLedger(); pushToCloud([newTxn.id]);
     showToast("Saved " + rupeeExact(newTxn.amount) + (newTxn.note ? " · " + newTxn.note : ""));
+    if(newTxn.loan && newTxn.type==="expense") emiCheckDone(newTxn.loan);
   });
 
   document.getElementById("updateBtn").addEventListener("click", ()=>{
@@ -5536,19 +5570,29 @@ Reply with the JSON object only.`;
       : `<div class="helper-text">No loans yet. Add money you borrowed, or an EMI.</div>`;
     const row = l=>{
       const s = loanState(l), bits = [];
-      if(l.emi) bits.push(fmt(l.emi) + " EMI" + (l.day ? " on the " + ordinal(l.day) : ""));
-      if(s.borrowed>0) bits.push("Borrowed " + fmt(s.borrowed));
-      if(s.repaid>0) bits.push("Paid back " + fmt(s.repaid));
+      if(l.emi) bits.push(fmt(l.emi) + (l.months ? "" : " EMI") + (l.day ? " on the " + ordinal(l.day) : ""));
+      let bar = "";
+      if(l.months){
+        const paid = Math.min(l.months, emiPaidCount(l));
+        bits.push(paid + " of " + l.months + " paid");
+        if(l.first) bits.push((l.closed ? "ended " : "ends ") + ymLabel(ymAdd(l.first.slice(0,7), l.months-1)));
+        bar = `<div class="emi-bar"><i style="width:${Math.round(paid/l.months*100)}%"></i></div>`;
+      } else {
+        if(s.borrowed>0) bits.push("Borrowed " + fmt(s.borrowed));
+        if(s.repaid>0) bits.push("Paid back " + fmt(s.repaid));
+      }
+      const from = l.pm==="credit" ? (cardById(l.card) ? cardById(l.card).name.split(/\s+/)[0] + " card" : "Card") : l.pm ? "Bank" : "";
       const val = l.closed ? "Closed" : (s.owed==null ? `<span class="muted" style="font-size:12px;">Total not set</span>` : fmt(s.owed));
-      return `<div class="cardx"${l.closed ? ` style="opacity:.6;"` : ""}><div class="t"><b>\u{1F3E6} ${esc(l.name)}</b><span class="v">${val}</span></div>
-        <div class="s">${bits.join(" · ") || "Nothing logged yet"}</div>
+      return `<div class="cardx"${l.closed ? ` style="opacity:.6;"` : ""}><div class="t"><b>\u{1F3E6} ${esc(l.name)}${from ? ` <span class="emi-tag">${esc(from)}</span>` : ""}</b><span class="v">${val}</span></div>
+        <div class="s">${bits.join(" · ") || "Nothing logged yet"}</div>${bar}
         <div class="acts">${l.closed ? "" : `<button class="link-btn" data-lpay="${esc(l.id)}">${l.emi ? "Log EMI" : "Log repayment"}</button><button class="link-btn" data-ltot="${esc(l.id)}">Set total left</button>`}<button class="link-btn" data-ledit="${esc(l.id)}">Edit</button><button class="link-btn" data-lclose="${esc(l.id)}">${l.closed ? "Reopen" : "Close"}</button></div></div>`;
     };
     list.innerHTML = [...open, ...closed].map(row).join("");
     const L = id=> loanById(id);
     list.querySelectorAll("[data-lpay]").forEach(b=> b.addEventListener("click", ()=>{
       const l = L(b.dataset.lpay); if(!l) return;
-      fromSettings(()=> openSheet("loanemi", null, { amount: l.emi||0, note: l.name, subcategory: l.emi ? "EMI" : "Repayment", loan: l.id }));
+      const due = setup.dues.find(d=> d.loan===l.id);
+      fromSettings(()=> openSheet("loanemi", null, { amount: l.emi||0, note: l.name, subcategory: l.emi ? "EMI" : "Repayment", loan: l.id, paymentMethod: l.pm||"", card: l.card||"", due: due ? due.id : "" }));
     }));
     list.querySelectorAll("[data-ltot]").forEach(b=> b.addEventListener("click", ()=>{
       const l = L(b.dataset.ltot); if(!l) return;
@@ -5560,6 +5604,7 @@ Reply with the JSON object only.`;
     }));
     list.querySelectorAll("[data-ledit]").forEach(b=> b.addEventListener("click", ()=>{
       const l = L(b.dataset.ledit); if(!l) return;
+      if(l.emi){ openEmiForm(l); return; }
       const n = prompt("Name of the loan", l.name); if(n==null) return;
       const name = n.trim().slice(0,30) || l.name;
       const e = prompt("Monthly EMI in ₹ (leave empty if there's no fixed EMI)", l.emi ? String(l.emi) : ""); if(e==null) return;
@@ -5587,19 +5632,103 @@ Reply with the JSON object only.`;
     const l = findOrMakeLoan(n.trim().slice(0,30)); refreshAfterSetup();
     fromSettings(()=> openSheet("loan", null, { loan: l.id, note: "From " + l.name }));
   });
-  document.getElementById("loanNewBtn").addEventListener("click", ()=>{
-    const n = prompt("Name of the loan, e.g. Scooter EMI"); if(n==null || !n.trim()) return;
-    const e = prompt("Monthly EMI in ₹"); if(e==null) return;
-    const emi = parseAmt(e); if(!(emi>0)){ alert("EMI should be an amount, e.g. 4500"); return; }
-    const d = prompt("Day of the month it's paid (1-31)"); if(d==null) return;
-    const day = parseInt(d,10); if(!(day>=1 && day<=31)){ alert("Day should be 1 to 31."); return; }
-    const t = prompt("Total left to pay today, if you know it (leave empty if not)", ""); if(t==null) return;
-    const total = t.trim() ? parseAmt(t) : null;
-    const l = findOrMakeLoan(n.trim().slice(0,30), { emi, day, total: (total!=null && !isNaN(total)) ? total : null, at: (total!=null && !isNaN(total)) ? Date.now() : 0 });
-    if(!setup.dues.some(x=> x.loan===l.id)) setup.dues.push({ id: "u" + uid(), name: l.name, catId: "loanemi", sub: "EMI", amount: emi, day, pm: "upi", card: "", loan: l.id, skips: [], u: Date.now() });
+  // ----- EMI form (new or edit) -----
+  // With a price and a number of months, the monthly EMI is worked out (price ÷ months) until
+  // you type your own (an EMI with interest). "Paid from" is the bank or one card. What's left
+  // to pay = EMI × months not paid yet. Each EMI logged lowers it; the last one closes the loan.
+  function ymAdd(ym, n){ let [y,m] = ym.split("-").map(Number); m += n; y += Math.floor((m-1)/12); m = ((m-1)%12+12)%12+1; return y + "-" + String(m).padStart(2,"0"); }
+  function ymLabel(ym){ return new Date(ym+"-01T00:00:00").toLocaleDateString("en-IN",{ month:"short", year:"numeric" }); }
+  const ef = id=> document.getElementById(id);
+  let emiEdit = null, emiFrom = "upi", emiTouched = false, emiPaidTouched = false, emiDateTouched = false;
+  function nextDateOn(day){
+    const t = todayISO(), [y,m] = t.split("-").map(Number);
+    const at = (yy,mm)=> yy + "-" + String(mm).padStart(2,"0") + "-" + String(Math.min(day, new Date(yy,mm,0).getDate())).padStart(2,"0");
+    let d = at(y,m); if(d < t) d = m===12 ? at(y+1,1) : at(y,m+1);
+    return d;
+  }
+  // EMIs whose month is before this one; this month's shows in Due this month to log.
+  function emiPaidGuess(first, months){
+    if(!first) return 0;
+    const ym = todayISO().slice(0,7); let n = 0, k = first.slice(0,7);
+    while(k < ym && n < 600){ n++; k = ymAdd(k,1); }
+    return months ? Math.min(n, months) : n;
+  }
+  function emiNum(id){ const v = ef(id).value.trim(); return v ? parseAmt(v) : NaN; }
+  function emiRefresh(){
+    ef("efFrom").innerHTML = "";
+    [["upi","\u{1F3E6} Bank"], ...setup.cards.map(c=>[c.id, "\u{1F4B3} " + c.name])].forEach(([v,label])=>{
+      const el = document.createElement("button"); el.type = "button";
+      el.className = "chip" + (emiFrom===v ? " active" : ""); el.textContent = label;
+      el.addEventListener("click", ()=>{
+        emiFrom = v; const c = cardById(v);
+        if(!emiDateTouched && c && c.day) ef("efFirst").value = nextDateOn(c.day);
+        emiRefresh();
+      });
+      ef("efFrom").appendChild(el);
+    });
+    const cost = emiNum("efCost"), months = parseInt(ef("efMonths").value,10);
+    if(!emiTouched && cost>0 && months>0) ef("efEmi").value = String(round2(cost/months));
+    if(!emiPaidTouched) ef("efPaid").value = String(emiPaidGuess(ef("efFirst").value, months>0 ? months : 0));
+    const emi = emiNum("efEmi");
+    ef("efEmiHint").textContent = (cost>0 && months>0)
+      ? (Math.abs(emi*months - cost) < 1 ? "Worked out as " + fmt(cost) + " ÷ " + months + ". If your EMI has interest, type the amount your statement shows." : "Your EMI × " + months + " = " + fmt(round2(emi*months)) + ", " + fmt(round2(Math.abs(emi*months - cost))) + (emi*months > cost ? " more" : " less") + " than the price (interest or fees).")
+      : "Add the price and months to work it out, or type the EMI.";
+    const sum = ef("efSum");
+    if(emi>0 && months>0 && ef("efFirst").value){
+      const paid = Math.min(months, parseInt(ef("efPaid").value,10)||0), c = cardById(emiFrom);
+      sum.innerHTML = `<b>${fmt(emi)} a month for ${months} months</b><br>Last EMI: ${ymLabel(ymAdd(ef("efFirst").value.slice(0,7), months-1))} · Left to pay: ${fmt(round2(emi*(months-paid)))}<br>` +
+        (c ? `Each month it adds to what you owe on the ${esc(c.name)} card. You pay it when you pay the card bill.` : `Each month it comes out of your bank.`);
+      sum.style.display = "block";
+    } else sum.style.display = "none";
+  }
+  function openEmiForm(l){
+    emiEdit = l; emiTouched = !!l; emiPaidTouched = !!(l && l.months); emiDateTouched = !!(l && l.first);
+    emiFrom = l && l.pm==="credit" && cardById(l.card) ? l.card : "upi";
+    ef("emiFormTitle").textContent = l ? "Edit " + l.name : "New EMI";
+    ef("efName").value = l ? l.name : "";
+    ef("efCost").value = l && l.cost ? String(l.cost) : "";
+    ef("efMonths").value = l && l.months ? String(l.months) : "";
+    ef("efEmi").value = l && l.emi ? String(l.emi) : "";
+    ef("efFirst").value = l && l.first ? l.first : (l && l.day ? nextDateOn(l.day) : todayISO());
+    ef("efPaid").value = l && l.months ? String(Math.min(l.months, emiPaidCount(l))) : "0";
+    emiRefresh();
+    ef("emiForm").style.display = "block";
+    ef("emiForm").scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+  ["efCost","efMonths"].forEach(id=> ef(id).addEventListener("input", emiRefresh));
+  ef("efEmi").addEventListener("input", ()=>{ emiTouched = !!ef("efEmi").value.trim(); emiRefresh(); });
+  ef("efPaid").addEventListener("input", ()=>{ emiPaidTouched = true; emiRefresh(); });
+  ef("efFirst").addEventListener("input", ()=>{ emiDateTouched = true; emiRefresh(); });
+  ef("efCancel").addEventListener("click", ()=>{ ef("emiForm").style.display = "none"; emiEdit = null; });
+  ef("efSave").addEventListener("click", ()=>{
+    const name = ef("efName").value.trim().slice(0,30);
+    const cost = emiNum("efCost"), emi = emiNum("efEmi"), first = ef("efFirst").value;
+    const mv = ef("efMonths").value.trim(), months = mv ? parseInt(mv,10) : 0;
+    if(!name){ alert("Give it a name, e.g. Laptop."); return; }
+    if(mv && !(months>=1 && months<=600)){ alert("Months should be a number, e.g. 12."); return; }
+    if(!(emi>0)){ alert("Monthly EMI should be an amount, e.g. 6750."); return; }
+    if(!first){ alert("Pick the date of the first EMI."); return; }
+    const paid0 = months ? Math.max(0, Math.min(months, parseInt(ef("efPaid").value,10)||0)) : 0;
+    if(months && paid0>=months){ alert("All " + months + " EMIs are already paid, so there's nothing left to track."); return; }
+    const c = cardById(emiFrom), day = Number(first.slice(8,10));
+    const fields = { name, emi, day, cost: cost>0 ? cost : 0, months, first, pm: c ? "credit" : "upi", card: c ? c.id : "", u: Date.now() };
+    if(months) Object.assign(fields, { paid0, total: round2(emi*(months-paid0)), at: Date.now() });
+    let l = emiEdit;
+    if(l) Object.assign(l, fields);
+    else {
+      if(!months && cost>0) Object.assign(fields, { total: cost, at: Date.now() });
+      l = findOrMakeLoan(name, fields);
+      if(l.u !== fields.u) Object.assign(l, fields);
+    }
+    const due = setup.dues.find(x=> x.loan===l.id), dueFields = { name: l.name, catId: "loanemi", sub: "EMI", amount: emi, day, pm: fields.pm, card: fields.card, u: Date.now() };
+    if(due) Object.assign(due, dueFields);
+    else if(!l.closed) setup.dues.push(Object.assign({ id: "u" + uid(), loan: l.id, skips: [] }, dueFields));
+    ef("emiForm").style.display = "none";
+    const isNew = !emiEdit; emiEdit = null;
     refreshAfterSetup(); renderLoansPage();
-    showToast(l.name + " added. Its EMI shows in Due this month.");
+    showToast(isNew ? l.name + " added. Its EMI shows in Due this month." : l.name + " updated");
   });
+  document.getElementById("loanNewBtn").addEventListener("click", ()=> openEmiForm(null));
 
   // Due every month
   const DUE_SKIP_CATS = new Set(["transport","groceries","outsidefood","shopping","entertainment","travel","medical","personal","gifts"]);
