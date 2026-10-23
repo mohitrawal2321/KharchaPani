@@ -5,51 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Kharcha Pani</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b0e11">
+<meta name="theme-color" content="#000000">
 <meta name="description" content="Track spending, income, reward points and your pantry.">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script>try{ if(localStorage.getItem("kharchapani_pin_v1")) document.documentElement.classList.add("locked"); var kp=JSON.parse(localStorage.getItem("kharchapani_prefs_v1")||"{}"); if(kp.theme==="dark"||kp.theme==="light") document.documentElement.setAttribute("data-theme", kp.theme); }catch(e){}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Lora:wght@700&display=swap" rel="stylesheet">
+<script>try{ if(localStorage.getItem("kharchapani_pin_v1")) document.documentElement.classList.add("locked"); var kp=JSON.parse(localStorage.getItem("kharchapani_prefs_v1")||"{}"); document.documentElement.setAttribute("data-theme", (kp.theme==="light" || (kp.theme==="auto" && kp.themeV2 && matchMedia("(prefers-color-scheme: light)").matches)) ? "light" : "dark"); }catch(e){}</script>
 <style>
   /* ---------- THEME ----------
      Dark by default. Light follows the phone's setting unless Settings > Look picks one.
      Colours: mint = money left / good, blue = credit card, saffron = points and warnings, rose = spending. */
   :root{
-    --bg:#0a0d0f; --bg2:#11161a; --card:#11161a; --card2:#161c20; --border:#1f272b; --faint:#4d5753;
-    --text:#f1f4f3; --muted:#7f8a86;
-    --accent:#5fd3a2; --accent-dim:#13251d; --accent-line:#22473a; --on-accent:#04190f;
-    --income:#5fd3a2; --expense:#e07c7c; --expense-dim:#2a1616; --expense-line:#4a2626;
-    --blue:#7aa8f0; --blue-dim:#151f2e; --blue-line:#2b3c58;
-    --saffron:#f0b45a; --saffron-dim:#2a2213; --saffron-line:#4a3a1c;
-    --sum-a:#12241c; --sum-b:#0f1618; --scrim:rgba(0,0,0,.6); --shadow:rgba(0,0,0,.45);
-    --radius:18px; --radius-sm:13px;
-    --ui:'Manrope',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    --display:'Fraunces',Georgia,"Times New Roman",serif;
+    --bg:#000000; --bg2:#171312; --card:#211c1a; --card2:#2c2624; --border:#332c29; --faint:#6b605b;
+    --text:#f3eeeb; --muted:#b3a9a4;
+    --accent:#f2a98b; --accent-dim:#3a2a24; --accent-line:#6b4434; --on-accent:#1b1210;
+    --income:#4fd17f; --expense:#ff8a7a; --expense-dim:#2e1a18; --expense-line:#5a2c26;
+    --blue:#8fb3ff; --blue-dim:#1a2233; --blue-line:#2e3d5c;
+    --saffron:#f3c98b; --saffron-dim:#2e2418; --saffron-line:#5a4526;
+    --sum-a:#211c1a; --sum-b:#211c1a; --scrim:rgba(0,0,0,.65); --shadow:rgba(0,0,0,.5);
+    --radius:26px; --radius-sm:18px;
+    --ui:Roboto,"Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;
+    --display:var(--ui);
     color-scheme:dark;
   }
   :root[data-theme="light"]{
-    --bg:#f6f7f4; --bg2:#ffffff; --card:#ffffff; --card2:#f0f2ee; --border:#e1e5df; --faint:#b4bcb6;
-    --text:#14201b; --muted:#66736d;
-    --accent:#14895a; --accent-dim:#e3f4ec; --accent-line:#b5dfca; --on-accent:#ffffff;
-    --income:#14895a; --expense:#c4473f; --expense-dim:#fbe9e7; --expense-line:#f0c4bf;
+    --bg:#f6f2ef; --bg2:#ffffff; --card:#ffffff; --card2:#f1ebe7; --border:#e6ddd8; --faint:#b9aea8;
+    --text:#1d1714; --muted:#6f6460;
+    --accent:#c9623e; --accent-dim:#fbe7de; --accent-line:#efc2ae; --on-accent:#ffffff;
+    --income:#1f9a55; --expense:#c4473f; --expense-dim:#fbe9e7; --expense-line:#f0c4bf;
     --blue:#2f63c4; --blue-dim:#e8eefb; --blue-line:#c4d3f2;
-    --saffron:#b8700f; --saffron-dim:#fbf1df; --saffron-line:#efd4a6;
-    --sum-a:#e5f4ec; --sum-b:#ffffff; --scrim:rgba(20,30,25,.35); --shadow:rgba(20,30,25,.12);
+    --saffron:#a8650c; --saffron-dim:#fbf1df; --saffron-line:#efd4a6;
+    --sum-a:#ffffff; --sum-b:#ffffff; --scrim:rgba(30,20,15,.35); --shadow:rgba(30,20,15,.12);
     color-scheme:light;
-  }
-  @media (prefers-color-scheme: light){
-    :root:not([data-theme="dark"]){
-      --bg:#f6f7f4; --bg2:#ffffff; --card:#ffffff; --card2:#f0f2ee; --border:#e1e5df; --faint:#b4bcb6;
-      --text:#14201b; --muted:#66736d;
-      --accent:#14895a; --accent-dim:#e3f4ec; --accent-line:#b5dfca; --on-accent:#ffffff;
-      --income:#14895a; --expense:#c4473f; --expense-dim:#fbe9e7; --expense-line:#f0c4bf;
-      --blue:#2f63c4; --blue-dim:#e8eefb; --blue-line:#c4d3f2;
-      --saffron:#b8700f; --saffron-dim:#fbf1df; --saffron-line:#efd4a6;
-      --sum-a:#e5f4ec; --sum-b:#ffffff; --scrim:rgba(20,30,25,.35); --shadow:rgba(20,30,25,.12);
-      color-scheme:light;
-    }
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0; height:100%;}
@@ -590,6 +576,180 @@
   .tidy-row .to b{ color:var(--accent); }
   .who-row{ display:flex; justify-content:space-between; font-size:13px; padding:7px 0; border-top:1px solid var(--border); }
   .who-row:first-child{ border-top:0; }
+
+  /* ---------- CALMER LOOK (Oct 2026) ----------
+     Rounded cards with no outlines, big plain numbers, one peach accent, and a line icon on a
+     coloured circle for each category. Layered on top of the rules above. */
+  body{ -webkit-font-smoothing:antialiased; }
+  main{ padding:0 16px; }
+  .scr-head{ padding:18px 4px 14px; }
+  .scr-head h1{ font-size:24px; font-weight:600; letter-spacing:-.2px; }
+  .scr-head h1.brand{ color:var(--accent); font-size:25px; }
+  .icon-btn{ border:0; border-radius:50%; width:40px; height:40px; color:var(--accent); }
+  .cap, .section-label, .set-title, .row-label, .field-row label, .flabel{ text-transform:none; letter-spacing:0; font-size:14px; font-weight:500; color:var(--muted); }
+  .cap{ margin:22px 6px 10px; }
+  .caprow{ margin:22px 6px 10px; }
+  .caprow a, .link{ font-size:14px; font-weight:500; }
+  .row-label{ margin:2px 2px 8px; }
+
+  /* category icon */
+  .ci{ width:40px; height:40px; border-radius:50%; display:grid; place-items:center; flex:none; background:var(--card2); }
+  .ci svg{ width:21px; height:21px; fill:none; stroke:#15110f; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; }
+  .ci.sm{ width:32px; height:32px; } .ci.sm svg{ width:17px; height:17px; }
+
+  /* Home hero */
+  .hero{ background:var(--card); border-radius:28px; padding:20px; }
+  .hero-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .hero-k{ color:var(--muted); font-size:14px; }
+  .hero-v{ font-size:38px; font-weight:600; letter-spacing:-.5px; margin-top:10px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .donut{ width:112px; height:112px; flex:none; margin-top:-4px; transform:rotate(0deg); }
+  .hero-leg{ margin-top:14px; }
+  .hero-leg div{ display:flex; align-items:center; font-size:15px; padding:5px 0; font-variant-numeric:tabular-nums; }
+  .hero-leg i{ width:10px; height:10px; border-radius:50%; margin:0 14px 0 4px; flex:none; }
+  .hero-leg span{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .hero-sub{ display:flex; gap:10px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border); }
+  .hero-sub > div{ flex:1; min-width:0; }
+  .hero-sub span{ display:block; color:var(--muted); font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .hero-sub b{ display:block; font-size:17px; font-weight:600; margin-top:3px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .hero-sub .tap{ cursor:pointer; }
+  .hero .sum-who, .hero .sum-note{ margin:10px 0 0; font-size:12.5px; }
+  .hero .sum-loans{ margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:14px; font-weight:500; }
+
+  /* Due this month: one line until tapped */
+  .due-card{ border:0; border-radius:24px; padding:0 18px; margin-top:12px; }
+  .due-head{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 0; font-size:15px; cursor:pointer; }
+  .due-head b{ color:var(--accent); font-weight:600; white-space:nowrap; }
+  #dueList{ padding-bottom:6px; }
+  .due-row{ gap:12px; padding:12px 0; }
+  .due-row:first-of-type{ border-top:1px solid var(--border); }
+  .due-row .m b{ font-weight:500; font-size:15px; }
+  .due-row .m span{ font-size:12.5px; }
+  .due-row .v{ font-weight:600; font-size:14px; }
+  .due-ok{ border-radius:999px; padding:8px 12px; font-weight:600; background:var(--accent-dim); color:var(--accent); }
+  .due-skip{ border:0; background:transparent; font-weight:500; font-size:13px; }
+  .due-done{ font-size:13px; font-weight:500; padding:12px 0; }
+
+  /* Home tiles */
+  .cat-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+  .cat-card{ border:0; border-radius:24px; padding:14px 13px 15px; text-align:left; min-height:118px; display:flex; flex-direction:column; align-items:flex-start; }
+  .cat-card .lbl{ font-size:14.5px; color:var(--text); font-weight:400; margin-top:10px; flex:1; padding:0; max-width:100%; }
+  .cat-card .tv{ font-size:19px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .cat-card.more{ border:0; align-items:center; justify-content:center; text-align:center; }
+  .cat-card.more .lbl{ color:var(--muted); flex:none; margin:0; white-space:normal; }
+  #pickGrid{ grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px 4px; }
+  #pickGrid .cat-card{ background:transparent; min-height:0; padding:4px 0; align-items:center; text-align:center; }
+  #pickGrid .cat-card .ci{ width:50px; height:50px; } #pickGrid .cat-card .ci svg{ width:22px; height:22px; }
+  #pickGrid .cat-card .lbl{ font-size:12px; color:var(--muted); margin-top:6px; text-align:center; white-space:normal; line-height:1.25; }
+
+  /* lists */
+  .list-card{ border:0; border-radius:24px; padding:2px 18px; }
+  .txn-row{ gap:14px; padding:12px 0; }
+  .txn-row .cat{ font-size:15.5px; font-weight:400; }
+  .txn-row .note{ font-size:13px; margin-top:1px; }
+  .txn-row .amt{ font-size:16px; font-weight:600; }
+  .txn-row .amt.expense{ color:var(--text); }
+  .day-head{ text-transform:none; letter-spacing:0; font-size:13px; font-weight:500; padding:14px 2px 6px; }
+  .see-all{ font-weight:500; font-size:14px; }
+
+  /* sheets */
+  .sheet{ border:0; border-radius:30px 30px 0 0; padding:12px 16px 20px; }
+  .sheet-handle{ width:40px; margin-bottom:14px; }
+  .sheet-header .name{ font-size:20px; font-weight:600; }
+  .sheet-title{ font-size:19px; font-weight:600; margin:0 4px 16px; }
+  .amount-wrap{ margin:2px 0 14px; align-items:baseline; }
+  .amount-wrap .rupee{ font-size:34px; color:var(--muted); font-weight:400; }
+  .amount-display{ font-size:52px; font-weight:600; letter-spacing:-1px; }
+  .chip{ border:1.5px solid transparent; padding:9px 15px; font-size:14.5px; font-weight:400; color:var(--text); }
+  .chip.active, .chip.cc.active, .chip.pts.active{ background:var(--accent-dim); border-color:var(--accent); color:var(--accent); }
+  .chip.dashed{ border:1.5px dashed var(--border); color:var(--accent); }
+  .keypad{ gap:8px; }
+  .keypad button{ border:0; border-radius:18px; font-weight:400; font-size:21px; padding:13px 0; }
+  .fold{ border:0; background:var(--card); border-radius:20px; margin-bottom:12px; }
+  .fold summary{ padding:14px 18px; font-size:14.5px; }
+  .fold .fold-in{ padding:0 16px 8px; }
+  .btn{ border:0; border-radius:999px; padding:15px 10px; font-size:16px; font-weight:600; }
+  .btn.ghost{ border:0; }
+  .btn.small{ border-radius:999px; }
+  .btn.wide{ width:100%; display:block; margin-top:12px; }
+  #normalActions, #editActions{ border-top:0; }
+  .field-row input[type=text], .field-row input[type=date], .field-row input[type=password], .field-row select, .inp, .pantry-search, .pantry-add-row input, .item-row input.iname, .item-row input.iqty{ background:var(--card2); border:1px solid transparent; border-radius:16px; }
+  .note-box{ border:0 !important; border-radius:18px; padding:13px 16px; font-size:13.5px; }
+  .pay-hint{ border-radius:14px; }
+  .seg{ border:0; border-radius:999px; padding:4px; }
+  .seg button{ border-radius:999px; padding:9px 0; font-size:14px; font-weight:500; border:0; }
+  .seg button.on{ border:0; }
+  .toast{ border:0; border-radius:18px; }
+
+  /* insights */
+  .card{ border:0; border-radius:26px; padding:18px 20px; }
+  .card h3{ font-size:15px; font-weight:500; color:var(--muted); }
+  .big{ font-size:36px; font-weight:600; letter-spacing:-.5px; }
+  .big small{ color:var(--muted); }
+  .mini-row{ font-size:13.5px; }
+  .rk{ grid-template-columns:32px 1fr auto; gap:6px 12px; font-size:15px; padding:8px 0; }
+  .rk b{ font-weight:400; } .rk b.num{ font-weight:600; }
+  .rk .pc{ font-size:12.5px; }
+  .detail-panel, .bal-card, .ledger-table{ border:0; border-radius:22px; }
+  .bal-card{ padding:16px 18px; }
+  .bal-card .lbl{ text-transform:none; letter-spacing:0; font-size:13.5px; font-weight:500; }
+  .bal-card .val{ font-size:22px; font-weight:600; }
+  .bal-card.left .val, .bal-card.cc .val{ color:var(--text); }
+  .cal-cell{ border-radius:12px; min-height:44px; }
+  .cal-cell .damt{ font-weight:500; }
+
+  /* history */
+  .search{ border:0; border-radius:999px; padding:0 18px; }
+  .fchip{ border:0; font-weight:500; font-size:13.5px; padding:8px 14px; }
+  .fchip.on{ border:0; }
+  .filter-total{ font-weight:500; font-size:14px; margin:6px 6px 4px; }
+
+  /* pantry */
+  .addline{ display:flex; align-items:center; background:var(--card); border-radius:999px; padding:4px 4px 4px 18px; margin-bottom:4px; }
+  .addline input{ flex:1; min-width:0; background:none; border:0; outline:none; color:var(--text); font-size:16px; padding:10px 0; }
+  .addline button{ width:42px; height:42px; border-radius:50%; border:0; background:var(--accent); color:var(--on-accent); font-size:20px; cursor:pointer; flex:none; }
+  .shop-row{ padding:13px 0; gap:14px; }
+  .shop-row:last-child{ border-bottom:0; }
+  .shop-row .box{ border-color:var(--faint); }
+  .shop-row .m b{ font-weight:400; font-size:15.5px; }
+  .shop-row .m span{ font-size:12.5px; }
+  .shop-row .chev{ color:var(--faint); font-size:18px; }
+  .add-have{ text-align:center; color:var(--accent); font-size:14.5px; padding:14px; cursor:pointer; }
+  .stepper button{ border:0; border-radius:999px; font-weight:600; }
+
+  /* settings */
+  .setv-page{ padding:0 16px 40px; }
+  .me{ background:var(--card); border-radius:24px; padding:14px 18px; margin:4px 0 4px; }
+  .av{ border:0; border-radius:50%; background:var(--accent); color:var(--on-accent); font-family:var(--ui); font-weight:600; }
+  .grp{ border:0; border-radius:24px; padding:0 4px; }
+  .grp.pad{ padding:4px 16px; }
+  .set-title{ margin:20px 8px 8px; }
+  .sr{ gap:14px; padding:13px 14px; }
+  .sr .m b{ font-weight:400; font-size:15.5px; }
+  .sr .m span{ font-size:12.5px; }
+  .sr .r{ font-weight:400; font-size:13.5px; }
+  .sr .ci{ width:36px; height:36px; } .sr .ci svg{ width:18px; height:18px; }
+  .cardx{ border:0; border-radius:24px; padding:16px 18px; }
+  .catrow .ci, .set-row .ci{ margin-right:2px; }
+  .set-row{ gap:12px; }
+
+  /* say it */
+  .say{ background:var(--card); border:0; border-radius:28px; padding:8px 8px 6px 18px; margin:0 0 12px; }
+  .say-mic{ width:40px; height:40px; background:var(--accent); color:var(--on-accent); border:0; display:grid; place-items:center; }
+  .say-mic svg{ width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
+  .say-go{ border-radius:999px; }
+  .sy-emo{ border:0; background:transparent; width:auto; height:auto; }
+  .sheet-header .sh-ic .ci{ width:44px; height:44px; }
+
+  /* welcome, lock */
+  .welcome{ background:var(--bg); }
+  .welcome .logo{ font-family:var(--ui); font-weight:600; color:var(--accent); }
+  .welcome .logo span{ color:var(--accent); }
+  .wpt i{ border:0; border-radius:50%; }
+  .lock-title{ font-family:var(--ui); font-weight:600; }
+  /* bottom bar */
+  nav.bottomnav{ border-top:0; background:color-mix(in srgb, var(--bg2) 92%, transparent); }
+  nav.bottomnav button{ font-size:11.5px; font-weight:500; }
+  nav.bottomnav button.plus .ic{ width:56px; height:56px; border-radius:50%; margin-top:-28px; box-shadow:none; }
 </style>
 </head>
 <body>
@@ -598,56 +758,46 @@
     <!-- HOME -->
     <section class="screen active" id="screen-add">
       <div class="scr-head">
-        <h1>Kharcha<span>Pani</span></h1>
+        <h1 class="brand">Kharcha Pani</h1>
         <button class="icon-btn" id="settingsBtn" aria-label="Settings"><span class="sync-dot" id="headerDot"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       </div>
 
       <div class="seg who-seg" style="display:none;"></div>
-      <div class="sum-card">
-        <div class="sum-l"><span id="homeLeftLbl">Shesh &middot; money left in your bank</span><button type="button" class="eye-btn" data-eye>Show</button></div>
-        <div class="sum-v" id="homeLeft">&#8377;0</div>
-        <div class="sum-who" id="homeWho" style="display:none;"></div>
-        <div class="sum-split">
-          <div><span>Spent today</span><b id="todaySpent">&#8377;0</b></div>
-          <div><span id="homeMonthLbl">Kharcha this month</span><b id="homeMonth">&#8377;0</b></div>
-          <div class="tap" id="homeCardBox"><span id="homeCardLbl">Card owed</span><b class="bl" id="homeCard">&#8377;0</b></div>
-        </div>
-        <div class="sum-note" id="todayNote" style="display:none;"></div>
-        <div class="sum-loans" id="homeLoans" style="display:none;"><span>Loans owed</span><b id="homeLoansVal">&#8377;0 &rsaquo;</b></div>
-      </div>
-
-      <div class="tidy-banner" id="tidyBanner" style="display:none;">
-        <span style="font-size:20px;">&#129529;</span>
-        <div><b id="tidyBannerTitle">Some old entries could be tidied</b><span>Review the changes first. Nothing changes until you tap Apply.</span></div>
-        <span class="x" id="tidyBannerHide" aria-label="Hide">&#10005;</span>
-      </div>
-
-      <div class="due-card" id="dueCard" style="display:none;">
-        <h4>Due this month <span id="dueMonth"></span></h4>
-        <div id="dueList"></div>
-      </div>
 
       <!-- SAY IT, DON'T TYPE IT (shown when AI is on in Settings) -->
       <div class="say" id="sayBox" style="display:none;">
         <div class="say-in">
           <textarea id="sayInput" rows="1" maxlength="300" placeholder="Say it: Dmart 1840, card"></textarea>
-          <button type="button" class="say-mic" id="sayMic" aria-label="Speak">&#127897;</button>
+          <button type="button" class="say-mic" id="sayMic" aria-label="Speak"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg></button>
           <button type="button" class="say-go" id="sayGo">Samjho</button>
         </div>
         <div class="say-foot"><span id="sayHint">Bolo ya likho</span><span id="sayLeft"></span></div>
         <div class="say-ask" id="sayAsk" style="display:none;"><small>One question</small><div id="sayAskText"></div><div class="chip-row" id="sayAnswers"></div></div>
       </div>
-      <div class="say-promo" id="sayPromo" style="display:none;">
-        <span style="font-size:20px;">&#127897;</span>
-        <div style="flex:1;"><div class="rt-name">Say it instead of tapping</div><div class="rt-sub">Turn on AI in Settings (free with your own key)</div></div>
-        <span class="x" id="sayPromoHide" aria-label="Hide">&#10005;</span>
+      <div id="sayPromo" style="display:none;"><span id="sayPromoHide"></span></div>
+
+      <div class="hero">
+        <div class="hero-top">
+          <div class="hero-l"><div class="hero-k" id="homeMonthLbl">Kharcha this month</div><div class="hero-v" id="homeMonth">&#8377;0</div></div>
+          <svg class="donut" id="homeDonut" viewBox="0 0 42 42" aria-hidden="true"></svg>
+        </div>
+        <div class="hero-leg" id="homeLegend"></div>
+        <div class="hero-sub">
+          <div><span>Today</span><b id="todaySpent">&#8377;0</b></div>
+          <div class="tap" data-eye><span id="homeLeftLbl">Money left</span><b id="homeLeft">&bull;&bull;&bull;&bull;&bull;&bull;</b></div>
+          <div class="tap" id="homeCardBox"><span id="homeCardLbl">Card owed</span><b id="homeCard">&#8377;0</b></div>
+        </div>
+        <div class="sum-who" id="homeWho" style="display:none;"></div>
+        <div class="sum-note" id="todayNote" style="display:none;"></div>
+        <div class="sum-loans" id="homeLoans" style="display:none;"><span>Loans owed</span><b id="homeLoansVal">&#8377;0 &rsaquo;</b></div>
       </div>
 
-      <div id="againBlock" style="display:none;">
-        <div class="cap">Do it again</div>
-        <div class="again" id="againRow"></div>
+      <div class="due-card" id="dueCard" style="display:none;">
+        <div class="due-head" id="dueHead"><span id="dueTitle">Due this month</span><b id="dueTotal"></b></div>
+        <div id="dueList" style="display:none;"></div>
       </div>
-      <div class="cap">Or pick a category</div>
+
+      <div class="cap">Add an expense</div>
       <div class="cat-grid" id="catGrid"></div>
 
       <div class="caprow"><span class="cap">Recent</span><a id="seeAllBtn">See all &rsaquo;</a></div>
@@ -684,41 +834,40 @@
       <div class="history-list" id="historyList"></div>
     </section>
 
-    <!-- PANTRY: shelves -->
+    <!-- PANTRY: the To buy list first, then what's at home -->
     <section class="screen" id="screen-pantry">
       <div class="scr-head">
         <h1>Ghar ka stock</h1>
-        <button class="icon-btn" id="pScanBtn" aria-label="Scan a bill">&#128247;</button>
-        <button class="icon-btn" id="pSearchBtn" aria-label="Search">&#128269;</button>
-        <button class="icon-btn" id="pAddBtn" aria-label="Add an item">&#65291;</button>
+        <button class="icon-btn" id="shopShare" aria-label="Share the list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></button>
+        <button class="icon-btn" id="pScanBtn" aria-label="Scan a bill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></button>
+        <button class="icon-btn" id="pSearchBtn" aria-label="Search" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
       </div>
-      <input type="search" id="pantrySearch" class="pantry-search" placeholder="Search items" style="display:none;" autocomplete="off">
-      <div id="pAddRow" style="display:none;">
-        <div class="pantry-add-row">
-          <input type="text" id="pantryNameInput" class="pname" placeholder="Item, e.g. Atta" list="itemNamesList">
-          <input type="text" id="pantryQtyInput" class="pqty" placeholder="Qty e.g. 5kg">
-          <button id="pantryAddBtn" aria-label="Add">&#65291;</button>
-        </div>
-        <div class="helper-text" style="margin-top:-6px;">Adds it as bought today. Items you add while logging Groceries or Shopping land here by themselves.</div>
-      </div>
+      <div class="seg" id="pTabs"><button class="on" data-pt="buy" id="pTabBuy">To buy</button><button data-pt="have" id="pTabHave">Have</button></div>
       <input type="file" id="billFile" accept="image/*" style="display:none;">
       <datalist id="itemNamesList"></datalist>
-      <div class="buybar" id="buyBar"></div>
-      <div id="shelves"></div>
-      <div class="muted-hint" id="pHint"></div>
-    </section>
+      <div class="buybar" id="buyBar" style="display:none;"></div>
 
-    <!-- PANTRY: shopping mode -->
-    <section class="screen" id="screen-shop">
-      <div class="scr-head">
-        <button class="icon-btn" id="shopBack" aria-label="Back">&lsaquo;</button>
-        <h1>Shopping</h1>
-        <button class="icon-btn" id="shopShare" aria-label="Share list">&#10548;</button>
+      <div id="pBuy">
+        <div class="addline"><input type="text" id="pBuyInput" placeholder="Add an item, e.g. Atta" list="itemNamesList" autocomplete="off"><button type="button" id="shopAdd" aria-label="Add to the list">&#65291;</button></div>
+        <div id="shopList"></div>
+        <div class="note-box ok" id="shopSyncNote">The other phone sees this list and the ticks.</div>
+        <button class="btn primary wide" id="shopDone">Done, log the bill</button>
       </div>
-      <div class="filter-total" id="shopCount"></div>
-      <div class="list-card" id="shopList" style="padding:0 12px;"></div>
-      <div class="note-box ok" id="shopSyncNote">The other phone sees this list and the ticks.</div>
-      <div class="sheet-actions" style="margin-top:4px;"><button class="btn ghost" id="shopAdd">&#65291; Add item</button><button class="btn primary" id="shopDone">Done &middot; log bill</button></div>
+
+      <div id="pHave" style="display:none;">
+        <input type="search" id="pantrySearch" class="pantry-search" placeholder="Search items" style="display:none;" autocomplete="off">
+        <div id="shelves"></div>
+        <div class="add-have" id="pAddBtn">&#65291; Add something you bought</div>
+        <div id="pAddRow" style="display:none;">
+          <div class="pantry-add-row">
+            <input type="text" id="pantryNameInput" class="pname" placeholder="Item, e.g. Atta" list="itemNamesList">
+            <input type="text" id="pantryQtyInput" class="pqty" placeholder="Qty e.g. 5kg">
+            <button id="pantryAddBtn" aria-label="Add">&#65291;</button>
+          </div>
+          <div class="helper-text" style="margin-top:-6px;">Adds it as bought today. Items you add while logging Groceries or Shopping land here by themselves.</div>
+        </div>
+        <div class="muted-hint" id="pHint"></div>
+      </div>
     </section>
 
     <!-- INSIGHTS: this month -->
@@ -827,8 +976,8 @@
   <div class="sheet" id="entrySheet">
     <div class="sheet-handle"></div>
     <div class="sheet-header">
-      <span class="emoji" id="sheetEmoji">&#128722;</span>
-      <div class="sh-mid"><span class="name" id="sheetName">Groceries</span><button type="button" class="sub-pick" id="subPickBtn"><span id="subPickText">Pick a type</span> &#9662;</button></div>
+      <span class="sh-ic" id="sheetEmoji"></span>
+      <div class="sh-mid"><span class="name" id="sheetName">Groceries</span></div>
     </div>
     <div class="meta-line" id="metaLine" style="display:none;"></div>
 
@@ -837,7 +986,9 @@
       <button class="income" data-t="income">Income</button>
     </div>
 
+    <div class="amount-wrap"><span class="rupee">&#8377;</span><div class="amount-display" id="amountDisplay">0</div></div>
     <div id="subcatBlock" style="display:none;">
+      <div class="row-label">What kind</div>
       <div class="chip-row" id="subcatChips"></div>
       <div class="field-row" id="customSubcatRow" style="display:none;">
         <div class="code-row">
@@ -847,28 +998,16 @@
       </div>
     </div>
 
-    <div class="chip-row scroll" id="shopRow" style="display:none;"></div>
-    <div id="routeBlock" style="display:none;">
-      <div class="row-label">Your routes</div>
-      <div class="chip-row" id="routeRow"></div>
-      <div class="inline-form" id="routeForm" style="display:none;">
-        <div class="two-inputs"><input type="text" id="rtFrom" class="inp" maxlength="24" placeholder="From, e.g. Home" list="placeList"><input type="text" id="rtTo" class="inp" maxlength="24" placeholder="To, e.g. Gym" list="placeList"></div>
-        <input type="text" id="rtCode" class="inp" maxlength="12" placeholder="Old short note, e.g. H2G (optional)" style="margin-top:8px;">
-        <label style="display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); margin-top:8px;"><input type="checkbox" id="rtBack" checked> Add the way back too</label>
-        <div class="acts"><button type="button" class="btn ghost small" id="rtCancel">Cancel</button><button type="button" class="btn primary small" id="rtSave">Add route</button></div>
-      </div>
-      <datalist id="placeList"></datalist>
-    </div>
+
     <div id="loanBlock" style="display:none;">
       <div class="row-label" id="loanLabel">Which loan?</div>
       <div class="chip-row" id="loanRow"></div>
     </div>
 
-    <div class="amount-wrap"><span class="rupee">&#8377;</span><div class="amount-display" id="amountDisplay">0</div></div>
-    <div class="pts-row" id="ptsRow" style="display:none;"><span id="ptsLabel">Points used</span><input type="text" inputmode="decimal" id="ptsInput" placeholder="0"><span id="ptsHint"></span></div>
-
     <!-- Expense: how it was paid -->
+    <div class="row-label" id="payLabel">Paid with</div>
     <div class="chip-row" id="payMethodRow"></div>
+    <div class="pts-row" id="ptsRow" style="display:none;"><span id="ptsLabel">Points used</span><input type="text" inputmode="decimal" id="ptsInput" placeholder="0"><span id="ptsHint"></span></div>
     <div class="split-panel" id="splitPanel" style="display:none;">
       <div class="split-head"><span>Split payment</span><button type="button" class="link-btn" id="splitOffBtn">Use one method</button></div>
       <div id="splitRows"></div>
@@ -899,15 +1038,6 @@
       <div class="pay-hint" id="betweenHint"></div>
     </div>
 
-    <!-- Who it was for -->
-    <div id="forBlock" style="display:none;">
-      <div class="row-label">For</div>
-      <div class="chip-row" id="forRow"></div>
-      <div class="inline-form" id="forOther" style="display:none;">
-        <div class="chip-row" id="forAllRow" style="margin-bottom:8px;"></div>
-        <div class="code-row"><input type="text" id="forNewInput" class="inp" maxlength="20" placeholder="New name, e.g. Ankit"><button type="button" class="btn primary small" id="forNewAdd">Add</button></div>
-      </div>
-    </div>
 
     <!-- New points / rewards type (inline) -->
     <div class="field-row" id="newRewardRow" style="display:none;">
@@ -921,18 +1051,24 @@
       <div style="display:flex; gap:8px;"><button type="button" class="btn ghost" id="nrCancel">Cancel</button><button type="button" class="btn primary" id="nrAdd">Add</button></div>
     </div>
 
-    <div class="keypad" id="keypad">
-      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
-      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
-      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
-      <button type="button" data-k=".">.</button><button type="button" data-k="0">0</button><button type="button" class="back" data-k="back">&#9003;</button>
+    <details class="fold" id="moreFold">
+      <summary><span id="foldSum">Today &middot; note</span></summary>
+      <div class="fold-in">
+        <div id="shopBlock"><div class="row-label">Shop</div>
+    <div class="chip-row" id="shopRow" style="display:none;"></div>
+        </div>
+        <div class="field-row"><label>Note</label><input type="text" id="noteInput" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="e.g. Dmart, or traffic was bad"></div>
+        <div class="field-row"><label>Date</label><input type="date" id="dateInput"></div>
+    <!-- Who it was for -->
+    <div id="forBlock" style="display:none;">
+      <div class="row-label">For</div>
+      <div class="chip-row" id="forRow"></div>
+      <div class="inline-form" id="forOther" style="display:none;">
+        <div class="chip-row" id="forAllRow" style="margin-bottom:8px;"></div>
+        <div class="code-row"><input type="text" id="forNewInput" class="inp" maxlength="20" placeholder="New name, e.g. Ankit"><button type="button" class="btn primary small" id="forNewAdd">Add</button></div>
+      </div>
     </div>
 
-    <details class="fold" id="moreFold">
-      <summary><span id="foldSum">Today &middot; add note</span></summary>
-      <div class="fold-in">
-        <div class="field-row"><label>Shop or note</label><input type="text" id="noteInput" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="e.g. Dmart, or traffic was bad"></div>
-        <div class="field-row"><label>Date</label><input type="date" id="dateInput"></div>
         <div class="items-section" id="itemsSection" style="display:none;">
           <label class="flabel">Add to pantry (optional)</label>
           <div id="itemsContainer"></div>
@@ -940,6 +1076,14 @@
         </div>
       </div>
     </details>
+
+    <div class="keypad" id="keypad">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" data-k=".">.</button><button type="button" data-k="0">0</button><button type="button" class="back" data-k="back">&#9003;</button>
+    </div>
+
 
     <div class="sheet-actions" id="normalActions">
       <button class="btn ghost" id="cancelBtn">Cancel</button>
@@ -1022,23 +1166,26 @@
     <div class="setv-page active" data-page="menu">
       <div class="scr-head"><button class="icon-btn" id="syncCancelBtn" aria-label="Close">&lsaquo;</button><h1>Settings</h1></div>
       <div class="me" data-go="name"><div class="av" id="meAv">?</div><div><b id="meName">Name this phone</b><span>This phone's name &middot; tap to change</span></div></div>
+      <div class="set-title">Money</div>
       <div class="grp">
-        <div class="sr" data-go="sync"><div class="ic" style="background:var(--accent-dim);">&#129309;</div><div class="m"><b>Family sync</b><span id="rowSyncSub">Not connected</span></div><div class="r" id="rowSyncVal">Off</div></div>
-        <div class="sr" data-go="ai"><div class="ic" style="background:var(--blue-dim);">&#10024;</div><div class="m"><b>Say it (AI)</b><span id="rowAiSub">Type or speak entries</span></div><div class="r" id="rowAiVal">Off</div></div>
+        <div class="sr" data-go="cards"><span class="ci" style="background:#8fb3ff"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span><div class="m"><b>Cards &amp; points</b><span id="rowCardsSub">Your credit cards and points</span></div><div class="r" id="rowCardsVal"></div></div>
+        <div class="sr" data-go="loans"><span class="ci" style="background:#9aa1ad"><svg viewBox="0 0 24 24"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 20 7H4z"/></svg></span><div class="m"><b>Loans &amp; EMIs</b><span id="rowLoansSub">Borrowed money and EMIs</span></div><div class="r" id="rowLoansVal"></div></div>
+        <div class="sr" data-go="dues"><span class="ci" style="background:#c9b98f"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><div class="m"><b>Due every month</b><span id="rowDuesSub">Rent, EMIs, subscriptions, salary</span></div><div class="r" id="rowDuesVal"></div></div>
+        <div class="sr" data-go="bank"><span class="ci" style="background:#7ad6b0"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M5 7l-3 7a4 4 0 0 0 6 0zM19 7l-3 7a4 4 0 0 0 6 0z"/></svg></span><div class="m"><b>Match your bank</b><span id="rowBankSub">Make Money left match your bank app</span></div><div class="r"></div></div>
       </div>
+      <div class="set-title">Entries</div>
       <div class="grp">
-        <div class="sr" data-go="cats"><div class="ic">&#128450;&#65039;</div><div class="m"><b>Categories &amp; shops</b><span>Order, hide, forget a shop</span></div><div class="r" id="rowCatsVal"></div></div>
-        <div class="sr" data-go="cards"><div class="ic" style="background:var(--blue-dim);">&#128179;</div><div class="m"><b>Cards &amp; points</b><span id="rowCardsSub">Your credit cards and points</span></div><div class="r" id="rowCardsVal"></div></div>
-        <div class="sr" data-go="loans"><div class="ic" style="background:var(--saffron-dim);">&#127974;</div><div class="m"><b>Loans</b><span id="rowLoansSub">Borrowed money and EMIs</span></div><div class="r" id="rowLoansVal"></div></div>
-        <div class="sr" data-go="dues"><div class="ic">&#128197;</div><div class="m"><b>Due every month</b><span id="rowDuesSub">Rent, EMIs, subscriptions, salary</span></div><div class="r" id="rowDuesVal"></div></div>
-        <div class="sr" data-go="people"><div class="ic">&#128101;</div><div class="m"><b>People &amp; routes</b><span id="rowPeopleSub">Who an entry was for, travel routes</span></div><div class="r" id="rowPeopleVal"></div></div>
-        <div class="sr" data-go="bank"><div class="ic">&#9878;&#65039;</div><div class="m"><b>Match your bank</b><span id="rowBankSub">Make Money left match your bank app</span></div><div class="r"></div></div>
-        <div class="sr" data-go="tidy"><div class="ic">&#129529;</div><div class="m"><b>Tidy old entries</b><span id="rowTidySub">Fix entries saved the old way</span></div><div class="r" id="rowTidyVal"></div></div>
+        <div class="sr" data-go="cats"><span class="ci" style="background:#bdb3ad"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg></span><div class="m"><b>Categories &amp; shops</b><span>Order, hide, forget a shop</span></div><div class="r" id="rowCatsVal"></div></div>
+        <div class="sr" data-go="people"><span class="ci" style="background:#d9a5f5"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><div class="m"><b>People</b><span id="rowPeopleSub">Who an entry was for</span></div><div class="r" id="rowPeopleVal"></div></div>
+        <div class="sr" data-go="ai"><span class="ci" style="background:#f2a98b"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5"/></svg></span><div class="m"><b>Say it (AI)</b><span id="rowAiSub">Type or speak entries</span></div><div class="r" id="rowAiVal">Off</div></div>
+        <div class="sr" data-go="tidy" id="rowTidy"><span class="ci" style="background:#f3c98b"><svg viewBox="0 0 24 24"><path d="m13 11 9-9M14.6 12.6l-6.8 6.8a2 2 0 0 1-2.8 0l-.8-.8a2 2 0 0 1 0-2.8l6.8-6.8M9 18l-6 4 4-6"/></svg></span><div class="m"><b>Tidy old entries</b><span id="rowTidySub">Fix entries saved the old way</span></div><div class="r" id="rowTidyVal"></div></div>
       </div>
+      <div class="set-title">This phone</div>
       <div class="grp">
-        <div class="sr" data-go="lock"><div class="ic">&#128274;</div><div class="m"><b>App lock</b><span>4-digit PIN on this phone</span></div><div class="r" id="rowLockVal">Off</div></div>
-        <div class="sr" data-go="look"><div class="ic">&#127912;</div><div class="m"><b>Look</b><span>Dark, light or follow the phone</span></div><div class="r" id="rowLookVal">Phone</div></div>
-        <div class="sr" data-go="backup"><div class="ic">&#8615;</div><div class="m"><b>Backup &amp; export</b><span id="rowBackupSub">Save a copy of everything</span></div><div class="r"></div></div>
+        <div class="sr" data-go="sync"><span class="ci" style="background:#4fd17f"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-15-6.7L3 8M3 3v5h5M3 12a9 9 0 0 0 15 6.7l3-2.7M21 21v-5h-5"/></svg></span><div class="m"><b>Family sync</b><span id="rowSyncSub">Not connected</span></div><div class="r" id="rowSyncVal">Off</div></div>
+        <div class="sr" data-go="lock"><span class="ci" style="background:#9aa1ad"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div class="m"><b>App lock</b><span>4-digit PIN on this phone</span></div><div class="r" id="rowLockVal">Off</div></div>
+        <div class="sr" data-go="look"><span class="ci" style="background:#b394f5"><svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span><div class="m"><b>Look</b><span>Dark, light or follow the phone</span></div><div class="r" id="rowLookVal">Dark</div></div>
+        <div class="sr" data-go="backup"><span class="ci" style="background:#6fb7ff"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span><div class="m"><b>Backup &amp; export</b><span id="rowBackupSub">Save a copy of everything</span></div><div class="r"></div></div>
       </div>
       <div class="ver">Kharcha Pani 2.0 &middot; your data stays on your phones</div>
     </div>
@@ -1219,7 +1366,7 @@
 
     <!-- people -->
     <div class="setv-page" data-page="people">
-      <div class="scr-head"><button class="icon-btn" data-back aria-label="Back">&lsaquo;</button><h1>People &amp; routes</h1></div>
+      <div class="scr-head"><button class="icon-btn" data-back aria-label="Back">&lsaquo;</button><h1>People</h1></div>
       <div class="helper-text">Each entry can say who it was for. Insights then shows spending per person.</div>
       <div class="grp pad" id="peopleList"></div>
       <div class="field-row"><div class="code-row"><input type="text" id="personNew" class="inp" maxlength="20" placeholder="Add a name, e.g. Priya"><button class="btn primary small" id="personAdd">Add</button></div></div>
@@ -1227,8 +1374,6 @@
       <div class="helper-text">New entries on this phone start with this name. You can change it on any entry.</div>
       <div class="field-row"><label>Entries with no name on them are paid from</label><select id="personMain" class="inp"></select></div>
       <div class="helper-text">Usually whoever started the app. Old entries count as their money.</div>
-      <div class="set-title">Saved travel routes</div>
-      <div class="grp pad" id="routesList"></div>
     </div>
 
     <!-- match your bank -->
@@ -2087,23 +2232,23 @@ Reply with the JSON object only.`;
   "use strict";
 
   const CATEGORIES = [
-    { id:"groceries",  name:"Groceries",        emoji:"\u{1F6D2}", subcats:["Local shop","Supermarket","Household","Blinkit","Zepto","Instamart","BigBasket"] },
-    { id:"outsidefood",name:"Food out",         emoji:"\u{1F37D}\uFE0F", subcats:["Restaurant","Cafe","Snacks","Zomato","Swiggy"] },
-    { id:"transport",  name:"Travel",           emoji:"\u{1F697}", subcats:["Cab","Auto","Bike taxi","Metro","Bus","Train","Fuel","Parking","Tolls","Servicing"] },
-    { id:"bills",      name:"Bills",            emoji:"\u{1F4A1}", subcats:["Electricity","Water","Gas","Internet","Mobile","Maintenance","Insurance"] },
+    { id:"groceries",  name:"Groceries",        emoji:"\u{1F6D2}", subcats:["Daily needs","Monthly stock","Household"] },
+    { id:"outsidefood",name:"Food out",         emoji:"\u{1F37D}\uFE0F", subcats:["Eat out","Order in","Snacks & chai"] },
+    { id:"transport",  name:"Travel",           emoji:"\u{1F697}", subcats:["Auto","Cab","Bike taxi","Metro/Bus","Vehicle"] },
+    { id:"bills",      name:"Bills",            emoji:"\u{1F4A1}", subcats:["Electricity","Phone & net","Maintenance","Other"] },
     { id:"rent",       name:"Rent",             emoji:"\u{1F3E0}", subcats:[] },
-    { id:"shopping",   name:"Shopping",         emoji:"\u{1F6CD}\uFE0F", subcats:["Clothes","Footwear","Electronics","Toys","Gifts"] },
-    { id:"health",     name:"Fitness",          emoji:"\u{1F4AA}", subcats:["Gym","Yoga","Sports","Supplements"] },
-    { id:"medical",    name:"Medical",          emoji:"\u{1F48A}", subcats:["Doctor","Pharmacy","Lab test","Hospital"] },
-    { id:"travel",     name:"Trips",            emoji:"\u2708\uFE0F", subcats:["Flights","Trains","Hotels","Intercity bus","Visa"] },
-    { id:"subscription",name:"Subscription",    emoji:"\u{1F4F1}", subcats:["Netflix","Prime","Spotify","Cloud"] },
-    { id:"entertainment",name:"Entertainment",  emoji:"\u{1F3AC}", subcats:["Movies","Events","Games","Concerts"] },
-    { id:"moneysent",  name:"Money Sent",       emoji:"\u{1F4B8}", subcats:["Family","Friend","Rent share","Gift"] },
-    { id:"personal",   name:"Personal care",    emoji:"\u{1F487}", subcats:["Salon","Parlour","Grooming","Spa"] },
-    { id:"gifts",      name:"Gifts & festivals",emoji:"\u{1F381}", subcats:["Gift","Festival","Sweets","Donation"] },
-    { id:"tax",        name:"Tax",              emoji:"\u{1F9FE}", subcats:["Income tax","Property tax","GST"] },
+    { id:"shopping",   name:"Shopping",         emoji:"\u{1F6CD}\uFE0F", subcats:["Clothes","Home","Electronics","Other"] },
+    { id:"health",     name:"Fitness",          emoji:"\u{1F4AA}", subcats:["Gym","Wellness","Supplements"] },
+    { id:"medical",    name:"Medical",          emoji:"\u{1F48A}", subcats:["Doctor","Medicines","Tests"] },
+    { id:"travel",     name:"Trips",            emoji:"\u2708\uFE0F", subcats:["Tickets","Stay","Other"] },
+    { id:"subscription",name:"Subscription",    emoji:"\u{1F4F1}", subcats:["Streaming","Rentals","Apps"] },
+    { id:"entertainment",name:"Fun",  emoji:"\u{1F3AC}", subcats:["Movies","Events","Games"] },
+    { id:"moneysent",  name:"Money Sent",       emoji:"\u{1F4B8}", subcats:["Family","Friend","Other"] },
+    { id:"personal",   name:"Personal care",    emoji:"\u{1F487}", subcats:["Salon","Grooming","Spa"] },
+    { id:"gifts",      name:"Gifts & festivals",emoji:"\u{1F381}", subcats:["Gift","Festival","Donation"] },
+    { id:"tax",        name:"Tax",              emoji:"\u{1F9FE}", subcats:[] },
     { id:"loanemi",    name:"Loans & EMI",      emoji:"\u{1F3E6}", subcats:["EMI","Repayment"] },
-    { id:"income",     name:"Income",           emoji:"\u{1F4B0}", subcats:["Salary","Freelance","Interest","Refund","Bonus","Cashback","Reward points"] },
+    { id:"income",     name:"Income",           emoji:"\u{1F4B0}", subcats:["Salary","Refund","Cashback","Other"] },
     { id:"others",     name:"Others",           emoji:"\u{1F5C2}\uFE0F", subcats:[] },
   ];
   const catMap = {}; CATEGORIES.forEach(c=>catMap[c.id]=c);
@@ -2118,6 +2263,39 @@ Reply with the JSON object only.`;
     { id:"electricity",     name:"Electricity",      emoji:"\u{1F4A1}", subcats:[] },
     { id:"transfer",        name:"Transfer",         emoji:"\u{1F4B8}", subcats:[] }
   ].forEach(c=> catMap[c.id]=c);
+  // Category icons: a simple line drawing on a coloured circle (replaces the emoji).
+  const CAT_ICONS = {
+    transport:["#4a86ff",'<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>'],
+    groceries:["#3fc1d6",'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>'],
+    outsidefood:["#4fd17f",'<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>'],
+    shopping:["#f0b84a",'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>'],
+    bills:["#b394f5",'<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>'],
+    rent:["#f2a98b",'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>'],
+    health:["#ff8a7a",'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'],
+    medical:["#f28fb0",'<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>'],
+    travel:["#6fb7ff",'<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>'],
+    subscription:["#e57ce0",'<rect x="2" y="4" width="20" height="16" rx="3"/><path d="m10 9 5 3-5 3z"/>'],
+    entertainment:["#ffb36b",'<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/>'],
+    moneysent:["#7ad6b0",'<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>'],
+    personal:["#d9a5f5",'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88"/><path d="M14.47 14.48 20 20"/><path d="M8.12 8.12 12 12"/>'],
+    gifts:["#ff9fb2",'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/>'],
+    tax:["#c9b98f",'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M12 16H8"/>'],
+    loanemi:["#9aa1ad",'<path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 20 7H4z"/>'],
+    income:["#9be36b",'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>'],
+    ccpayment:["#8fb3ff",'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'],
+    loan:["#7ad6b0",'<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>'],
+    between:["#d9a5f5",'<path d="m17 2 4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'],
+    opening:["#9aa1ad",'<path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 20 7H4z"/>'],
+    others:["#bdb3ad",'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>'],
+    more:["",'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>']
+  };
+  // Retired ids show their new home's icon.
+  const ICON_ALIAS = { grocerydelivery:"groceries", fooddelivery:"outsidefood", airlines:"travel", electricity:"bills", transfer:"moneysent" };
+  function catColor(id){ return (CAT_ICONS[ICON_ALIAS[id]||id] || CAT_ICONS.others)[0]; }
+  function catIc(id, cls){
+    const k = ICON_ALIAS[id] || id, ic = CAT_ICONS[k] || CAT_ICONS.others;
+    return `<span class="ci${cls ? " " + cls : ""}"${ic[0] ? ` style="background:${ic[0]}"` : ""}><svg viewBox="0 0 24 24">${ic[1]}</svg></span>`;
+  }
   const PANTRY_CATS = new Set(["groceries","shopping"]);
   // Borrowed money: it lands in the bank like income, but it is owed back, so it is never
   // counted as Income. Not a Home tile; it's logged from the Loans page.
@@ -2134,6 +2312,42 @@ Reply with the JSON object only.`;
     income: { "Borrow":null },
     others: { "Education Loan":null }
   };
+  // Oct 2026: subcategories say only "what kind" (3 to 5 each). Old names map to the new ones.
+  // Shop and app names (Blinkit, Swiggy, Dmart...) move into the note so they aren't lost.
+  // Old entries change only through Settings › Tidy old entries, with a preview first.
+  const NEW_SUBS = {
+    groceries: { "Local shop":"Daily needs", "Veggies":"Daily needs", "Akshayakalpa":"Daily needs", "Blinkit":"Daily needs", "Zepto":"Daily needs", "Instamart":"Daily needs", "Delivery":"Daily needs",
+      "Supermarket":"Monthly stock", "BigBasket":"Monthly stock", "Bigbasket":"Monthly stock", "Dmart":"Monthly stock", "DMart":"Monthly stock", "Ratnadeep":"Monthly stock", "Amazon":"Monthly stock",
+      "Household items":"Household" },
+    outsidefood: { "Restaurant":"Eat out", "Cafe":"Eat out", "Snacks":"Snacks & chai", "Zomato":"Order in", "Swiggy":"Order in", "Delivery":"Order in" },
+    transport: { "Bike":"Bike taxi", "Metro":"Metro/Bus", "Bus":"Metro/Bus", "Train":"Metro/Bus", "Fuel":"Vehicle", "Parking":"Vehicle", "Tolls":"Vehicle", "Servicing":"Vehicle" },
+    bills: { "Mobile":"Phone & net", "Internet":"Phone & net", "Water":"Other", "Gas":"Other", "Insurance":"Other", "Iron":"Other" },
+    shopping: { "Footwear":"Clothes", "Home items":"Home", "Toys":"Other", "Gifts":"Other" },
+    health: { "Yoga":"Gym", "Sports":"Gym" },
+    medical: { "Pharmacy":"Medicines", "Lab test":"Tests", "Hospital":"Doctor" },
+    travel: { "Flights":"Tickets", "Trains":"Tickets", "Intercity bus":"Tickets", "Hotels":"Stay", "Visa":"Other" },
+    subscription: { "Netflix":"Streaming", "Prime":"Streaming", "Spotify":"Streaming", "Rentomojo":"Rentals", "Cloud":"Apps", "Claude":"Apps" },
+    entertainment: { "Concerts":"Events" },
+    moneysent: { "Rent share":"Other", "Gift":"Other" },
+    personal: { "Parlour":"Salon" },
+    gifts: { "Sweets":"Festival" },
+    rent: { "Rent":"" },
+    income: { "Freelance":"Other", "Interest":"Other", "Bonus":"Other", "Reward points":"Cashback" }
+  };
+  const SHOP_SUBS = new Set(["Blinkit","Zepto","Instamart","BigBasket","Bigbasket","Dmart","DMart","Ratnadeep","Akshayakalpa","Amazon","Zomato","Swiggy","Netflix","Prime","Spotify","Rentomojo","Claude"]);
+  // The new subcategory (and note) for an old one, or null when nothing changes.
+  function newSubFor(catId, sub, note){
+    if(!sub) return null;
+    let s2 = sub;
+    const old = MERGED_SUBCATS[catId]; if(old && s2 in old && old[s2]) s2 = old[s2];
+    const m = NEW_SUBS[catId]; if(m && s2 in m) s2 = m[s2];
+    if(s2===sub) return null;
+    let n = (note||"").trim();
+    if(SHOP_SUBS.has(sub) && !n.toLowerCase().includes(sub.toLowerCase())) n = n ? sub + " · " + n : sub;
+    return { sub: s2, note: n };
+  }
+  // For anything new arriving with an old name (Say it, scanned bills, saved dues).
+  function normSub(catId, sub, note){ return newSubFor(catId, sub, note) || { sub: sub||"", note: (note||"").trim() }; }
 
 
   const STORE_KEY = "kharchapani_txns_v1";
@@ -2153,13 +2367,14 @@ Reply with the JSON object only.`;
   // This phone's own choices (not synced): Home tile order, hidden categories, forgotten
   // shops, theme, card bill due day, and whether the welcome screen was seen.
   const PREFS_KEY = "kharchapani_prefs_v1";
-  let prefs = Object.assign({ order:"auto", catOrder:[], hidden:[], ignoredShops:[], theme:"auto", ccDueDay:0, welcomed:false }, loadJ(PREFS_KEY, {}));
+  let prefs = Object.assign({ order:"auto", catOrder:[], hidden:[], ignoredShops:[], theme:"dark", ccDueDay:0, welcomed:false }, loadJ(PREFS_KEY, {}));
   function savePrefs(){ saveJ(PREFS_KEY, prefs); }
+  // The calmer redesign (Oct 2026) starts everyone on Dark once; Follow phone and Light stay pickable.
+  if(!prefs.themeV2){ if(prefs.theme==="auto") prefs.theme = "dark"; prefs.themeV2 = true; savePrefs(); }
   function applyTheme(){
-    const root = document.documentElement;
-    if(prefs.theme==="dark" || prefs.theme==="light") root.setAttribute("data-theme", prefs.theme); else root.removeAttribute("data-theme");
-    const light = prefs.theme==="light" || (prefs.theme!=="dark" && window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches);
-    const mt = document.querySelector('meta[name="theme-color"]'); if(mt) mt.setAttribute("content", light ? "#f6f7f4" : "#0a0d0f");
+    const light = prefs.theme==="light" || (prefs.theme==="auto" && window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches);
+    document.documentElement.setAttribute("data-theme", light ? "light" : "dark");
+    const mt = document.querySelector('meta[name="theme-color"]'); if(mt) mt.setAttribute("content", light ? "#f6f2ef" : "#000000");
   }
   applyTheme();
   try{ matchMedia("(prefers-color-scheme: light)").addEventListener("change", applyTheme); }catch(e){}
@@ -2347,7 +2562,7 @@ Reply with the JSON object only.`;
 
   function subcatsFor(catId){
     const base = (catMap[catId] && catMap[catId].subcats) || [];
-    const merged = MERGED_SUBCATS[catId] || {};
+    const merged = Object.assign({}, MERGED_SUBCATS[catId] || {}, NEW_SUBS[catId] || {});
     const custom = (customSubcats[catId] || []).filter(c=> !(c in merged));
     return [...base, ...custom.filter(c=>!base.includes(c))];
   }
@@ -2480,14 +2695,32 @@ Reply with the JSON object only.`;
     const counts = catUseCounts(90);
     return list.sort((a,b)=> (counts[b.id]||0)-(counts[a.id]||0) || base(a.id)-base(b.id));
   }
-  function catTile(c, onClick, label, cls){
+  // A category tile: icon, name and (on Home) what left the bank for it this month.
+  function catTile(c, onClick, label, cls, amt){
     const el = document.createElement("div");
     el.className = "cat-card" + (cls ? " " + cls : "");
-    el.innerHTML = `<span class="emoji">${c.emoji}</span><span class="lbl">${esc(label || c.name)}</span>`;
+    el.innerHTML = (cls==="more" ? "" : catIc(c.id)) + `<span class="lbl">${esc(label || c.name)}</span>` + (amt!=null ? `<b class="tv">${fmt(amt)}</b>` : "");
     el.addEventListener("click", onClick);
     return el;
   }
-  const HOME_TILES = 7;
+  const HOME_TILES = 5;
+  // The ring on Home: this month's Kharcha by category, biggest three in colour, the rest grey.
+  function renderHomeDonut(ym){
+    const by = catSpend(ym).by, total = Object.values(by).reduce((a,b)=>a+b,0);
+    const top = Object.entries(by).sort((a,b)=> b[1]-a[1]).slice(0,3);
+    const svg = document.getElementById("homeDonut"), leg = document.getElementById("homeLegend");
+    const COLS = ["#3f7bff","#3fc1d6","#4fd17f"];
+    let off = 25, rings = `<circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--card2)" stroke-width="5.5"/>`;
+    if(total>0){
+      rings = `<circle cx="21" cy="21" r="15.9" fill="none" stroke="#8f8883" stroke-width="5.5"/>`;
+      top.forEach(([id,v],i)=>{ const pc = v/total*100; rings += `<circle cx="21" cy="21" r="15.9" fill="none" stroke="${COLS[i]}" stroke-width="5.5" stroke-dasharray="${pc} ${100-pc}" stroke-dashoffset="${off}"/>`; off -= pc; });
+    }
+    svg.innerHTML = rings;
+    const name = id=> id==="ccpayment" ? "Card bill paid" : (catMap[id]||catMap.others).name;
+    leg.innerHTML = top.map(([id,v],i)=> `<div><i style="background:${COLS[i]}"></i><span>${esc(name(id))}</span>${fmt(v)}</div>`).join("");
+    leg.style.display = top.length ? "" : "none";
+    return by;
+  }
   function renderCatGrid(){
     // Spent today counts everything bought today whatever you paid with, because as a
     // display figure that's what "spent" means day to day. Credit card BILL payments are
@@ -2509,38 +2742,36 @@ Reply with the JSON object only.`;
     renderWhoSegs();
     const left = moneyLeftAll(), view = curView();
     const leftEl = document.getElementById("homeLeft"), whoEl = document.getElementById("homeWho");
-    document.getElementById("homeLeftLbl").innerHTML = view ? "Shesh &middot; " + esc(view) + "'s bank" : (setup.people.length>1 ? "Shesh &middot; money left in your banks" : "Shesh &middot; money left in your bank");
-    // Money left is hidden every time the app opens, until you tap Show.
+    document.getElementById("homeLeftLbl").textContent = view ? view + "'s bank" : "Money left";
+    // Money left is hidden every time the app opens, until you tap it.
     if(showLeft){
-      leftEl.innerHTML = (left<0 ? "−" : "") + "<small>₹</small>" + nfmt(Math.abs(left));
+      leftEl.textContent = (left<0 ? "−" : "") + fmt(Math.abs(left));
       leftEl.style.color = left < 0 ? "var(--expense)" : "";
-    } else { leftEl.innerHTML = "<small>₹</small> ••••••"; leftEl.style.color = ""; }
+    } else { leftEl.textContent = "••••••"; leftEl.style.color = ""; }
     const multi = !view && setup.people.length>1 && mainPerson();
     whoEl.style.display = (showLeft && multi) ? "block" : "none";
     if(showLeft && multi) whoEl.textContent = peopleMainFirst().map(p=> p.name + " " + fmt(moneyLeftFor(p.name))).join(" · ");
     document.querySelectorAll("[data-eye]").forEach(b=>{ if(b.classList.contains("eye-btn")) b.textContent = showLeft ? "Hide" : "Show"; });
     const ym = today.slice(0,7);
-    document.getElementById("homeMonthLbl").textContent = "Kharcha in " + new Date(ym+"-01T00:00:00").toLocaleDateString("en-IN",{month:"short"});
+    document.getElementById("homeMonthLbl").textContent = "Kharcha in " + new Date(ym+"-01T00:00:00").toLocaleDateString("en-IN",{month:"long"});
+    const spendBy = renderHomeDonut(ym);
     document.getElementById("homeMonth").textContent = fmt(monthKharcha(ym));
     // Bill payments bigger than the card purchases logged (usually a bill for spends from before
     // you started logging) show as "Card paid ahead" instead of hiding behind ₹0.
     const owedNow = cardOwedNow();
     const many = setup.cards.length > 1;
-    document.getElementById("homeCardLbl").textContent = owedNow < 0 ? "Card paid ahead" : (many ? "Cards owed" : "Card owed");
+    document.getElementById("homeCardLbl").textContent = owedNow < 0 ? "Paid ahead" : (many ? "Cards owed" : "Card owed");
     document.getElementById("homeCard").textContent = fmt(Math.abs(owedNow));
     const lo = loansOwedTotal(), hl = document.getElementById("homeLoans");
     hl.style.display = setup.loans.some(l=>!l.closed) ? "flex" : "none";
     document.getElementById("homeLoansVal").innerHTML = fmt(lo) + " &rsaquo;";
 
     renderDue();
-    renderTidyBanner();
-    renderAgain();
 
-    const cats = orderedCats();
+    const cats = orderedCats().filter(c=> c.id!=="income");
     catGrid.innerHTML = "";
-    cats.slice(0, HOME_TILES).forEach(c=> catGrid.appendChild(catTile(c, ()=> openSheet(c.id))));
-    const rest = cats.length - Math.min(cats.length, HOME_TILES) + 1;   // + the card bill
-    catGrid.appendChild(catTile({ emoji:"⋯", name:"" }, openPick, rest + " more", "more"));
+    cats.slice(0, HOME_TILES).forEach(c=> catGrid.appendChild(catTile(c, ()=> openSheet(c.id), "", "", spendBy[c.id]||0)));
+    catGrid.appendChild(catTile({ id:"more", name:"" }, openPick, "All categories ›", "more"));
   }
   let showLeft = false;
   document.querySelectorAll("[data-eye]").forEach(el=> el.addEventListener("click", (e)=>{ e.stopPropagation(); showLeft = !showLeft; renderCatGrid(); renderLedger(); }));
@@ -2591,11 +2822,13 @@ Reply with the JSON object only.`;
       if(dueDoneTxn(d, ym)) done.push(d); else open.push(d);
     });
     card.style.display = "block";
-    document.getElementById("dueMonth").textContent = new Date(ym+"-01T00:00:00").toLocaleDateString("en-IN",{month:"short"});
+    const openSum = open.reduce((s,d)=> s + (Number(d.amount)||0), 0);
+    document.getElementById("dueTitle").textContent = open.length ? open.length + (open.length===1 ? " payment" : " payments") + " due this month" : "Due this month: all done";
+    document.getElementById("dueTotal").innerHTML = (open.length ? fmt(openSum) + " " : "✓ ") + (list.style.display==="none" ? "&rsaquo;" : "&#8963;");
     let html = open.map(d=>{
-      const c = catMap[d.catId] || catMap.others, l = d.loan && loanById(d.loan);
+      const l = d.loan && loanById(d.loan);
       const extra = (d.pm==="credit" && cardById(d.card) ? " · " + esc(cardById(d.card).name) : "") + (l && l.months ? " · " + Math.min(l.months, emiPaidCount(l)+1) + " of " + l.months : "");
-      return `<div class="due-row"><div class="e">${c.emoji}</div><div class="m"><b>${esc(d.name)}</b><span>${Number(todayISO().slice(8,10)) > (d.day||1) ? "Was due" : "Due"} ${dueDateLabel(d, ym)} · ${esc(c.name)}${extra}</span></div><div class="v">${fmt(d.amount)}</div><button class="due-ok" data-log="${esc(d.id)}" aria-label="Log it">✓</button><button class="due-skip" data-skip="${esc(d.id)}">Skip</button></div>`;
+      return `<div class="due-row">${catIc(d.catId)}<div class="m"><b>${esc(d.name)}</b><span>${fmt(d.amount)} · ${Number(todayISO().slice(8,10)) > (d.day||1) ? "was due" : "due"} ${dueDateLabel(d, ym)}${extra}</span></div><button class="due-skip" data-skip="${esc(d.id)}">Skip</button><button class="due-ok" data-log="${esc(d.id)}" aria-label="Log it">✓ Log</button></div>`;
     }).join("");
     if(done.length) html += `<div class="due-done">✓ Logged: ${done.map(d=>esc(d.name)).join(", ")}</div>`;
     if(!open.length && !done.length) html = `<div class="due-done">Nothing left for this month</div>`;
@@ -2612,52 +2845,13 @@ Reply with the JSON object only.`;
     }));
   }
 
-  // ---------- TIDY BANNER ----------
-  function renderTidyBanner(){
-    const el = document.getElementById("tidyBanner");
-    if(prefs.tidyHidden){ el.style.display = "none"; return; }
-    const n = tidyProposals().length;
-    el.style.display = n ? "flex" : "none";
-    if(n) document.getElementById("tidyBannerTitle").textContent = n + " old entr" + (n===1?"y":"ies") + " could be tidied";
-  }
-  document.getElementById("tidyBanner").addEventListener("click", (e)=>{
-    if(e.target.closest("#tidyBannerHide")){ prefs.tidyHidden = true; savePrefs(); renderTidyBanner(); showToast("Hidden. It's still in Settings › Tidy old entries."); return; }
-    openSettings("tidy");
+  document.getElementById("dueHead").addEventListener("click", ()=>{
+    const list = document.getElementById("dueList");
+    list.style.display = list.style.display==="none" ? "block" : "none";
+    renderDue();
   });
-
-  // "Do it again": the entries you repeat (same category, type, shop or note, and payment) in
-  // the last 60 days. One tap opens the entry form filled in with the last amount, dated today.
-  function repeatCandidates(){
-    const cutoff = Date.now() - 60*86400000, groups = new Map();
-    txns.forEach(t=>{
-      if(t.isCC || t.type!=="expense" || new Date(t.date).getTime() < cutoff) return;
-      const ps = partsOf(t);
-      if(ps.length!==1 || isPts(ps[0].m)) return;   // splits and points change every time
-      const noteKey = (t.note||"").trim().toLowerCase();
-      if(!noteKey && !t.subcategory) return;
-      const key = [t.catId, t.subcategory||"", noteKey, ps[0].m||""].join("|");
-      const g = groups.get(key) || { n:0, last:"", t };
-      g.n++;
-      const stampKey = t.date + String(t.addedAt||0).padStart(15,"0");
-      if(stampKey > g.last){ g.last = stampKey; g.t = t; }
-      groups.set(key, g);
-    });
-    return [...groups.values()].filter(g=> g.n>=2).sort((a,b)=> b.n-a.n || b.last.localeCompare(a.last)).slice(0,5);
-  }
-  function renderAgain(){
-    const block = document.getElementById("againBlock"), row = document.getElementById("againRow");
-    const list = repeatCandidates();
-    block.style.display = list.length ? "block" : "none";
-    row.innerHTML = "";
-    list.forEach(g=>{
-      const t = g.t, c = catMap[t.catId] || catMap.others;
-      const el = document.createElement("div");
-      el.className = "ag";
-      el.innerHTML = `<i>${c.emoji}</i><div><b>${esc(t.note || t.subcategory || c.name)}</b><span>${fmt(t.amount)} · ${esc(methodLabelOf(t) || "UPI")}</span></div>`;
-      el.addEventListener("click", ()=> openSheet(t.catId, null, { amount:t.amount, note:t.note||"", subcategory:t.subcategory||"", paymentMethod:(partsOf(t)[0]||{}).m || "" }));
-      row.appendChild(el);
-    });
-  }
+  // Tidy old entries now lives only in Settings (the Home banner was removed in the calmer redesign).
+  function renderTidyBanner(){}
 
   // ---------- PICK A CATEGORY (the + button and "more") ----------
   const pickBackdrop = document.getElementById("pickBackdrop"), pickSheet = document.getElementById("pickSheet");
@@ -2667,7 +2861,7 @@ Reply with the JSON object only.`;
     grid.innerHTML = "";
     const go = id=> ()=>{ doClosePick(); if(pickPushed){ pickPushed = false; sheetPushed = true; } openSheet(id); };
     orderedCats().forEach(c=> grid.appendChild(catTile(c, go(c.id))));
-    grid.appendChild(catTile(catMap.ccpayment, go("ccpayment"), "Card bill", "cc"));
+    grid.appendChild(catTile(catMap.ccpayment, go("ccpayment"), "Card bill"));
     if(setup.people.length>1) grid.appendChild(catTile(catMap.between, go("between")));
     pickBackdrop.classList.add("active"); pickSheet.classList.add("active");
     if(!pickPushed){ try{ history.pushState({view:"sheet"}, ""); pickPushed = true; }catch(e){} }
@@ -2682,7 +2876,7 @@ Reply with the JSON object only.`;
   // ---------- RECENT LIST ----------
   const recentList = document.getElementById("recentList");
   function renderRecent(){
-    const sorted = [...txns].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,5);
+    const sorted = [...txns].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,3);
     if(sorted.length===0){ recentList.innerHTML = `<div class="empty-hint">Nothing logged yet. Tap a category above, or the ＋ below, to add your first one.</div>`; document.getElementById("seeAllBtn").style.display = "none"; return; }
     document.getElementById("seeAllBtn").style.display = "";
     recentList.innerHTML = "";
@@ -2724,7 +2918,7 @@ Reply with the JSON object only.`;
     const row = document.createElement("div");
     row.className = "txn-row";
     row.innerHTML = `
-      <span class="emoji">${c.emoji}</span>
+      ${catIc(t.isCC ? "ccpayment" : t.catId)}
       <div class="mid">
         <div class="cat">${esc(title)}${tags}</div>
         <div class="note">${subBits.join(" · ") || esc(c.name)}</div>
@@ -2742,7 +2936,6 @@ Reply with the JSON object only.`;
   const sheetType = document.getElementById("sheetType");
   const amountDisplay = document.getElementById("amountDisplay");
   const saveBtn = document.getElementById("saveBtn"), updateBtn = document.getElementById("updateBtn");
-  const subPickBtn = document.getElementById("subPickBtn"), subPickText = document.getElementById("subPickText");
   const shopRow = document.getElementById("shopRow"), moreFold = document.getElementById("moreFold"), foldSum = document.getElementById("foldSum");
   const keypad = document.getElementById("keypad");
   let amountStr = "";
@@ -2794,7 +2987,6 @@ Reply with the JSON object only.`;
   const cardBlock = document.getElementById("cardBlock"), cardRow = document.getElementById("cardRow"), cardHint = document.getElementById("cardHint");
   const forBlock = document.getElementById("forBlock"), forRow = document.getElementById("forRow"), forOther = document.getElementById("forOther");
   const loanBlock = document.getElementById("loanBlock"), loanRow = document.getElementById("loanRow");
-  const routeBlock = document.getElementById("routeBlock"), routeRow = document.getElementById("routeRow"), routeForm = document.getElementById("routeForm");
 
   function setType(t){
     activeType = t;
@@ -2805,6 +2997,7 @@ Reply with the JSON object only.`;
   function refreshPayUI(){
     const exp = isExpenseEntry();
     payMethodRow.style.display = (exp && !splitMode) ? "flex" : "none";
+    document.getElementById("payLabel").style.display = exp ? "" : "none";
     splitPanel.style.display = (exp && splitMode) ? "block" : "none";
     const inc = activeType==="income";
     recvRow.style.display = inc ? "flex" : "none";
@@ -2833,7 +3026,7 @@ Reply with the JSON object only.`;
     el.style.display = on ? "block" : "none";
     if(!on) return;
     const names = setup.people.map(p=>p.name), row = document.getElementById("betweenRow"), hint = document.getElementById("betweenHint");
-    if(names.length<2){ row.innerHTML = ""; hint.textContent = "Add both names in Settings › People & routes first."; return; }
+    if(names.length<2){ row.innerHTML = ""; hint.textContent = "Add both names in Settings › People first."; return; }
     if(!(names.includes(activeFrom) && names.includes(activeTo) && activeFrom!==activeTo)){ activeFrom = defaultBy(); activeTo = names.find(n=>n!==activeFrom); }
     const pairs = []; names.forEach(a=> names.forEach(b=>{ if(a!==b) pairs.push([a,b]); }));
     row.innerHTML = pairs.map(([a,b])=>`<div class="chip${a===activeFrom && b===activeTo ? " active" : ""}" data-f="${esc(a)}" data-t="${esc(b)}">${esc(a)} → ${esc(b)}</div>`).join("");
@@ -2900,7 +3093,7 @@ Reply with the JSON object only.`;
     main.forEach(n=>{
       const el = document.createElement("div");
       el.className = "chip" + (n===activeFor ? " active" : ""); el.textContent = n;
-      el.addEventListener("click", ()=>{ activeFor = (activeFor===n ? "" : n); forOther.style.display = "none"; refreshForUI(); });
+      el.addEventListener("click", ()=>{ activeFor = (activeFor===n ? "" : n); forOther.style.display = "none"; refreshForUI(); updateFoldSum(); });
       forRow.appendChild(el);
     });
     const other = document.createElement("div");
@@ -2917,7 +3110,7 @@ Reply with the JSON object only.`;
     rest.forEach(n=>{
       const el = document.createElement("div");
       el.className = "chip" + (n===activeFor ? " active" : ""); el.textContent = n;
-      el.addEventListener("click", ()=>{ activeFor = n; forOther.style.display = "none"; refreshForUI(); });
+      el.addEventListener("click", ()=>{ activeFor = n; forOther.style.display = "none"; refreshForUI(); updateFoldSum(); });
       row.appendChild(el);
     });
   }
@@ -2951,65 +3144,6 @@ Reply with the JSON object only.`;
     });
   }
 
-  // ----- travel routes -----
-  function routeLabel(r){ return r.from + " → " + r.to; }
-  function routeHistory(r){
-    const keys = [routeLabel(r).toLowerCase()]; if(r.code) keys.push(r.code.toLowerCase());
-    return txns.filter(t=> t.catId==="transport" && t.type==="expense" && keys.includes((t.note||"").trim().toLowerCase()))
-      .sort((a,b)=> (b.date+(b.addedAt||0)).localeCompare(a.date+(a.addedAt||0)));
-  }
-  function routeUsual(r){ const h = routeHistory(r).slice(0,5).map(t=>t.amount); return h.length ? median(h) : 0; }
-  function renderRoutes(){
-    const show = activeCatId==="transport" && activeType==="expense";
-    routeBlock.style.display = show ? "block" : "none";
-    if(!show) return;
-    if(setup.routes.length) shopRow.style.display = "none";
-    const cur = noteInput.value.trim().toLowerCase();
-    routeRow.innerHTML = "";
-    setup.routes.forEach(r=>{
-      const usual = routeUsual(r);
-      const el = document.createElement("div");
-      el.className = "chip" + (routeLabel(r).toLowerCase()===cur ? " active" : "");
-      el.textContent = routeLabel(r) + (usual ? " · " + fmt(usual) : "");
-      el.addEventListener("click", ()=> pickRoute(r));
-      routeRow.appendChild(el);
-    });
-    const add = document.createElement("div");
-    add.className = "chip dashed"; add.textContent = "+ Route";
-    add.addEventListener("click", ()=>{ routeForm.style.display = routeForm.style.display==="none" ? "block" : "none"; if(routeForm.style.display==="block") document.getElementById("rtFrom").focus(); });
-    routeRow.appendChild(add);
-    document.getElementById("placeList").innerHTML = [...new Set(setup.routes.flatMap(r=>[r.from, r.to]))].map(p=>`<option value="${esc(p)}">`).join("");
-  }
-  function pickRoute(r){
-    const label = routeLabel(r);
-    const already = noteInput.value.trim().toLowerCase()===label.toLowerCase();
-    noteInput.value = already ? "" : label;
-    if(!already && !editingTxn){
-      const last = routeHistory(r)[0];
-      if(!amountStr){ const u = routeUsual(r); if(u) amountStr = String(u); }
-      if(last && last.subcategory){ activeSubcat = last.subcategory; renderSubcatChips(); }
-      const pm = last ? (partsOf(last)[0]||{}).m : "";
-      if(pm && !splitMode && (!isPts(pm) || rewardById(pm.slice(3)))) setPayMethod(pm);
-      renderAmount();
-    }
-    renderRoutes(); updateFoldSum(); refreshCardUI();
-  }
-  document.getElementById("rtCancel").addEventListener("click", ()=>{ routeForm.style.display = "none"; });
-  document.getElementById("rtSave").addEventListener("click", ()=>{
-    const from = document.getElementById("rtFrom").value.trim().slice(0,24), to = document.getElementById("rtTo").value.trim().slice(0,24);
-    const code = document.getElementById("rtCode").value.trim().slice(0,12);
-    if(!from || !to){ alert("Fill in both places, e.g. Home and Gym."); return; }
-    const exists = (f,t)=> setup.routes.some(r=> r.from.toLowerCase()===f.toLowerCase() && r.to.toLowerCase()===t.toLowerCase());
-    const now = Date.now();
-    if(!exists(from,to)) setup.routes.push({ id: uid(), from, to, code, u: now });
-    if(document.getElementById("rtBack").checked && !exists(to,from)){
-      const m = code.match(/^(.+?)2(.+)$/i);   // H2G -> G2H
-      setup.routes.push({ id: uid(), from: to, to: from, code: m ? m[2] + "2" + m[1] : "", u: now });
-    }
-    saveSetup(); pushToCloud();
-    ["rtFrom","rtTo","rtCode"].forEach(id=> document.getElementById(id).value = "");
-    routeForm.style.display = "none"; renderRoutes();
-  });
 
   function buildPayChips(){
     payMethodRow.innerHTML = "";
@@ -3226,21 +3360,22 @@ Reply with the JSON object only.`;
 
   function renderSubcatChips(){
     subcatChips.innerHTML = "";
-    subcatsFor(activeCatId).forEach(name=>{
+    const names = subcatsFor(activeCatId);
+    // An old entry can still carry a retired name until it's tidied; show it so editing keeps it.
+    if(activeSubcat && !names.includes(activeSubcat)) names.unshift(activeSubcat);
+    names.forEach(name=>{
       const el = document.createElement("div");
       el.className = "chip" + (activeSubcat===name ? " active" : "");
       el.textContent = name;
-      el.addEventListener("click", ()=>{ activeSubcat = (activeSubcat===name ? "" : name); renderSubcatChips(); customSubcatRow.style.display="none"; if(activeSubcat) subcatBlock.style.display = "none"; });
+      el.addEventListener("click", ()=>{ activeSubcat = (activeSubcat===name ? "" : name); renderSubcatChips(); customSubcatRow.style.display="none"; });
       subcatChips.appendChild(el);
     });
     const addEl = document.createElement("div");
     addEl.className = "chip dashed";
-    addEl.textContent = "+ Custom";
+    addEl.textContent = subcatsFor(activeCatId).length ? "+ New" : "+ Add a type";
     addEl.addEventListener("click", ()=>{ customSubcatRow.style.display = customSubcatRow.style.display==="none" ? "block" : "none"; customSubcatInput.focus(); });
     subcatChips.appendChild(addEl);
-    subPickText.textContent = activeSubcat || (subcatsFor(activeCatId).length ? "Pick a type" : "Add a type");
   }
-  subPickBtn.addEventListener("click", ()=>{ subcatBlock.style.display = subcatBlock.style.display==="none" ? "block" : "none"; });
   document.getElementById("customSubcatAddBtn").addEventListener("click", ()=>{
     const name = customSubcatInput.value.trim();
     if(!name) return;
@@ -3287,7 +3422,9 @@ Reply with the JSON object only.`;
   let shopCache = null;
   function renderShopChips(){
     shopRow.innerHTML = "";
-    if(!activeCatId || activeCatId==="ccpayment" || activeType==="income" || activeType==="transfer"){ shopRow.style.display = "none"; return; }
+    const sb = document.getElementById("shopBlock");
+    if(!activeCatId || activeCatId==="ccpayment" || activeType==="income" || activeType==="transfer"){ shopRow.style.display = "none"; sb.style.display = "none"; return; }
+    sb.style.display = "";
     if(!shopCache) shopCache = shopMemory();
     const cur = noteInput.value.trim().toLowerCase();
     const list = [...shopCache.values()].filter(g=> g.cats[activeCatId] && g.cats[activeCatId].n>=2)
@@ -3300,10 +3437,10 @@ Reply with the JSON object only.`;
       shopRow.appendChild(el);
     });
     const add = document.createElement("div");
-    add.className = "chip dashed"; add.textContent = list.length ? "+ shop" : "+ Shop or note";
-    add.addEventListener("click", ()=>{ moreFold.open = true; noteInput.focus(); });
+    add.className = "chip dashed"; add.textContent = "+ New";
+    add.addEventListener("click", ()=>{ noteInput.focus(); });
     shopRow.appendChild(add);
-    shopRow.style.display = (activeCatId==="transport" && setup.routes.length) ? "none" : "flex";
+    shopRow.style.display = "flex";
   }
   // Picking a shop fills in the note, and (for a new entry) the type and payment you usually use there.
   function pickShop(g){
@@ -3312,18 +3449,20 @@ Reply with the JSON object only.`;
     if(!already && !editingTxn){
       const mem = g.cats[activeCatId] || {};
       if(mem.sub){ activeSubcat = mem.sub; renderSubcatChips(); }
-      if(mem.pm && !splitMode && (!isPts(mem.pm) || rewardById(mem.pm.slice(3)))) setPayMethod(mem.pm);
+      // Only fills the payment when you haven't picked one yet; it never replaces your choice.
+      if(mem.pm && !activePayMethod && !splitMode && (!isPts(mem.pm) || rewardById(mem.pm.slice(3)))) setPayMethod(mem.pm);
     }
     renderShopChips(); updateFoldSum();
   }
   function updateFoldSum(){
     const bits = [dayName(dateInput.value || todayISO())];
     const n = noteInput.value.trim();
-    bits.push(n ? esc(n) : "add note");
+    bits.push(n ? esc(n) : (document.getElementById("shopBlock").style.display!=="none" ? "note · shop" : "note"));
+    if(forBlock.style.display!=="none") bits.push(activeFor ? "for " + esc(activeFor) : "for whom");
     if(itemsSection.style.display!=="none"){ const k = collectItems().length; bits.push(k ? k + " pantry item" + (k===1?"":"s") : "pantry items"); }
     foldSum.innerHTML = bits.join(" · ");
   }
-  noteInput.addEventListener("input", ()=>{ renderShopChips(); renderRoutes(); updateFoldSum(); });
+  noteInput.addEventListener("input", ()=>{ renderShopChips(); updateFoldSum(); });
   dateInput.addEventListener("change", updateFoldSum);
   itemsContainer.addEventListener("input", updateFoldSum);
 
@@ -3331,7 +3470,7 @@ Reply with the JSON object only.`;
   function openSheet(catId, txn, preset){
     activeCatId = catId; editingTxn = txn || null;
     const c = catMap[catId] || catMap.others;
-    sheetEmoji.textContent = c.emoji; sheetName.textContent = catId==="ccpayment" ? "Card bill payment" : c.name;
+    sheetEmoji.innerHTML = catIc(catId); sheetName.textContent = catId==="ccpayment" ? "Card bill payment" : c.name;
     const isCCMode = catId === "ccpayment";
     shopCache = null;
 
@@ -3368,7 +3507,7 @@ Reply with the JSON object only.`;
     activeFor = txn ? (txn.for||"") : (preset && preset.for!=null ? preset.for : (prefs.me||""));
     activeLoan = txn ? (txn.loan||"") : (preset && preset.loan ? preset.loan : "");
     activeDue = txn ? (txn.due||"") : (preset && preset.due ? preset.due : "");
-    forOther.style.display = "none"; routeForm.style.display = "none";
+    forOther.style.display = "none";
     noteInput.value = txn ? (txn.note||"") : (preset && preset.note ? preset.note : "");
     dateInput.value = txn ? txn.date : (preset && preset.date ? preset.date : todayISO());
     buildPayChips(); buildRecvChips();
@@ -3378,13 +3517,15 @@ Reply with the JSON object only.`;
     setType(txn ? txn.type : ((catId==="income" || catId==="loan") ? "income" : catId==="between" ? "transfer" : "expense"));
     if(splitParts) startSplit(splitParts);
 
-    activeSubcat = txn ? (txn.subcategory || "") : ((preset && preset.subcategory) ? preset.subcategory : (lastSubcat[catId] || ""));
-    subPickBtn.style.display = (isCCMode || catId==="between") ? "none" : "";
-    subcatBlock.style.display = "none";
+    // New entries start with no type picked (same as the payment method). Old names coming in
+    // from Say it, a scanned bill or a saved due are moved to the new short ones.
+    activeSubcat = "";
+    if(txn) activeSubcat = txn.subcategory || "";
+    else if(preset && preset.subcategory){ const ns = normSub(catId, preset.subcategory, noteInput.value); activeSubcat = ns.sub; noteInput.value = ns.note; }
+    subcatBlock.style.display = (isCCMode || catId==="between" || catId==="loan" || activeType==="transfer") ? "none" : "block";
     customSubcatRow.style.display = "none";
     renderSubcatChips();
     renderShopChips();
-    renderRoutes();
     refreshCardUI(); refreshForUI(); refreshLoanUI();
 
     itemsContainer.innerHTML = "";
@@ -3530,8 +3671,7 @@ Reply with the JSON object only.`;
     history: document.getElementById("screen-history"),
     pantry: document.getElementById("screen-pantry"),
     dash: document.getElementById("screen-dash"),
-    ledger: document.getElementById("screen-ledger"),
-    shop: document.getElementById("screen-shop")
+    ledger: document.getElementById("screen-ledger")
   };
   // Every tab switch and every sheet open pushes a browser history entry, so the Android
   // back gesture steps back through the app instead of closing it. popstate below undoes
@@ -3540,6 +3680,7 @@ Reply with the JSON object only.`;
   let sheetPushed = false, syncPushed = false;
 
   function switchScreen(name, presetFilter, fromPop){
+    if(name==="shop"){ name = "pantry"; pantryTab = "buy"; }
     if(!screens[name]) name = "add";
     if(!fromPop && name===currentScreen && !presetFilter) return;
     // Balances (the ledger) lives under Insights, and shopping under Pantry, so keep those tabs lit.
@@ -3551,7 +3692,6 @@ Reply with the JSON object only.`;
     currentScreen = name;
     if(name==="dash") renderDashboard();
     if(name==="pantry") renderPantry();
-    if(name==="shop") renderShop();
     if(name==="ledger") renderLedger();
     if(name==="history"){ if(presetFilter) applyHistoryPreset(presetFilter); renderHistory(); }
     if(!fromPop){ try{ history.pushState({view:"screen", screen:name}, ""); }catch(e){} }
@@ -3602,7 +3742,7 @@ Reply with the JSON object only.`;
 
   function setSayHint(text, isErr){ sayHint.textContent = text; sayHint.className = isErr ? "err" : ""; }
   function renderSayBox(){
-    sayPromo.style.display = (!aiCfg.on && !aiCfg.promoHidden) ? "flex" : "none";
+    sayPromo.style.display = "none";
     sayBox.style.display = aiCfg.on ? "block" : "none";
     if(!aiCfg.on) return;
     const online = navigator.onLine;
@@ -3747,10 +3887,12 @@ Reply with the JSON object only.`;
     return "After saving: " + bits.join(" · ");
   }
   function openSayPreview(said, t, lines, warnings, problem){
+    // The AI may still use an old subcategory name; code moves it to the new short one.
+    if(t.subcategory && !t.isCC){ const ns = normSub(t.catId, t.subcategory, t.note); t.subcategory = ns.sub; if(ns.note) t.note = ns.note; }
     sayDraft = t;
     const c = catMap[t.isCC ? "ccpayment" : t.catId] || catMap.others;
     document.getElementById("sySaid").innerHTML = "You said <q>" + esc(said) + "</q>";
-    document.getElementById("syEmoji").textContent = c.emoji;
+    document.getElementById("syEmoji").innerHTML = catIc(t.isCC ? "ccpayment" : t.catId);
     document.getElementById("syCat").textContent = c.name;
     document.getElementById("sySub").textContent = [t.subcategory, t.note].filter(Boolean).join(" · ");
     document.getElementById("syAmt").textContent = t.amount ? rupee2(t.amount) : "₹?";
@@ -4086,20 +4228,6 @@ Reply with the JSON object only.`;
     });
     if(changed) saveJ(PSTATE_KEY, pstate);
   }
-  const ITEM_EMOJI = [
-    [/doodh|milk/, "🥛"], [/bread|pav|bun/, "🍞"], [/atta|flour|maida|besan|suji|rava/, "🌾"], [/anda|egg/, "🥚"],
-    [/chawal|rice|poha/, "🍚"], [/dal|daal|rajma|chana|lentil/, "🫘"], [/pyaz|onion/, "🧅"], [/tamatar|tomato/, "🍅"],
-    [/aloo|potato/, "🥔"], [/\btel\b|oil|ghee/, "🫒"], [/namak|salt/, "🧂"], [/cheeni|sugar|gud|jaggery/, "🍬"],
-    [/chai|tea|coffee/, "☕"], [/dahi|curd|yogurt|lassi/, "🥣"], [/paneer|cheese/, "🧀"], [/butter|makhan/, "🧈"],
-    [/kela|banana/, "🍌"], [/\bseb\b|apple/, "🍎"], [/\baam\b|mango/, "🥭"], [/fruit|phal|grapes|angoor/, "🍇"],
-    [/sabzi|sabji|veg|palak|gobi|bhindi|methi|dhaniya|mirch|adrak|lehsun|garlic|ginger|lauki|baingan/, "🥬"],
-    [/biscuit|cookie|namkeen|chips|bhujia/, "🍪"], [/soap|sabun|shampoo|handwash|bodywash/, "🧼"],
-    [/surf|detergent|vim|harpic|lizol|cleaner|phenyl|dishwash/, "🧴"], [/tooth|colgate|paste|brush/, "🪥"],
-    [/tissue|toilet|napkin|diaper|pad/, "🧻"], [/masala|haldi|jeera|spice|rai/, "🌶️"], [/water|paani|bisleri/, "💧"],
-    [/maggi|noodle|pasta/, "🍜"], [/chicken|mutton|fish|meat/, "🍗"], [/juice|cold ?drink|coke|pepsi/, "🧃"],
-    [/medicine|dawai|tablet/, "💊"], [/battery|bulb/, "🔋"]
-  ];
-  function itemEmoji(name){ const n = String(name).toLowerCase(); const hit = ITEM_EMOJI.find(([re])=> re.test(n)); return hit ? hit[1] : "🛒"; }
   function median(a){ const s = [...a].sort((x,y)=>x-y), m = Math.floor(s.length/2); return s.length%2 ? s[m] : Math.round((s[m-1]+s[m])/2); }
   function shelfFor(left, usual){ if(left<=0) return "out"; if(left <= Math.max(2, Math.round(usual*0.3))) return "low"; return "have"; }
 
@@ -4140,12 +4268,16 @@ Reply with the JSON object only.`;
     pantry.forEach(p=>{ const k = String(p.name||"").toLowerCase(); if(k && !seen.has(k)) seen.set(k, p.name); });
     itemNamesList.innerHTML = [...seen.values()].sort().map(n=>`<option value="${esc(n)}">`).join("");
   }
-  function jarEl(i){
+  // One row on the Have tab: when you last bought it and how long it usually lasts.
+  function haveRowEl(i){
     const el = document.createElement("div");
-    el.className = "jar" + (i.listed && i.shelf==="have" ? " listed" : "");
-    let small = "";
-    if(i.shelf==="low" && i.left!=null) small = i.left<=1 ? "1d" : i.left + "d";
-    el.innerHTML = `<i>${itemEmoji(i.name)}</i>${esc(i.name)}${small ? `<small>${small}</small>` : ""}`;
+    el.className = "shop-row";
+    const sub = [];
+    if(i.sinceLast!=null) sub.push(i.sinceLast===0 ? "Bought today" : "Bought " + i.sinceLast + " day" + (i.sinceLast===1?"":"s") + " ago");
+    if(i.usual) sub.push("lasts about " + i.usual + " day" + (i.usual===1?"":"s"));
+    else if(i.count===1) sub.push("bought once");
+    if(i.listed) sub.push("on your list");
+    el.innerHTML = `<div class="m"><b>${esc(i.name)}</b><span>${esc(sub.join(" · "))}</span></div><span class="chev">›</span>`;
     el.addEventListener("click", ()=> openItem(i.key));
     return el;
   }
@@ -4153,52 +4285,40 @@ Reply with the JSON object only.`;
     refreshItemNamesList();
     const q = pantrySearch.value.trim().toLowerCase();
     const items = pantryItems();
-    const toBuy = items.filter(onList);
-    if(toBuy.length){
-      const names = toBuy.slice(0,4).map(i=>i.name).join(", ") + (toBuy.length>4 ? "…" : "");
-      buyBar.className = "buybar";
-      buyBar.innerHTML = `<div>🛍 Go shopping · ${toBuy.length} item${toBuy.length===1?"":"s"}<span>${esc(names)}</span></div><div>›</div>`;
-    } else {
-      buyBar.className = "buybar empty";
-      buyBar.innerHTML = `<div>🛍 Nothing to buy right now<span>Out and running-low items land on the list by themselves</span></div><div>›</div>`;
-    }
+    const toBuy = items.filter(onList), tracked = items.filter(i=> !i.hidden);
+    const have = tracked.filter(i=> i.shelf==="have");
+    const left = toBuy.filter(i=>!i.got).length;
+    document.getElementById("pTabBuy").textContent = "To buy" + (left ? " · " + left : "");
+    document.getElementById("pTabHave").textContent = "Have" + (have.length ? " · " + have.length : "");
     shelvesEl.innerHTML = "";
-    const tracked = items.filter(i=> !i.hidden);
     if(!tracked.length){
-      shelvesEl.innerHTML = `<div class="list-card"><div class="empty-hint">Nothing here yet.<br>When you log Groceries or Shopping, open "add pantry items" and type what you bought. Or tap ＋ above to add something by hand.</div></div>`;
+      shelvesEl.innerHTML = `<div class="list-card"><div class="empty-hint">Nothing here yet.<br>When you log Groceries or Shopping, open the details and add what you bought. Or add something below.</div></div>`;
     } else {
-      const shown = tracked.filter(i=> !q || i.key.includes(q));
-      const byLeft = (a,b)=> (a.left==null?9999:a.left) - (b.left==null?9999:b.left) || a.name.localeCompare(b.name);
-      [["out","Out","buy now"],["low","Running low","buy soon"],["have","Have",""]].forEach(([k,title,sub])=>{
-        const list = shown.filter(i=> i.shelf===k).sort(byLeft);
-        if(!list.length && k!=="have") return;
-        const sh = document.createElement("div");
-        sh.className = "shelf " + k;
-        sh.innerHTML = `<h4>${title} <span>${k==="have" ? list.length + " item" + (list.length===1?"":"s") : sub}</span></h4><div class="jars"></div>`;
-        const jars = sh.querySelector(".jars");
-        const cap = (k==="have" && !haveExpanded && !q) ? 18 : 999;
-        list.slice(0,cap).forEach(i=> jars.appendChild(jarEl(i)));
-        if(list.length>cap){
-          const more = document.createElement("div"); more.className = "jar more"; more.textContent = "+" + (list.length-cap) + " more";
-          more.addEventListener("click", ()=>{ haveExpanded = true; renderPantry(); });
-          jars.appendChild(more);
-        }
-        if(!list.length) jars.innerHTML = `<span class="muted" style="font-size:12px;">${q ? "No match." : "Nothing yet."}</span>`;
-        shelvesEl.appendChild(sh);
-      });
+      const shown = have.filter(i=> !q || i.key.includes(q)).sort((a,b)=> a.name.localeCompare(b.name));
+      const card = document.createElement("div"); card.className = "list-card";
+      const cap = (!haveExpanded && !q) ? 30 : 9999;
+      shown.slice(0,cap).forEach(i=> card.appendChild(haveRowEl(i)));
+      if(shown.length>cap){
+        const more = document.createElement("div"); more.className = "see-all"; more.textContent = "Show all " + shown.length;
+        more.addEventListener("click", ()=>{ haveExpanded = true; renderPantry(); });
+        card.appendChild(more);
+      }
+      if(!shown.length) card.innerHTML = `<div class="empty-hint">${q ? "No match." : "Everything is on your To buy list."}</div>`;
+      shelvesEl.appendChild(card);
     }
     const hidden = items.filter(i=> i.hidden);
     if(showHiddenItems && hidden.length){
-      const sh = document.createElement("div"); sh.className = "shelf";
-      sh.innerHTML = `<h4 style="color:var(--muted);">Not tracked <span>tap one to track it again</span></h4><div class="jars"></div>`;
-      hidden.forEach(i=> sh.querySelector(".jars").appendChild(jarEl(i)));
-      shelvesEl.appendChild(sh);
+      const card = document.createElement("div"); card.className = "list-card";
+      card.innerHTML = `<div class="day-head"><span>Not tracked · tap one to track it again</span></div>`;
+      hidden.forEach(i=> card.appendChild(haveRowEl(i)));
+      shelvesEl.appendChild(card);
     }
-    pHint.innerHTML = tracked.length ? "Tap an item to move it between shelves or see when you bought it."
+    pHint.innerHTML = tracked.length ? "Tap an item to say it ran out or is running low. It moves to To buy straight away."
       + (hidden.length ? ` <a class="link" id="pHiddenToggle">${showHiddenItems ? "Hide" : "Show"} ${hidden.length} not tracked</a>` : "") : "";
     const tg = document.getElementById("pHiddenToggle");
     if(tg) tg.addEventListener("click", ()=>{ showHiddenItems = !showHiddenItems; renderPantry(); });
-    if(currentScreen==="shop") renderShop();
+    showPantryTab();
+    renderShop();
   }
   pantrySearch.addEventListener("input", renderPantry);
   document.getElementById("pSearchBtn").addEventListener("click", ()=>{
@@ -4221,7 +4341,19 @@ Reply with the JSON object only.`;
     renderPantry(); pushToCloud();
     showToast("Added " + name + " as bought today");
   });
-  buyBar.addEventListener("click", ()=> switchScreen("shop"));
+  // To buy / Have tabs
+  let pantryTab = "buy";
+  function showPantryTab(){
+    document.getElementById("pBuy").style.display = pantryTab==="buy" ? "" : "none";
+    document.getElementById("pHave").style.display = pantryTab==="have" ? "" : "none";
+    document.getElementById("shopShare").style.display = pantryTab==="buy" ? "" : "none";
+    document.getElementById("pSearchBtn").style.display = pantryTab==="have" ? "" : "none";
+    [...document.getElementById("pTabs").children].forEach(b=> b.classList.toggle("on", b.dataset.pt===pantryTab));
+  }
+  document.getElementById("pTabs").addEventListener("click", (e)=>{
+    const b = e.target.closest("[data-pt]"); if(!b) return;
+    pantryTab = b.dataset.pt; showPantryTab(); window.scrollTo(0,0);
+  });
 
   // ----- one item -----
   const itemBackdrop = document.getElementById("itemBackdrop"), itemSheet = document.getElementById("itemSheet");
@@ -4229,7 +4361,7 @@ Reply with the JSON object only.`;
   function fillItem(){
     const it = pantryItems().find(i=> i.key===itemKey);
     if(!it){ closeItem(); return; }
-    document.getElementById("itEmoji").textContent = itemEmoji(it.name);
+    document.getElementById("itEmoji").innerHTML = catIc(it.catId || "groceries");
     document.getElementById("itName").textContent = it.name;
     const sub = [];
     if(it.usual) sub.push("usually every " + it.usual + " day" + (it.usual===1?"":"s"));
@@ -4288,44 +4420,60 @@ Reply with the JSON object only.`;
   });
 
   // ----- shopping mode -----
+  // The To buy list: ran out, running low, added by hand, and what's already in the bag.
   function renderShop(){
     const items = pantryItems().filter(onList);
-    const order = { out:0, low:1, have:2 };
-    items.sort((a,b)=> (a.got-b.got) || (order[a.shelf]-order[b.shelf]) || a.name.localeCompare(b.name));
-    const got = items.filter(i=>i.got).length;
-    document.getElementById("shopCount").innerHTML = items.length ? `<span>${items.length-got} to buy</span><b>${got} in the bag</b>` : "";
+    const got = items.filter(i=>i.got);
+    const byLeft = (a,b)=> (a.left==null?9999:a.left) - (b.left==null?9999:b.left) || a.name.localeCompare(b.name);
+    const groups = [
+      ["Buy now · ran out", items.filter(i=> !i.got && i.shelf==="out").sort(byLeft)],
+      ["Buy soon · running low", items.filter(i=> !i.got && i.shelf==="low").sort(byLeft)],
+      ["On your list", items.filter(i=> !i.got && i.shelf==="have").sort((a,b)=> a.name.localeCompare(b.name))],
+      ["In the bag · " + got.length, got.sort((a,b)=> a.name.localeCompare(b.name))]
+    ];
     const box = document.getElementById("shopList");
     box.innerHTML = "";
-    if(!items.length){ box.innerHTML = `<div class="empty-hint">Nothing on the list. Add something below, or move an item to Out or Low on the shelves.</div>`; }
-    items.forEach(i=>{
-      const row = document.createElement("div");
-      row.className = "shop-row" + (i.got ? " done" : "");
-      const sub = [];
-      if(i.last && i.last.qty) sub.push("last " + i.last.qty);
-      if(i.sinceLast!=null) sub.push(i.sinceLast===0 ? "bought today" : "bought " + i.sinceLast + " day" + (i.sinceLast===1?"":"s") + " ago");
-      else sub.push("added to the list");
-      row.innerHTML = `<div class="box">${i.got ? "✓" : ""}</div><div class="m"><b>${itemEmoji(i.name)} ${esc(i.name)}</b><span>${esc(sub.join(" · "))}</span></div><span class="x" title="Not needed">✕</span>`;
-      row.addEventListener("click", (e)=>{
-        if(e.target.classList.contains("x")){
-          setPst(i.key, i.name, i.count ? { shelf:"have", shelfAt:Date.now(), list:false, got:false } : { list:false, got:false });
-        } else setPst(i.key, i.name, { got: !i.got });
-        pushToCloud(); renderShop(); renderPantry();
+    if(!items.length){ box.innerHTML = `<div class="list-card"><div class="empty-hint">Nothing to buy right now.<br>Items that run out or run low land here by themselves.</div></div>`; }
+    groups.forEach(([title, list])=>{
+      if(!list.length) return;
+      box.insertAdjacentHTML("beforeend", `<div class="cap">${esc(title)}</div>`);
+      const card = document.createElement("div"); card.className = "list-card";
+      list.forEach(i=>{
+        const row = document.createElement("div");
+        row.className = "shop-row" + (i.got ? " done" : "");
+        const sub = [];
+        if(i.last && i.last.qty) sub.push(i.last.qty + " last time");
+        if(i.shelf==="low" && i.left!=null) sub.push(i.left<=1 ? "1 day left" : i.left + " days left");
+        else if(i.usual) sub.push("every " + i.usual + " day" + (i.usual===1?"":"s"));
+        if(i.sinceLast==null) sub.push("added by hand");
+        row.innerHTML = `<div class="box">${i.got ? "✓" : ""}</div><div class="m"><b>${esc(i.name)}</b><span>${esc(sub.join(" · "))}</span></div><span class="x" title="Not needed">✕</span>`;
+        row.addEventListener("click", (e)=>{
+          if(e.target.classList.contains("x")){
+            setPst(i.key, i.name, i.count ? { shelf:"have", shelfAt:Date.now(), list:false, got:false } : { list:false, got:false });
+          } else setPst(i.key, i.name, { got: !i.got });
+          pushToCloud(); renderPantry();
+        });
+        card.appendChild(row);
       });
-      box.appendChild(row);
+      box.appendChild(card);
     });
     const synced = !!localStorage.getItem("kharchapani_sync_code");
     const sn = document.getElementById("shopSyncNote");
     sn.className = "note-box " + (synced ? "ok" : "plain");
     sn.textContent = synced ? "The other phone sees this list and the ticks." : "Turn on Family sync in Settings and the other phone sees this list too.";
-    document.getElementById("shopDone").disabled = !got;
+    sn.style.display = items.length ? "" : "none";
+    const done = document.getElementById("shopDone");
+    done.style.display = got.length ? "" : "none";
+    done.textContent = "Done, log the bill (" + got.length + " item" + (got.length===1?"":"s") + ")";
   }
-  document.getElementById("shopBack").addEventListener("click", ()=> history.back());
-  document.getElementById("shopAdd").addEventListener("click", ()=>{
-    const n = prompt("What do you need?"); if(n==null) return;
-    const name = n.trim().slice(0,40); if(!name) return;
+  function addToList(){
+    const inp = document.getElementById("pBuyInput");
+    const name = inp.value.trim().slice(0,40); if(!name){ inp.focus(); return; }
     setPst(name.toLowerCase(), name, { list:true, got:false, hidden:false });
-    pushToCloud(); renderShop(); renderPantry();
-  });
+    inp.value = ""; pushToCloud(); renderPantry();
+  }
+  document.getElementById("shopAdd").addEventListener("click", addToList);
+  document.getElementById("pBuyInput").addEventListener("keydown", (e)=>{ if(e.key==="Enter") addToList(); });
   document.getElementById("shopShare").addEventListener("click", ()=>{
     const items = pantryItems().filter(i=> onList(i) && !i.got);
     if(!items.length){ showToast("Nothing left to buy"); return; }
@@ -4579,7 +4727,7 @@ Reply with the JSON object only.`;
     // Where it went: cash-paid category totals plus a Card bill line. Together these always sum
     // to exactly Kharcha (same number, two views). A split bill only adds the part that left your bank.
     const { by: byCat } = catSpend(dashYM);
-    const slices = Object.entries(byCat).map(([id,amt])=>({ id, name: id==="ccpayment" ? "Card bill paid" : (catMap[id]||catMap.others).name, emoji:(catMap[id]||catMap.others).emoji, amt }));
+    const slices = Object.entries(byCat).map(([id,amt])=>({ id, name: id==="ccpayment" ? "Card bill paid" : (catMap[id]||catMap.others).name, amt }));
     slices.sort((a,b)=>b.amt-a.amt);
     const rank = document.getElementById("rankList"), empty = document.getElementById("donutEmptyHint");
     rank.innerHTML = "";
@@ -4588,7 +4736,7 @@ Reply with the JSON object only.`;
     slices.forEach((d,i)=>{
       const row = document.createElement("div");
       row.className = "rk";
-      row.innerHTML = `<span>${d.emoji}</span><b>${esc(d.name)}<span class="pc">${total>0 ? Math.round(d.amt/total*100) : 0}%</span></b><b class="num">${fmt(d.amt)}</b><div class="bar"><i style="width:${Math.max(2, d.amt/top*100)}%;background:${CAT_COLORS[i%CAT_COLORS.length]}"></i></div>`;
+      row.innerHTML = `${catIc(d.id, "sm")}<b>${esc(d.name)}<span class="pc">${total>0 ? Math.round(d.amt/total*100) : 0}%</span></b><b class="num">${fmt(d.amt)}</b><div class="bar"><i style="width:${Math.max(2, d.amt/top*100)}%;background:${catColor(d.id)}"></i></div>`;
       row.addEventListener("click", ()=> switchScreen("history", { catId:d.id, range:"custom", from: dashYM+"-01", to: monthEndISO(dashYM) }));
       rank.appendChild(row);
     });
@@ -4650,8 +4798,8 @@ Reply with the JSON object only.`;
     const ctx = document.getElementById("trendChart").getContext("2d");
     if(trendChartInstance) trendChartInstance.destroy();
     trendChartInstance = new Chart(ctx, { type:"bar", data:{ labels, datasets:[
-      { label:"Income", data:incomeSeries, backgroundColor:col("--income"), borderRadius:5, maxBarThickness:22 },
-      { label:"Kharcha", data:expenseSeries, backgroundColor:col("--expense"), borderRadius:5, maxBarThickness:22 }
+      { label:"Income", data:incomeSeries, backgroundColor:col("--muted"), borderRadius:5, maxBarThickness:22 },
+      { label:"Kharcha", data:expenseSeries, backgroundColor:col("--accent"), borderRadius:5, maxBarThickness:22 }
     ]}, options:{ responsive:true, plugins:{legend:{labels:{color:col("--muted"), font:{size:11}}}}, scales:{ x:{ticks:{color:col("--muted"),font:{size:11}},grid:{display:false}}, y:{ticks:{color:col("--muted"),font:{size:10}},grid:{color:col("--border")}} } } });
   }
 
@@ -5074,20 +5222,21 @@ Reply with the JSON object only.`;
     document.getElementById("rowLoansVal").textContent = openLoans.length ? fmt(loansOwedTotal()) : "";
     document.getElementById("rowDuesSub").textContent = setup.dues.length ? setup.dues.map(d=>d.name).slice(0,4).join(", ") + (setup.dues.length>4 ? "…" : "") : "Rent, EMIs, subscriptions, salary";
     document.getElementById("rowDuesVal").textContent = setup.dues.length ? String(setup.dues.length) : "";
-    document.getElementById("rowPeopleSub").textContent = setup.people.length ? setup.people.map(p=>p.name).join(", ") : "Who an entry was for, travel routes";
-    document.getElementById("rowPeopleVal").textContent = setup.routes.length ? setup.routes.length + " route" + (setup.routes.length===1?"":"s") : "";
+    document.getElementById("rowPeopleSub").textContent = setup.people.length ? setup.people.map(p=>p.name).join(", ") : "Who an entry was for";
+    document.getElementById("rowPeopleVal").textContent = "";
     const tn = tidyCount();
     document.getElementById("rowTidySub").textContent = tn ? tn + " old entr" + (tn===1?"y":"ies") + " could be tidied" : "Nothing to tidy";
     document.getElementById("rowTidyVal").textContent = tn ? String(tn) : "";
+    document.getElementById("rowTidy").style.display = tn ? "" : "none";
     const lv = document.getElementById("rowLockVal"); lv.textContent = pinIsSet() ? "On" : "Off"; lv.classList.toggle("on", pinIsSet());
-    document.getElementById("rowLookVal").textContent = { auto:"Phone", dark:"Dark", light:"Light" }[prefs.theme] || "Phone";
+    document.getElementById("rowLookVal").textContent = { auto:"Phone", dark:"Dark", light:"Light" }[prefs.theme] || "Dark";
     const lb = parseInt(localStorage.getItem("kharchapani_lastbackup_v1")||"0",10);
     document.getElementById("rowBackupSub").textContent = lb ? "Last backup " + agoLabel(lb) : "Save a copy of everything";
     document.getElementById("leaveLedger").style.display = localStorage.getItem(SYNC_CODE_KEY) ? "flex" : "none";
   }
 
   // Look
-  function renderLook(){ [...document.getElementById("themeSeg").children].forEach(b=> b.classList.toggle("on", b.dataset.v===(prefs.theme||"auto"))); }
+  function renderLook(){ [...document.getElementById("themeSeg").children].forEach(b=> b.classList.toggle("on", b.dataset.v===(prefs.theme||"dark"))); }
   document.getElementById("themeSeg").addEventListener("click", (e)=>{
     const b = e.target.closest("button"); if(!b) return;
     prefs.theme = b.dataset.v; savePrefs(); applyTheme(); renderLook();
@@ -5124,7 +5273,7 @@ Reply with the JSON object only.`;
       const tag = isHidden ? `<span class="muted" style="font-size:10.5px;font-weight:700;">Hidden</span>` : pos < HOME_TILES ? `<span class="pin">HOME</span>` : `<span class="muted" style="font-size:10.5px;font-weight:700;">More</span>`;
       const usual = lastSubcat[c.id] ? "Usually " + lastSubcat[c.id] + " · " : "";
       const moves = (prefs.order==="manual" && !isHidden) ? `<button class="mv" data-up="${c.id}" ${pos===0?"disabled":""}>▲</button><button class="mv" data-dn="${c.id}" ${pos===shownOrder.length-1?"disabled":""}>▼</button>` : "";
-      row.innerHTML = `<span class="e">${c.emoji}</span><div class="m"><b>${esc(c.name)}</b><span>${usual}${counts[c.id]||0} in the last 30 days</span></div>${tag}${moves}<label class="switch" title="Show"><input type="checkbox" ${isHidden?"":"checked"} data-show="${c.id}"><span></span></label>`;
+      row.innerHTML = `${catIc(c.id, "sm")}<div class="m"><b>${esc(c.name)}</b><span>${usual}${counts[c.id]||0} in the last 30 days</span></div>${tag}${moves}<label class="switch" title="Show"><input type="checkbox" ${isHidden?"":"checked"} data-show="${c.id}"><span></span></label>`;
       box.appendChild(row);
     });
     box.querySelectorAll("[data-show]").forEach(inp=> inp.addEventListener("change", ()=>{
@@ -5154,7 +5303,7 @@ Reply with the JSON object only.`;
       const c = catMap[catId] || catMap.others;
       const row = document.createElement("div");
       row.className = "catrow";
-      row.innerHTML = `<span class="e">${c.emoji}</span><div class="m"><b>${esc(g.name)}</b><span>${esc(c.name)}${mem.sub ? " · " + esc(mem.sub) : ""}${mem.pm ? " · " + esc(methodName(mem.pm)) : ""} · ${g.n} times</span></div><button class="btn ghost small" data-forget="${esc(g.name)}">Forget</button>`;
+      row.innerHTML = `${catIc(c.id, "sm")}<div class="m"><b>${esc(g.name)}</b><span>${esc(c.name)}${mem.sub ? " · " + esc(mem.sub) : ""}${mem.pm ? " · " + esc(methodName(mem.pm)) : ""} · ${g.n} times</span></div><button class="btn ghost small" data-forget="${esc(g.name)}">Forget</button>`;
       sl.appendChild(row);
     });
     sl.querySelectorAll("[data-forget]").forEach(b=> b.addEventListener("click", ()=>{
@@ -5884,7 +6033,7 @@ Reply with the JSON object only.`;
     seg.querySelectorAll("[data-dw]").forEach(b=> b.addEventListener("click", ()=>{ duePageWho = b.dataset.dw; renderDuesPage(); }));
     const ds = [...duesOf(duePageWho)].sort((a,b)=>(a.day||0)-(b.day||0));
     list.innerHTML = ds.length ? ds.map(d=>{ const c = catMap[d.catId]||catMap.others;
-      return `<div class="set-row"><div><div>${c.emoji} ${esc(d.name)}</div><div class="sub">${fmt(d.amount)} · ${ordinal(d.day||1)} of every month · ${esc(c.name)}</div></div><div class="acts"><button class="link-btn" data-dedit="${esc(d.id)}">Amount</button><button class="link-btn" style="color:var(--expense);" data-ddel="${esc(d.id)}">Remove</button></div></div>`; }).join("")
+      return `<div class="set-row">${catIc(d.catId, "sm")}<div style="flex:1;min-width:0;"><div>${esc(d.name)}</div><div class="sub">${fmt(d.amount)} · ${ordinal(d.day||1)} of every month · ${esc(c.name)}</div></div><div class="acts"><button class="link-btn" data-dedit="${esc(d.id)}">Amount</button><button class="link-btn" style="color:var(--expense);" data-ddel="${esc(d.id)}">Remove</button></div></div>`; }).join("")
       : `<div class="helper-text" style="margin:0;">Nothing yet. Add from the suggestions below, or your own.</div>`;
     list.querySelectorAll("[data-ddel]").forEach(b=> b.addEventListener("click", ()=>{
       const d = setup.dues.find(x=>x.id===b.dataset.ddel); if(!d) return;
@@ -5899,13 +6048,13 @@ Reply with the JSON object only.`;
     const sug = dueSuggestions(duePageWho), sbox = document.getElementById("duesSuggest");
     document.getElementById("duesSuggestBox").style.display = sug.length ? "block" : "none";
     sbox.innerHTML = sug.map((s,i)=>{ const c = catMap[s.catId]||catMap.others;
-      return `<div class="set-row"><div><div>${c.emoji} ${esc(s.name)}</div><div class="sub">about ${fmt(s.amount)} around the ${ordinal(s.day)}</div></div><div class="acts"><button class="link-btn" data-sadd="${i}">+ Add</button></div></div>`; }).join("");
+      return `<div class="set-row">${catIc(c.id, "sm")}<div style="flex:1;min-width:0;"><div>${esc(s.name)}</div><div class="sub">about ${fmt(s.amount)} around the ${ordinal(s.day)}</div></div><div class="acts"><button class="link-btn" data-sadd="${i}">+ Add</button></div></div>`; }).join("");
     sbox.querySelectorAll("[data-sadd]").forEach(b=> b.addEventListener("click", ()=>{
       const s = sug[+b.dataset.sadd]; if(!s) return;
       setup.dues.push(Object.assign({ id: "u" + uid(), skips: [], u: Date.now() }, s, duePageWho ? { who: duePageWho } : {})); refreshAfterSetup(); renderDuesPage();
     }));
     const sel = document.getElementById("dfCat");
-    if(!sel.options.length) sel.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}">${c.emoji} ${esc(c.name)}</option>`).join("");
+    if(!sel.options.length) sel.innerHTML = CATEGORIES.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
   }
   document.getElementById("dfAdd").addEventListener("click", ()=>{
     const name = document.getElementById("dfName").value.trim().slice(0,30);
@@ -5938,14 +6087,6 @@ Reply with the JSON object only.`;
     const mn = document.getElementById("personMain");
     mn.innerHTML = `<option value="">Not set</option>` + setup.people.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("");
     mn.value = mainPerson();
-    const rl = document.getElementById("routesList");
-    rl.innerHTML = setup.routes.length ? setup.routes.map(r=>
-      `<div class="set-row"><div><div>${esc(routeLabel(r))}</div><div class="sub">${r.code ? "Short code " + esc(r.code) + " · " : ""}${routeHistory(r).length} trips</div></div><div class="acts"><button class="link-btn" style="color:var(--expense);" data-rdel="${esc(r.id)}">Remove</button></div></div>`).join("")
-      : `<div class="helper-text" style="margin:0;">Add routes from Travel: tap the Travel tile, then "+ Route".</div>`;
-    rl.querySelectorAll("[data-rdel]").forEach(b=> b.addEventListener("click", ()=>{
-      const r = setup.routes.find(x=>x.id===b.dataset.rdel); if(!r) return;
-      tombstone("routes", [r.id]); setup.routes = setup.routes.filter(x=>x!==r); refreshAfterSetup(); renderPeoplePage();
-    }));
   }
   document.getElementById("personAdd").addEventListener("click", ()=>{
     const inp = document.getElementById("personNew"), n = addPerson(inp.value);
@@ -6004,7 +6145,7 @@ Reply with the JSON object only.`;
   document.getElementById("bkWho").addEventListener("change", renderBankInfo);
   document.getElementById("bkAmt").addEventListener("input", renderBankInfo);
   document.getElementById("bkSet").addEventListener("click", ()=>{
-    if(!setup.people.length){ alert("Add your name first in Settings › People & routes."); return; }
+    if(!setup.people.length){ alert("Add your name first in Settings › People."); return; }
     const target = parseAmt(document.getElementById("bkAmt").value);
     if(isNaN(target)){ alert("Type the balance your bank app shows, e.g. 50000"); return; }
     const who = bankWho();
@@ -6034,16 +6175,17 @@ Reply with the JSON object only.`;
     { to:"tax", re:/\bitr\b|income tax|\btax\b|\bgst\b/i, sub: n=> /gst/i.test(n) ? "GST" : /property/i.test(n) ? "Property tax" : "Income tax" },
     { to:"loanemi", re:/\bemi\b|\bloan\b/i, sub: ()=> "EMI" },
     { to:"personal", re:/salon|parlou?r|hair ?cut|beard|threading|\bnail|grooming|\bspa\b|wax|facial/i,
-      sub: n=> /parlou?r|threading|wax|facial/i.test(n) ? "Parlour" : /\bspa\b/i.test(n) ? "Spa" : /beard|hair ?cut|trim|shav/i.test(n) ? "Grooming" : "Salon" },
+      sub: n=> /parlou?r|threading|wax|facial/i.test(n) ? "Salon" : /\bspa\b/i.test(n) ? "Spa" : /beard|hair ?cut|trim|shav/i.test(n) ? "Grooming" : "Salon" },
     { to:"gifts", re:/sweet|laddu|chocolate|gift|rakhi|raksha|diwali|holi\b|festival|puja|pooja|dakshina|donation|shagun/i,
-      sub: n=> /donation|dakshina/i.test(n) ? "Donation" : /rakhi|raksha|diwali|holi\b|festival|puja|pooja/i.test(n) ? "Festival" : /gift/i.test(n) ? "Gift" : "Sweets" }
+      sub: n=> /donation|dakshina/i.test(n) ? "Donation" : /rakhi|raksha|diwali|holi\b|festival|puja|pooja/i.test(n) ? "Festival" : /gift/i.test(n) ? "Gift" : "Festival" }
   ];
   const TIDY_GROUPS = [
     ["card", "Card purchases saved as UPI or blank", "Card buys count in Kharcha when you pay the bill, not on the day you buy."],
     ["bill", "Card bills saved in Others", "These become Card bill payments, so they lower what's owed on the card."],
     ["borrow", "Borrowed money saved as income", "Moves to Loans. It stays in Money left but leaves Income."],
     ["others", "Moved out of Others", "Into Tax, Personal care, Gifts & festivals, and Loans & EMI."],
-    ["home", "One home for each kind of spend", "Electricity and Maintenance to Bills, recharges to Bills, blood tests to Medical, and two spellings merged."]
+    ["home", "One home for each kind of spend", "Electricity and Maintenance to Bills, recharges to Bills, blood tests to Medical."],
+    ["subs", "Simpler subcategories", "Each moves to one of the new short types. Shop and app names (Blinkit, Swiggy, Dmart) go into the note."]
   ];
   function tidyProposals(){
     const out = [];
@@ -6080,16 +6222,19 @@ Reply with the JSON object only.`;
         else if(t.catId==="rent" && (sub==="Maintenance" || /^maintenance/i.test(note)))
           add("home", where("rent", sub), where("bills","Maintenance"), { catId:"bills", subcategory:"Maintenance" });
         else if(t.catId==="subscription" && /recharge|airtel|\bjio\b|\bvi\b|mobile/i.test(note + " " + sub))
-          add("home", where("subscription", sub), where("bills","Mobile"), { catId:"bills", subcategory:"Mobile" });
+          add("home", where("subscription", sub), where("bills","Phone & net"), { catId:"bills", subcategory:"Phone & net" });
         else if(t.catId==="health" && /blood|lab test|lipid|thyroid|\btest\b/i.test(note + " " + sub))
-          add("home", where("health", sub), where("medical","Lab test"), { catId:"medical", subcategory:"Lab test" });
+          add("home", where("health", sub), where("medical","Tests"), { catId:"medical", subcategory:"Tests" });
         else {
-          const m = MERGED_SUBCATS[t.catId];
-          if(m && sub in m && m[sub]) add("home", where(t.catId, sub), where(t.catId, m[sub]), { subcategory: m[sub] });
+          const r = newSubFor(t.catId, sub, note);
+          if(r) add("subs", where(t.catId, sub), where(t.catId, r.sub) + (r.note!==note ? " · note " + r.note : ""), r.note!==note ? { subcategory: r.sub, note: r.note } : { subcategory: r.sub });
         }
       } else if(t.type==="income" && t.catId==="income" && /^borrow/i.test(sub)){
         const who = note.replace(/^(borrowed\s+)?from\s+/i, "").trim().slice(0,30) || "Borrowed";
         add("borrow", "Income · " + sub, "Borrowed from " + who, { catId:"loan", subcategory:"" }, { loanName: who });
+      } else if(t.type==="income"){
+        const r = newSubFor(t.catId, sub, note);
+        if(r) add("subs", where(t.catId, sub), where(t.catId, r.sub), r.note!==note ? { subcategory: r.sub, note: r.note } : { subcategory: r.sub });
       }
     });
     return out;
