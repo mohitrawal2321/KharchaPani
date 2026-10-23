@@ -2054,7 +2054,6 @@ Reply with the JSON object only.`;
   const PANTRY_KEY = "kharchapani_pantry_v1";
   const SUBCAT_KEY = "kharchapani_customsubcats_v1";
   const LASTSUBCAT_KEY = "kharchapani_lastsubcat_v1";
-  const LASTPAY_KEY = "kharchapani_lastpay_v1";
   function loadJ(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch(e){ return fallback; } }
   function saveJ(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
 
@@ -2063,7 +2062,6 @@ Reply with the JSON object only.`;
   let pantry = loadJ(PANTRY_KEY, []);
   let customSubcats = loadJ(SUBCAT_KEY, {}); // { catId: [names] }
   let lastSubcat = loadJ(LASTSUBCAT_KEY, {}); // { catId: name }
-  let lastPayMethod = localStorage.getItem(LASTPAY_KEY) || "upi";
 
   // This phone's own choices (not synced): Home tile order, hidden categories, forgotten
   // shops, theme, card bill due day, and whether the welcome screen was seen.
@@ -3045,7 +3043,7 @@ Reply with the JSON object only.`;
     const val = (m, card)=> (m==="credit" && setup.cards.length) ? "credit|" + (cardById(card) ? card : defaultCard()) : m;
     if(parts && parts.length>1){ parts.forEach(p=> addSplitRow(val(p.m, p.card), p.amt, isPts(p.m) ? p.pts : null)); }
     else {
-      const first = val(activePayMethod, activeCard);
+      const first = val(activePayMethod || "upi", activeCard);
       const firstPts = rewards.length ? "pt:"+rewards[0].id : null;
       const second = (firstPts && firstPts!==first) ? firstPts : (splitM(first)==="credit" ? "upi" : val("credit", activeCard));
       addSplitRow(first, "", null); addSplitRow(second, "", null);
@@ -3100,6 +3098,7 @@ Reply with the JSON object only.`;
       return { fields:{ paymentMethod:"split", payments: parts } };
     }
     const m = activePayMethod;
+    if(!m) return { error:"How did you pay? Tap UPI, Cash, Card or another method." };
     if(isPts(m)){
       const pts = parseFloat(ptsInput.value);
       if(!(pts>0)) return { error:"How many points did you use? Fill in the points box." };
@@ -3262,7 +3261,8 @@ Reply with the JSON object only.`;
 
     // Restore how it was paid / received.
     splitMode = false; ptsTouched = false;
-    let pm = lastPayMethod;
+    // New entries start with no payment method picked, so you choose it each time.
+    let pm = "";
     if(preset && preset.paymentMethod && preset.paymentMethod!=="split") pm = preset.paymentMethod;
     if(isPts(pm) && !rewardById(pm.slice(3))) pm = "upi";
     activeRecv = "";
@@ -3357,7 +3357,6 @@ Reply with the JSON object only.`;
     txns.push(newTxn); saveJ(STORE_KEY, txns); bumpUsage(activeCatId);
     if(!isCCMode){
       if(activeSubcat){ lastSubcat[activeCatId] = activeSubcat; saveJ(LASTSUBCAT_KEY, lastSubcat); }
-      if(activeType==="expense" && !splitMode){ lastPayMethod = activePayMethod; localStorage.setItem(LASTPAY_KEY, lastPayMethod); }
     }
     if(items.length){
       items.forEach(it=> pantry.push({ id: uid(), name:it.name, qty:it.qty, date:newTxn.date, catId:activeCatId, fromTxnId:newTxn.id, u: Date.now() }));
