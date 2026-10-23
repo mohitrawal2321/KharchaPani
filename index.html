@@ -1332,8 +1332,6 @@
 (function (root) {
   "use strict";
 
-  const GEMINI_MODEL = "gemini-3.8-flash";   // free-tier model. Backup option: "gemini-3.5-flash-lite"
-
   // ===== 1. The AI's instructions and answer shape =====
 
   const CATEGORIES = [
@@ -1526,46 +1524,91 @@
   Reply with the JSON object only.`;
   }
 
-  // Sends one sentence to Gemini. Returns { draft } or { error, reason }.
+  // ===== Talking to Gemini =====
+  // Google renames and retires its free models every few months. When a model name stops
+  // working, the app used to fail every time. Now it tries the names below in order, keeps the
+  // first one that answers (ctx.model, saved on this phone), and only gives up if none do.
+  const MODELS = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.5-flash", "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-flash-lite-latest"];
+  const GEMINI_MODEL = MODELS[0];
+
+  // The answer-shape and thinking settings each model family understands.
+  function genConfig(model, schema, maxTokens, plain) {
+    const c = { responseMimeType: "application/json", maxOutputTokens: maxTokens };
+    if (plain) return c;                       // fallback: the prompt alone describes the JSON
+    c.responseJsonSchema = schema;
+    if (/^gemini-2\.5/.test(model)) c.thinkingConfig = { thinkingBudget: 0 };
+    else if (/^gemini-(3|flash)/.test(model)) c.thinkingConfig = { thinkingLevel: "low" };
+    return c;
+  }
+
+  // Sends one request, trying other models when Google says this one is gone, busy or doesn't
+  // understand a setting. Returns { data, model } or { reason, error, status, msg }.
+  async function callGemini(apiKey, makeBody, ctx, maxTokens, schema) {
+    const tried = [], order = [];
+    if (ctx.model) order.push(ctx.model);
+    MODELS.forEach(m => { if (order.indexOf(m) < 0) order.push(m); });
+    let last = null;
+    for (const model of order) {
+      for (const plain of [false, true]) {
+        let res;
+        try {
+          res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+            body: JSON.stringify(Object.assign(makeBody(), { generationConfig: genConfig(model, schema, maxTokens, plain) })),
+          });
+        } catch (e) {
+          return { reason: "offline", error: "Couldn't reach the AI. Check your internet and try again." };
+        }
+        tried.push(model);
+        if (res.ok) {
+          let data; try { data = await res.json(); } catch (e) { return { reason: "ai", error: "The AI's answer was garbled. Try again." }; }
+          return { data, model };
+        }
+        let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {}
+        last = { status: res.status, msg };
+        if (/api key/i.test(msg) || res.status === 401) return { reason: "key", error: "Google didn't accept your Gemini key. Check it in Settings.", status: res.status, msg };
+        // A setting this model doesn't know: try the same model once with plain settings.
+        if (res.status === 400 && !plain && /unknown name|invalid json payload|thinking|schema|not supported|mime/i.test(msg)) continue;
+        // Model gone, not allowed on the free tier, overloaded or out of quota: try the next one.
+        if (res.status === 404 || res.status === 429 || res.status === 500 || res.status === 503 ||
+            (res.status === 400 && /not found|not supported|unsupported|model/i.test(msg)) ||
+            (res.status === 403 && !/api key/i.test(msg))) break;
+        return { reason: "ai", error: "The AI couldn't take this request" + (msg ? ": " + msg : " (error " + res.status + ").") , status: res.status, msg };
+      }
+    }
+    if (last && last.status === 429) return { reason: "busy", error: "Google's free AI limit is used up for now. Try again in a minute, or later today." };
+    if (last && last.status === 403) return { reason: "key", error: "Google turned this key down: " + (last.msg || "permission denied") + ". Make a new key in AI Studio and paste it in Settings." };
+    return { reason: "ai", error: "None of Google's free AI models answered" + (last ? " (error " + last.status + (last.msg ? ": " + last.msg : "") + ")" : "") + ". Try again later." };
+  }
+
+  // Sends one sentence to Gemini. Returns { draft, model } or { error, reason }.
   // reason: "key" (key missing or rejected), "busy" (free limit reached for now), "offline", "ai".
   async function askAI(apiKey, text, ctx) {
     ctx = ctx || {};
     if (!apiKey) return { reason: "key", error: "Add your free Gemini key in Settings first." };
     const rewards = cleanRewards(ctx.rewards);
     const subcats = cleanSubcats(ctx.subcats);
-    let res;
-    try {
-      res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: buildSystemPrompt(rewards, subcats) }] },
-          contents: [{ role: "user", parts: [{ text: "Today is " + ctx.today + ".\nMessage: " + text }] }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            responseJsonSchema: buildSchema(rewards),
-            thinkingConfig: { thinkingLevel: "low" },
-            maxOutputTokens: 4000,
-          },
-        }),
-      });
-    } catch (e) {
-      return { reason: "offline", error: "Couldn't reach the AI. Check your internet and try again." };
-    }
-    if (res.status === 429) return { reason: "busy", error: "Google's free AI limit is used up for now. Try again later, or use the tiles." };
-    if (res.status === 400 || res.status === 401 || res.status === 403) {
-      let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {}
-      if (/api key/i.test(msg)) return { reason: "key", error: "Google didn't accept your Gemini key. Check it in Settings." };
-      return { reason: "ai", error: "The AI couldn't take this request" + (msg ? ": " + msg : ".") };
-    }
-    if (!res.ok) return { reason: "ai", error: "The AI didn't answer (error " + res.status + "). Try again." };
-    let data; try { data = await res.json(); } catch (e) { return { reason: "ai", error: "The AI's answer was garbled. Try again." }; }
-    const cand = (data.candidates || [])[0];
+    const r = await callGemini(apiKey, () => ({
+      systemInstruction: { parts: [{ text: buildSystemPrompt(rewards, subcats) }] },
+      contents: [{ role: "user", parts: [{ text: "Today is " + ctx.today + ".\nMessage: " + text }] }],
+    }), ctx, 4000, buildSchema(rewards));
+    if (r.error) return r;
+    const cand = (r.data.candidates || [])[0];
     if (!cand || cand.finishReason === "SAFETY" || cand.finishReason === "PROHIBITED_CONTENT") return { reason: "ai", error: "The AI couldn't read that one. Please use the tiles." };
     if (cand.finishReason === "MAX_TOKENS") return { reason: "ai", error: "That was too long to read. Try a shorter sentence." };
-    const out = ((cand.content && cand.content.parts) || []).filter(p => !p.thought && typeof p.text === "string").map(p => p.text).join("");
-    try { return { draft: JSON.parse(out) }; }
-    catch (e) { return { reason: "ai", error: "The AI's answer was garbled. Try again." }; }
+    const draft = parseJson(cand);
+    if (!draft) return { reason: "ai", error: "The AI's answer was garbled. Try again." };
+    return { draft, model: r.model };
+  }
+
+  // The JSON in the AI's answer, even if it came wrapped in ```json fences.
+  function parseJson(cand) {
+    const out = ((cand.content && cand.content.parts) || []).filter(p => !p.thought && typeof p.text === "string").map(p => p.text).join("").trim();
+    const a = out.indexOf("{"), b = out.lastIndexOf("}");
+    if (a < 0 || b < a) return null;
+    try { const v = JSON.parse(out.slice(a, b + 1)); return (v && typeof v === "object") ? v : null; } catch (e) { return null; }
   }
 
   // ===== 2. The money check =====
@@ -1746,7 +1789,7 @@
     return { ok: true, txn, warnings, lines: pieces.map(p => ({ m: p.m, label: methodName(p.m), amt: p.amt, pts: p.pts })) };
   }
 
-  const api = { buildDraft, dateFrom, askAI, buildSchema, buildSystemPrompt, GEMINI_MODEL };
+  const api = { buildDraft, dateFrom, askAI, buildSchema, buildSystemPrompt, GEMINI_MODEL, MODELS };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.SayItCore = api;
 })(typeof window !== "undefined" ? window : this);
@@ -1772,7 +1815,6 @@
 (function (root) {
   "use strict";
 
-  const GEMINI_MODEL = "gemini-3.8-flash";   // same free-tier model as "Say it"
   const MAX_ITEMS = 60;
 
   function buildBillSchema() {
@@ -1834,47 +1876,92 @@ Do not list the subtotal, total, payment, change or tax-summary rows as items.
 Reply with the JSON object only.`;
   }
 
+  // ===== Talking to Gemini =====
+  // Same as in "Say it". Google renames and retires its free models every few months. When a model name stops
+  // working, the app used to fail every time. Now it tries the names below in order, keeps the
+  // first one that answers (ctx.model, saved on this phone), and only gives up if none do.
+  const MODELS = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.5-flash", "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-flash-lite-latest"];
+  const GEMINI_MODEL = MODELS[0];
+
+  // The answer-shape and thinking settings each model family understands.
+  function genConfig(model, schema, maxTokens, plain) {
+    const c = { responseMimeType: "application/json", maxOutputTokens: maxTokens };
+    if (plain) return c;                       // fallback: the prompt alone describes the JSON
+    c.responseJsonSchema = schema;
+    if (/^gemini-2\.5/.test(model)) c.thinkingConfig = { thinkingBudget: 0 };
+    else if (/^gemini-(3|flash)/.test(model)) c.thinkingConfig = { thinkingLevel: "low" };
+    return c;
+  }
+
+  // Sends one request, trying other models when Google says this one is gone, busy or doesn't
+  // understand a setting. Returns { data, model } or { reason, error, status, msg }.
+  async function callGemini(apiKey, makeBody, ctx, maxTokens, schema) {
+    const tried = [], order = [];
+    if (ctx.model) order.push(ctx.model);
+    MODELS.forEach(m => { if (order.indexOf(m) < 0) order.push(m); });
+    let last = null;
+    for (const model of order) {
+      for (const plain of [false, true]) {
+        let res;
+        try {
+          res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+            body: JSON.stringify(Object.assign(makeBody(), { generationConfig: genConfig(model, schema, maxTokens, plain) })),
+          });
+        } catch (e) {
+          return { reason: "offline", error: "Couldn't reach the AI. Check your internet and try again." };
+        }
+        tried.push(model);
+        if (res.ok) {
+          let data; try { data = await res.json(); } catch (e) { return { reason: "ai", error: "The AI's answer was garbled. Try again." }; }
+          return { data, model };
+        }
+        let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {}
+        last = { status: res.status, msg };
+        if (/api key/i.test(msg) || res.status === 401) return { reason: "key", error: "Google didn't accept your Gemini key. Check it in Settings.", status: res.status, msg };
+        // A setting this model doesn't know: try the same model once with plain settings.
+        if (res.status === 400 && !plain && /unknown name|invalid json payload|thinking|schema|not supported|mime/i.test(msg)) continue;
+        // Model gone, not allowed on the free tier, overloaded or out of quota: try the next one.
+        if (res.status === 404 || res.status === 429 || res.status === 500 || res.status === 503 ||
+            (res.status === 400 && /not found|not supported|unsupported|model/i.test(msg)) ||
+            (res.status === 403 && !/api key/i.test(msg))) break;
+        return { reason: "ai", error: "The AI couldn't take this request" + (msg ? ": " + msg : " (error " + res.status + ").") , status: res.status, msg };
+      }
+    }
+    if (last && last.status === 429) return { reason: "busy", error: "Google's free AI limit is used up for now. Try again in a minute, or later today." };
+    if (last && last.status === 403) return { reason: "key", error: "Google turned this key down: " + (last.msg || "permission denied") + ". Make a new key in AI Studio and paste it in Settings." };
+    return { reason: "ai", error: "None of Google's free AI models answered" + (last ? " (error " + last.status + (last.msg ? ": " + last.msg : "") + ")" : "") + ". Try again later." };
+  }
+
   // Sends one photo to Gemini. image: { mimeType, data } where data is base64 without the prefix.
-  // Returns { bill } or { error, reason }. reason: "key", "busy", "offline", "ai".
+  // Returns { bill, model } or { error, reason }. reason: "key", "busy", "offline", "ai".
   async function askBill(apiKey, image, ctx) {
     ctx = ctx || {};
     if (!apiKey) return { reason: "key", error: "Add your free Gemini key in Settings first." };
-    let res;
-    try {
-      res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: buildBillPrompt(ctx.pantryNames) }] },
-          contents: [{ role: "user", parts: [
-            { inlineData: { mimeType: image.mimeType, data: image.data } },
-            { text: "Today is " + ctx.today + ". Read this bill." },
-          ] }],
-          generationConfig: {
-            responseMimeType: "application/json",
-            responseJsonSchema: buildBillSchema(),
-            thinkingConfig: { thinkingLevel: "low" },
-            maxOutputTokens: 8000,
-          },
-        }),
-      });
-    } catch (e) {
-      return { reason: "offline", error: "Couldn't reach the AI. Check your internet and try again." };
-    }
-    if (res.status === 429) return { reason: "busy", error: "Google's free AI limit is used up for now. Try again later, or add items with ＋." };
-    if (res.status === 400 || res.status === 401 || res.status === 403) {
-      let msg = ""; try { msg = (await res.json()).error.message || ""; } catch (e) {}
-      if (/api key/i.test(msg)) return { reason: "key", error: "Google didn't accept your Gemini key. Check it in Settings." };
-      return { reason: "ai", error: "The AI couldn't take this photo" + (msg ? ": " + msg : ".") };
-    }
-    if (!res.ok) return { reason: "ai", error: "The AI didn't answer (error " + res.status + "). Try again." };
-    let data; try { data = await res.json(); } catch (e) { return { reason: "ai", error: "The AI's answer was garbled. Try again." }; }
-    const cand = (data.candidates || [])[0];
+    const r = await callGemini(apiKey, () => ({
+      systemInstruction: { parts: [{ text: buildBillPrompt(ctx.pantryNames) }] },
+      contents: [{ role: "user", parts: [
+        { inlineData: { mimeType: image.mimeType, data: image.data } },
+        { text: "Today is " + ctx.today + ". Read this bill." },
+      ] }],
+    }), ctx, 8000, buildBillSchema());
+    if (r.error) return r;
+    const cand = (r.data.candidates || [])[0];
     if (!cand || cand.finishReason === "SAFETY" || cand.finishReason === "PROHIBITED_CONTENT") return { reason: "ai", error: "The AI couldn't read that photo. Add the items with ＋ instead." };
     if (cand.finishReason === "MAX_TOKENS") return { reason: "ai", error: "That bill was too long to read in one go. Photograph half of it at a time." };
-    const out = ((cand.content && cand.content.parts) || []).filter(p => !p.thought && typeof p.text === "string").map(p => p.text).join("");
-    try { return { bill: JSON.parse(out) }; }
-    catch (e) { return { reason: "ai", error: "The AI's answer was garbled. Try again." }; }
+    const bill = parseJson(cand);
+    if (!bill) return { reason: "ai", error: "The AI's answer was garbled. Try again." };
+    return { bill, model: r.model };
+  }
+
+  // The JSON in the AI's answer, even if it came wrapped in ```json fences.
+  function parseJson(cand) {
+    const out = ((cand.content && cand.content.parts) || []).filter(p => !p.thought && typeof p.text === "string").map(p => p.text).join("").trim();
+    const a = out.indexOf("{"), b = out.lastIndexOf("}");
+    if (a < 0 || b < a) return null;
+    try { const v = JSON.parse(out.slice(a, b + 1)); return (v && typeof v === "object") ? v : null; } catch (e) { return null; }
   }
 
   // ===== 2. The check =====
@@ -1990,7 +2077,7 @@ Reply with the JSON object only.`;
     };
   }
 
-  const api = { buildBill, billDate, askBill, buildBillSchema, buildBillPrompt, GEMINI_MODEL };
+  const api = { buildBill, billDate, askBill, buildBillSchema, buildBillPrompt, GEMINI_MODEL, MODELS };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.BillCore = api;
 })(typeof window !== "undefined" ? window : this);
@@ -3501,6 +3588,8 @@ Reply with the JSON object only.`;
   const AI_USE_KEY = "kharchapani_aiuse_v1"; // this phone only: {day, n}
   let aiCfg = Object.assign({ on:false, key:"", cap:60, promoHidden:false }, loadJ(AI_KEY, {}));
   function saveAiCfg(){ saveJ(AI_KEY, aiCfg); }
+  // The AI model that last answered on this phone. The next request tries it first.
+  function rememberModel(m){ if(m && m !== aiCfg.model){ aiCfg.model = m; saveAiCfg(); } }
   function aiUsedToday(){ const u = loadJ(AI_USE_KEY, {}); return u.day===todayISO() ? (u.n||0) : 0; }
   function aiBump(){ saveJ(AI_USE_KEY, { day: todayISO(), n: aiUsedToday()+1 }); }
 
@@ -3547,17 +3636,37 @@ Reply with the JSON object only.`;
     rec.lang = aiCfg.lang || "en-IN"; rec.interimResults = true; rec.maxAlternatives = 1;
     const before = sayInput.value.trim();
     rec.onresult = (ev)=>{
-      let txt = ""; for(let i=0;i<ev.results.length;i++) txt += ev.results[i][0].transcript;
-      sayInput.value = (before ? before + " " : "") + txt.trim();
+      // Chrome on Android often repeats the whole sentence in each new piece ("chai", "chai samosa",
+      // "chai samosa 80"). Gluing them together gave "chai chai samosa chai samosa 80" and the AI
+      // misread the amounts. Keep a piece only if it isn't a repeat of what we already have.
+      let txt = "";
+      for(let i=0;i<ev.results.length;i++){
+        const t = String(ev.results[i][0].transcript||"").trim();
+        if(!t) continue;
+        const a = txt.toLowerCase(), b = t.toLowerCase();
+        if(!txt || b.indexOf(a)===0) txt = t;
+        else if(a.indexOf(b)===0) continue;
+        else txt += " " + t;
+      }
+      sayInput.value = (before ? before + " " : "") + txt;
       sayInput.dispatchEvent(new Event("input"));
     };
-    rec.onerror = (ev)=>{ if(ev.error==="not-allowed") setSayHint("Allow the microphone for this app to speak", true); };
-    rec.onend = ()=>{ rec = null; sayMic.classList.remove("listening"); if(sayHint.className!=="err") setSayHint("Bolo ya likho"); };
+    rec.onerror = (ev)=>{
+      const why = {
+        "not-allowed": "The microphone is blocked for this app. In Chrome: ⋮ menu, Settings, Site settings, Microphone, then allow mohitrawal2321.github.io.",
+        "service-not-allowed": "Voice typing is off on this phone. Turn on Google voice typing (Settings, then System, then Keyboard, then On-screen keyboard, then Google voice typing) and try again.",
+        "audio-capture": "No microphone found. Another app may be using it. Close it and try again.",
+        "network": "Voice needs internet. Check your connection and try again.",
+        "no-speech": "Didn't hear anything. Tap the mic and speak.",
+        "language-not-supported": "This phone can't listen in the chosen language. Change Voice language in Settings, then Say it."
+      }[ev.error];
+      if(why) setSayHint(why, true);
+    };
     sayMic.classList.add("listening"); setSayHint("Listening… tap the mic to stop");
     try{ rec.start(); }catch(e){ rec = null; sayMic.classList.remove("listening"); }
   });
 
-  function sayCtx(){ return { today: todayISO(), rewards: rewards.map(r=>({ id:r.id, name:r.name, rate:r.rate })), subcats: customSubcats }; }
+  function sayCtx(){ return { model: aiCfg.model || "", today: todayISO(), rewards: rewards.map(r=>({ id:r.id, name:r.name, rate:r.rate })), subcats: customSubcats }; }
 
   async function runSayIt(){
     const text = sayInput.value.trim();
@@ -3571,6 +3680,7 @@ Reply with the JSON object only.`;
     const ctx = sayCtx();
     const out = await SayItCore.askAI(aiCfg.key, text, ctx);
     sayBusy = false;
+    rememberModel(out.model);
     if(out.error){ setSayHint(out.error, true); renderSayBox(); return; }
     setSayHint("Bolo ya likho"); renderSayBox();
     const ai = out.draft;
@@ -3756,9 +3866,16 @@ Reply with the JSON object only.`;
     if(!navigator.onLine){ aiKeyStatus.className = "ai-status"; aiKeyStatus.textContent = "Saved. Connect to the internet to check it."; return; }
     aiKeyStatus.className = "ai-status"; aiKeyStatus.textContent = "Checking with Google…";
     try{
-      const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + SayItCore.GEMINI_MODEL, { headers: { "x-goog-api-key": k } });
-      if(res.ok){ aiKeyStatus.className = "ai-status ok"; aiKeyStatus.textContent = "✓ Key works. It stays only on this phone."; }
-      else if(res.status===404){ aiKeyStatus.className = "ai-status bad"; aiKeyStatus.textContent = "The key works, but Google says the AI model isn't available to it."; }
+      // Ask Google which models this key may use, and pick the first one the app knows.
+      const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000", { headers: { "x-goog-api-key": k } });
+      if(res.ok){
+        const have = new Set(((await res.json()).models || [])
+          .filter(m=> (m.supportedGenerationMethods||[]).includes("generateContent"))
+          .map(m=> String(m.name||"").replace(/^models\//, "")));
+        const pick = SayItCore.MODELS.find(m=> have.has(m));
+        if(pick){ aiCfg.model = pick; saveAiCfg(); aiKeyStatus.className = "ai-status ok"; aiKeyStatus.textContent = "✓ Key works (" + pick + "). It stays only on this phone."; }
+        else { aiKeyStatus.className = "ai-status bad"; aiKeyStatus.textContent = "The key works, but Google offers none of the free models the app uses to it."; }
+      }
       else { aiKeyStatus.className = "ai-status bad"; aiKeyStatus.textContent = "Google didn't accept this key. Copy it again from AI Studio."; }
     }catch(e){ aiKeyStatus.className = "ai-status bad"; aiKeyStatus.textContent = "Couldn't reach Google to check it. Try again."; }
   });
@@ -4287,10 +4404,11 @@ Reply with the JSON object only.`;
     document.getElementById("blThumb").src = dataUrl;
     billShow("wait", "<b>Reading the bill…</b>This takes a few seconds. Nothing is saved until you check it.");
     aiBump();
-    const ctx = { today: todayISO(), pantryNames: [...new Set(pantry.map(p=> String(p.name||"").trim()).filter(Boolean))],
+    const ctx = { model: aiCfg.model || "", today: todayISO(), pantryNames: [...new Set(pantry.map(p=> String(p.name||"").trim()).filter(Boolean))],
                   txns: txns.map(t=>({ date:t.date, amount:t.amount, type:t.type, catId:t.catId, note:t.note })) };
     const out = await BillCore.askBill(aiCfg.key, { mimeType:"image/jpeg", data: dataUrl.split(",")[1] }, ctx);
     billBusy = false;
+    rememberModel(out.model);
     if(!billSheet.classList.contains("active")) return;   // closed while it was reading
     if(out.error){ billShow("error", "<b>" + esc(out.error) + "</b>"); return; }
     const r = BillCore.buildBill(out.bill, ctx);
