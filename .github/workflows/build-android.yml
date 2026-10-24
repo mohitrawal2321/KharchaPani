@@ -8,6 +8,9 @@ on:
     branches-ignore: [main]
     paths:
       - 'android/**'
+      - '!android/kharcha-pani.apk'
+      - '!android/README.md'
+      - '!android/unsigned/**'
       - '.github/workflows/build-android.yml'
 
 permissions:
