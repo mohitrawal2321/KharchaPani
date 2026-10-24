@@ -1,0 +1,38 @@
+# Builds the Kharcha Pani Android shell (a Trusted Web Activity).
+# The output is UNSIGNED; it gets signed with the private key, which never goes in this repo.
+name: Build Android app
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths:
+      - 'android/**'
+      - '.github/workflows/build-android.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build unsigned release APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+      - name: Save the unsigned APK back to this branch
+        run: |
+          mkdir -p android/unsigned
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk android/unsigned/kharcha-pani-unsigned.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f android/unsigned/kharcha-pani-unsigned.apk
+          git commit -m "Unsigned Android build from ${GITHUB_SHA::7} [skip ci]"
+          git push
