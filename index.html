@@ -164,7 +164,18 @@
   .fold[open] summary::after{ transform:rotate(90deg); }
   .fold .fold-in{ padding:2px 12px 4px; }
   .sheet-actions{ display:flex; gap:9px; margin-top:14px; }
-  #normalActions, #editActions{ position:sticky; bottom:-20px; background:var(--bg2); margin:12px -16px -20px; padding:12px 16px 20px; border-top:1px solid var(--border); z-index:2; }
+  #normalActions, #editActions{ margin-top:10px; }
+  /* Add/edit sheet: name + amount stay on top, keypad + Save stay pinned at the bottom,
+     only the chips in the middle scroll. So the keypad is always in view. */
+  #entrySheet{ display:flex; flex-direction:column; overflow:hidden; max-height:92vh; max-height:92dvh; padding-bottom:max(14px, env(safe-area-inset-bottom)); }
+  #entrySheet > .sheet-handle, #entrySheet > .sheet-header, #entrySheet > .amount-wrap, #entrySheet > .meta-line, #entrySheet > .type-toggle{ flex:none; }
+  #entrySheet .es-body{ flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; margin:0 -16px; padding:0 16px; }
+  #entrySheet .es-dock{ flex:none; border-top:1px solid var(--border); margin:0 -16px; padding:10px 16px 0; background:var(--bg2); }
+  #entrySheet .es-dock .keypad{ margin-bottom:0; gap:6px; }
+  #entrySheet .es-dock .keypad button{ padding:10px 0; }
+  #entrySheet.typing .es-dock .keypad{ display:none; }
+  #entrySheet .amount-wrap{ margin:0 0 8px; }
+  #entrySheet .sheet-header{ margin-bottom:6px; }
   .btn{ flex:1; padding:13px 10px; border-radius:14px; border:1px solid transparent; font-size:14.5px; font-weight:800; cursor:pointer; }
   .btn:active{ opacity:.8; }
   .btn:disabled{ opacity:.45; }
@@ -987,6 +998,7 @@
     </div>
 
     <div class="amount-wrap"><span class="rupee">&#8377;</span><div class="amount-display" id="amountDisplay">0</div></div>
+    <div class="es-body" id="entryBody">
     <div id="subcatBlock" style="display:none;">
       <div class="row-label">What kind</div>
       <div class="chip-row" id="subcatChips"></div>
@@ -1076,7 +1088,9 @@
         </div>
       </div>
     </details>
+    </div>
 
+    <div class="es-dock">
     <div class="keypad" id="keypad">
       <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
       <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
@@ -1092,6 +1106,7 @@
     <div class="sheet-actions" id="editActions" style="display:none;">
       <button class="btn danger" id="deleteBtn">Delete</button>
       <button class="btn primary" id="updateBtn">Update</button>
+    </div>
     </div>
   </div>
 
@@ -2938,6 +2953,11 @@ Reply with the JSON object only.`;
   const saveBtn = document.getElementById("saveBtn"), updateBtn = document.getElementById("updateBtn");
   const shopRow = document.getElementById("shopRow"), moreFold = document.getElementById("moreFold"), foldSum = document.getElementById("foldSum");
   const keypad = document.getElementById("keypad");
+  // While typing in a text box on the add sheet (note, points, split amounts), the phone keyboard
+  // takes half the screen, so hide our number keypad until the box is left.
+  const entryBody = document.getElementById("entryBody");
+  entryBody.addEventListener("focusin", e=>{ if(e.target.matches("input, textarea")) entrySheet.classList.add("typing"); });
+  entryBody.addEventListener("focusout", ()=> setTimeout(()=>{ if(!entryBody.contains(document.activeElement) || !document.activeElement.matches("input, textarea")) entrySheet.classList.remove("typing"); }, 50));
   let amountStr = "";
   function renderAmount(){
     amountDisplay.textContent = amountStr ? Number(amountStr.split(".")[0]||0).toLocaleString("en-IN") + (amountStr.includes(".") ? "." + amountStr.split(".")[1] : "") : "0";
@@ -3542,11 +3562,11 @@ Reply with the JSON object only.`;
 
     normalActions.style.display = txn ? "none" : "flex";
     editActions.style.display = txn ? "flex" : "none";
-    entrySheet.scrollTop = 0;
+    entrySheet.scrollTop = 0; document.getElementById("entryBody").scrollTop = 0;
     sheetBackdrop.classList.add("active"); entrySheet.classList.add("active");
     if(!sheetPushed){ try{ history.pushState({view:"sheet"}, ""); sheetPushed = true; }catch(e){} }
   }
-  function doCloseSheet(){ sheetBackdrop.classList.remove("active"); entrySheet.classList.remove("active"); }
+  function doCloseSheet(){ sheetBackdrop.classList.remove("active"); entrySheet.classList.remove("active", "typing"); }
   // Closing by button or backdrop steps history back, so the entry the sheet pushed is
   // consumed. popstate is what actually hides it, keeping both routes identical.
   function closeSheet(){ if(sheetPushed){ history.back(); } else { doCloseSheet(); } }
