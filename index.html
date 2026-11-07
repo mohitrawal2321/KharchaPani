@@ -596,7 +596,14 @@
   .scr-head{ padding:18px 4px 14px; }
   .scr-head h1{ font-size:24px; font-weight:600; letter-spacing:-.2px; }
   .scr-head h1.brand{ color:var(--accent); font-size:25px; display:flex; align-items:center; gap:10px; }
-  .brand-coin{ width:28px; height:28px; flex:none; }
+  .brand-coin{ width:24px; height:24px; flex:none; }
+  /* Home top bar (Nov 2026): coin + KHARCHA PANI in spaced capitals, lined up with the card edges;
+     the gear is a plain outline so the total below stays the loudest thing on screen. */
+  #screen-add .scr-head{ padding:12px 0 14px; min-height:58px; align-items:center; }
+  #screen-add .scr-head h1.brand{ gap:11px; font-size:16px; font-weight:700; letter-spacing:2.1px; word-spacing:5px; text-transform:uppercase; line-height:1; }
+  #screen-add #settingsBtn{ background:transparent; color:var(--muted); margin-right:-8px; }
+  #screen-add #settingsBtn svg{ width:23px; height:23px; }
+  #screen-add #settingsBtn .sync-dot{ top:7px; right:7px; }
   .wel-coin{ width:68px; height:68px; display:block; margin-top:6px; }
   .icon-btn{ border:0; border-radius:50%; width:40px; height:40px; color:var(--accent); }
   .cap, .section-label, .set-title, .row-label, .field-row label, .flabel{ text-transform:none; letter-spacing:0; font-size:14px; font-weight:500; color:var(--muted); }
@@ -747,7 +754,8 @@
 
   /* say it */
   .say{ background:var(--card); border:0; border-radius:28px; padding:8px 8px 6px 18px; margin:0 0 12px; }
-  .say-mic{ width:40px; height:40px; background:var(--accent); color:var(--on-accent); border:0; display:grid; place-items:center; }
+  .say-mic{ width:40px; height:40px; background:transparent; color:var(--accent); border:0; box-shadow:inset 0 0 0 1.5px var(--accent-line); display:grid; place-items:center; }
+  .say-mic.listening{ background:var(--accent); color:var(--on-accent); box-shadow:none; }
   .say-mic svg{ width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; }
   .say-go{ border-radius:999px; }
   .sy-emo{ border:0; background:transparent; width:auto; height:auto; }
@@ -755,7 +763,7 @@
 
   /* welcome, lock */
   .welcome{ background:var(--bg); }
-  .welcome .logo{ font-family:var(--ui); font-weight:600; color:var(--accent); }
+  .welcome .logo{ font-family:var(--ui); font-weight:700; color:var(--accent); font-size:28px; letter-spacing:4px; word-spacing:8px; text-transform:uppercase; }
   .welcome .logo span{ color:var(--accent); }
   .wpt i{ border:0; border-radius:50%; }
   .lock-title{ font-family:var(--ui); font-weight:600; }
@@ -775,7 +783,7 @@
     <!-- HOME -->
     <section class="screen active" id="screen-add">
       <div class="scr-head">
-        <h1 class="brand"><svg class="brand-coin" aria-hidden="true"><use href="#kpCoinSm"/></svg>Kharcha Pani</h1>
+        <h1 class="brand"><svg class="brand-coin" aria-hidden="true"><use href="#kpCoinSm"/></svg><span>Kharcha Pani</span></h1>
         <button class="icon-btn" id="settingsBtn" aria-label="Settings"><span class="sync-dot" id="headerDot"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       </div>
 
@@ -1448,7 +1456,7 @@
   <div class="welcome" id="welcome">
     <div class="in">
       <svg class="wel-coin" aria-hidden="true"><use href="#kpCoin"/></svg>
-      <div class="logo">Kharcha<span>Pani</span></div>
+      <div class="logo">Kharcha Pani</div>
       <p>Track what you spend in two taps. Your data stays on your phone unless you choose to sync.</p>
       <div class="wpt"><i>&#128070;</i><div><b>Tap, type the amount, done</b><span>The app learns your shops and usual payment, so most entries take two taps.</span></div></div>
       <div class="wpt"><i>&#128179;</i><div><b>Cards and points, done right</b><span>Card spends wait for the bill. Reward points never touch your bank balance.</span></div></div>
@@ -3781,7 +3789,7 @@ Reply with the JSON object only.`;
     const left = Math.max(0, aiCfg.cap - aiUsedToday());
     sayLeft.textContent = online ? (left + " of " + aiCfg.cap + " left today") : "";
     if(!online){ sayInput.placeholder = "Needs internet. Use the tiles below."; setSayHint("Offline"); }
-    else { sayInput.placeholder = "e.g. Dmart 1840, 1200 card, 640 points"; if(!sayBusy && sayHint.className!=="err") setSayHint(aiCfg.key ? "Bolo ya likho" : "Add your free Gemini key in Settings"); }
+    else { sayInput.placeholder = "Dmart 1840, 1200 card…"; if(!sayBusy && sayHint.className!=="err") setSayHint(aiCfg.key ? "Bolo ya likho" : "Add your free Gemini key in Settings"); }
   }
   window.addEventListener("online", renderSayBox);
   window.addEventListener("offline", renderSayBox);
