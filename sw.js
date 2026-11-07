@@ -2,7 +2,7 @@
 // App files: network first (so updates arrive straight away), saved copy when offline.
 // Libraries (charts, Firebase) and fonts: saved copy first, since those never change.
 // Firebase's own data traffic is left alone; the app queues changes itself while offline.
-const CACHE = "kharchapani-v3";
+const CACHE = "kharchapani-v4";
 const APP_FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 const LIBS = [
   "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js",
